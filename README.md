@@ -14,3 +14,5 @@ sides. The object can be moved on three axis, in both directions.
 Finally, a texture must be applicable simply on the object when we press a dedicated
 key, and the same key allows us to go back to the different colors. A soft transition
 between the two is requested.
+
+Resources are available on the projet on 42 intra
