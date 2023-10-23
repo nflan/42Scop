@@ -1,0 +1,28 @@
+Source: vulkan-tools
+Section: graphics
+Priority: optional
+Maintainer: John Zupin <johnz@lunarg.com>
+Build-Depends: debhelper (>= 10),
+ cmake,
+ python3,
+ glslang-tools,
+ vulkan-headers (>= 1.3.231.0~rc1),
+ libvulkan-dev (>= 1.3.231.0~rc1),
+ libwayland-dev,
+ libx11-dev,
+ libxrandr-dev,
+ pkg-config,
+ wayland-protocols
+Standards-Version: 4.1.2
+Homepage: https://github.com/KhronosGroup/Vulkan-Tools
+Vcs-Git: https://github.com/KhronosGroup/Vulkan-Tools
+Vcs-Browser: https://github.com/KhronosGroup/Vulkan-Tools
+
+Package: vulkan-tools
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libvulkan1 (>= 1.3.231.0~rc1)
+Breaks: vulkan-utils
+Replaces: vulkan-utils
+Provides: vulkan-utils
+Description: This project provides Vulkan tools and utilities that can
+ assist Vulkan developers

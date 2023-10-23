@@ -1,0 +1,1219 @@
+vulkan-tools (1.3.261.0~rc2-1lunarg22.04-1) jammy; urgency=medium
+
+  [ Charles Giessen ]
+  * vulkaninfo: Make -j=<GPU> work
+
+ -- john <john@odin>  Mon, 21 Aug 2023 11:59:46 -0600
+
+vulkan-tools (1.3.261.0~rc1-1lunarg22.04-1) jammy; urgency=medium
+
+  [ Marijn Suijten ]
+  * vulkaninfo: Reduce NVIDIA quaternary version field to 6 bits
+
+  [ juan-lunarg ]
+  * icd: Fix WIN32 Mock ICD installation
+
+  [ Richard S. Wright Jr ]
+  * Update known_good.json for MoltenVK 1.2.4
+
+  [ Daniel Rakos ]
+  * mock: Parameterization changes for Vulkan SC
+
+  [ Tony-LunarG ]
+  * vkcubepp: Fix cmd buffer/pool leak
+
+  [ Charles Giessen ]
+  * vulkaninfo: Only enable necessary instance extensions
+  * icd: Fix OOB writes in QueuePerfCounters
+
+  [ spencer-lunarg ]
+  * icd: Add vkGetDescriptorSetLayoutSupport
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.251
+
+  [ Alexander Kanavin ]
+  * scripts/CMakeLists.txt: append to CMAKE_FIND_ROOT_PATH instead of replacing it
+
+  [ Charles Giessen ]
+  * icd: Use #pragma once in header
+
+  [ scottmarsland ]
+  * icd: Add vkGetRenderAreaGranularity
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.254
+
+  [ Charles Giessen ]
+  * build: Update to C++14 as minimum version
+  * build: Add googletest dependency for testing
+  * test: Add test infrastructure
+  * test: Use build artifacts in tests
+  * test: Add basic MockICD test
+  * icd: Move handwritten code into .cpp file
+  * build: Only inlcude wayland if enabled for MockICD
+
+  [ Juan Ramos ]
+  * docs: Remove unneccessary info about ccache and compile commands
+
+  [ Charles Giessen ]
+  * ci: Add tests to linux & mac action runs
+  * icd: Add AllocateCommandBuffer test
+  * ci: Reduce linux actions combinations
+
+  [ Daniel Rakos ]
+  * mock: Redo parameterization changes for Vulkan SC
+  * mock: Fix memory leak issue
+
+  [ Charles Giessen ]
+  * icd: Document parametization for VulkanSC
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.255
+
+  [ Charles Giessen ]
+  * test: Expand MockICD test coverage
+  * ci: Enable Address Sanitizer in tests
+
+  [ Juan Ramos ]
+  * cmake: Update update_deps
+
+  [ Charles Giessen ]
+  * build: Default to using the static CRT for MSVC
+
+  [ spencer-lunarg ]
+  * icd: Add VK_KHR_cooperative_matrix support
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.257
+
+  [ Daniel Rakos ]
+  * build: Fix generator directory references
+  * build: Add API_TYPE variable
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.258
+  * build: Update to header 1.3.259
+
+  [ Charles Giessen ]
+  * vulkaninfo: Enable Swapchain Colorspace ext
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.260
+
+  [ Water Chika ]
+  * pMessageIdName maybe NULL.
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.261
+
+  [ Tony Barbour ]
+  * icd: Add support for VK_EXT_host_image_copy
+
+ -- john <john@odin>  Wed, 16 Aug 2023 09:35:34 -0600
+
+vulkan-tools (1.3.250.0~rc1-1lunarg22.04-1) jammy; urgency=medium
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.244
+
+  [ Charles Giessen ]
+  * vulkaninfo: Stopgap fix for old copyrights
+  * vulkaninfo: Dont enable Direct Driver Loading Ext
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.245
+
+  [ Charles Giessen ]
+  * vkcubepp: Fix custom height not working
+
+  [ Richard S. Wright Jr ]
+  * Updated MoltenVK known good version to 1.2.3
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.246
+
+  [ Andrew Poole ]
+  * cube: Add .gitignore for Android builds
+  * vulkaninfo: Add Android build support
+  * vulkaninfo: Add "VK_" prefix for PrintFlagBits
+
+  [ Charles Giessen ]
+  * ci: Use Ubuntu 22 instead of 18
+  * ci: Remove dependency on libmirclient-dev
+  * vulkaninfo: Use VkFormatFeatureFlags2 by default
+  * cmake: Add build option for Address Sanitizer
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.247
+
+  [ Charles Giessen ]
+  * vulkaninfo: Flush before exiting
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.248
+  * build: Update to header 1.3.249
+
+  [ juan-lunarg ]
+  * mock: Add support for DeviceBufferMemoryRequirements
+  * mock: Add support for vkGetDeviceImageMemoryRequirements
+  * docs: Update README.md
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.250
+
+  [ Powei Feng ]
+  * cube: remove unnecessary use-xlib
+
+  [ juan-lunarg ]
+  * git: Ignore external/ directory
+  * cmake: Add UPDATE_DEPS functionality
+  * ci: Use UPDATE_DEPS and ccache
+  * ci: Speed up MacOS CI
+  * cmake: Keep VulkanRT-License.txt copyright up to date
+
+  [ Artem Kharytoniuk ]
+  * mock: Extend external memory functionality
+
+  [ Scott.Marsland ]
+  * mock: Fix sparse image format properties 2 queries
+  * mock: Fix image sparse mem requirements 2 queries
+
+ -- john <john@odin>  Tue, 23 May 2023 14:46:01 -0600
+
+vulkan-tools (1.3.243.0~rc2-1lunarg22.04-1) jammy; urgency=medium
+
+  [ Charles Giessen ]
+  * vulkaninfo: Dont enable Direct Driver Loading Ext
+
+ -- john <john@odin>  Mon, 27 Mar 2023 13:04:33 -0600
+
+vulkan-tools (1.3.243.0~rc1-1lunarg22.04-1) jammy; urgency=medium
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.242
+
+  [ spencer-lunarg ]
+  * mockicd: Add Support for testing Video decoding
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.243
+
+  [ Charles Giessen ]
+  * mock_icd: Add missing locks
+
+ -- john <john@odin>  Thu, 23 Mar 2023 15:07:18 -0600
+
+vulkan-tools (1.3.241.0~rc1-1lunarg22.04-1) jammy; urgency=medium
+
+  [ Charles Giessen ]
+  * vulkaninfo: Fix rc file copyright and other mistakes
+
+  [ Richard S. Wright Jr ]
+  * Update MoltenVK known good tag
+
+  [ Juan Ramos ]
+  * cmake: Raise min to 3.17
+  * ci: Fix CI warnings
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.240
+  * ci: Update GN toolchain
+  * gn: Add ninja to DEPS
+
+  [ Juan Ramos ]
+  * cmake: Remove custom install code
+
+  [ spencer-lunarg ]
+  * mockicd: Add more PhysicalDevice functions not in profiles
+  * mockicd: Add non-zero timestampValidBits
+  * mockicd: Fix and finish vkGetPhysicalDeviceProperties2KHR
+  * mockicd: Add Protected Queue
+
+  [ berryboy2012 ]
+  * Fixed cube.cpp crashing on Windows when minimized.
+
+  [ spencer-lunarg ]
+  * mockicd: Add more Memory Types
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.241
+
+  [ spencer-lunarg ]
+  * mockicd: Add Support for testing Ray Tracing
+
+  [ Charles Giessen ]
+  * vulkaninfo: Fix wrong stripping in flag strings
+
+ -- john <john@odin>  Mon, 06 Mar 2023 14:05:41 -0700
+
+vulkan-tools (1.3.239.0~rc2-1lunarg22.04-1) jammy; urgency=medium
+
+  [ Charles Giessen ]
+  * vulkaninfo: Fix rc file copyright and other mistakes
+
+ -- john <john@odin>  Thu, 26 Jan 2023 13:21:35 -0700
+
+vulkan-tools (1.3.239.0~rc1-1lunarg22.04-1) jammy; urgency=medium
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.237
+
+  [ Richard S. Wright Jr ]
+  * Updated to latest known good MoltenVK
+
+  [ Mike Schuchardt ]
+  * vulkaninfo: Remove macOS application bundle
+  * ci: Fix macOS github actions codegen verification
+
+  [ Juan Ramos ]
+  * cmake: Use PkgConfig to find XCB
+  * cmake: Use PkgConfig to find X11
+  * cmake: Use PkgConfig to find DirectFB
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.238
+
+  [ Juan Ramos ]
+  * build: Update vulkan headers
+
+  [ Charles Giessen ]
+  * Update README.md to point to LICENSE.md
+
+  [ Jeremy Gebben ]
+  * vkcube: Add more debug utils object names and cb labels
+
+  [ Juan Ramos ]
+  * github: Use main instead of master
+
+  [ John Zupin ]
+  * packaging: debian: update copyright
+
+  [ Charles Giessen ]
+  * vkcube: Fix object type printing in 32 bit mode
+  * cubepp: Make sure width & height are > 0
+  * cube: Check for width & height less are than zero
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.239
+
+ -- john <john@odin>  Mon, 23 Jan 2023 12:40:30 -0700
+
+vulkan-tools (1.3.236.0~rc1-1lunarg22.04-1) jammy; urgency=medium
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.236
+
+  [ Charles Giessen ]
+  * cubepp: Set the apiVersion to 1.0
+  * cube & cubepp: Handle negative gpu selections
+
+  [ Juan Ramos ]
+  * ci: Speed up MacOS builds
+
+ -- john <john@odin>  Thu, 08 Dec 2022 12:56:10 -0700
+
+vulkan-tools (1.3.235.0~rc1-1lunarg22.04-1) jammy; urgency=medium
+
+  [ Juan Ramos ]
+  * cubepp: Fix presentKHR assert
+
+  [ Richard S. Wright Jr ]
+  * Updated MoltenVK to 1.2.0
+
+  [ Juan Ramos ]
+  * ci: Use MACOS_DEPLOYMENT_TARGET
+
+  [ Charles Giessen ]
+  * vulkaninfo: Fix validation errors
+
+  [ Juan Ramos ]
+  * cmake: Remove outdate code
+  * cmake: Remove USE_CCACHE
+  * docs: Explain CMAKE_EXPORT_COMPILE_COMMANDS
+  * cmake: Suppress Wayland warnings
+  * cmake: Remove illegal CMake code
+
+  [ Mike Schuchardt ]
+  * cmake: Sync FindVulkanHeaders.cmake with VVL
+  * build: Update to header 1.3.232
+
+  [ Charles Giessen ]
+  * vulkaninfo: Escape strings in JSON output
+  * vulkaninfo: Improve array printing
+  * vulkaninfo: Add Driver Version handling
+
+  [ Mike Schuchardt ]
+  * vulkaninfo: Fix VkShaderStageFlagBits expansion
+  * build: Update to header 1.3.233
+
+  [ Simon McVittie ]
+  * build: Compile vkcube and other demos, even when cross-compiling
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.234
+
+  [ Juan Ramos ]
+  * cmake: Use new VulkanHeaders cmake support
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.235
+
+  [ spencer-lunarg ]
+  * icd: Set MockICD driver version to header version
+
+  [ Charles Giessen ]
+  * vulkaninfo: Fix quoting strings in json output
+
+ -- john <john@odin>  Thu, 01 Dec 2022 09:18:44 -0700
+
+vulkan-tools (1.3.231.0~rc2-1lunarg22.04-1) jammy; urgency=medium
+
+  [ Juan Ramos ]
+  * cubepp: Fix presentKHR assert
+
+ -- john <john@odin>  Thu, 20 Oct 2022 14:49:33 -0600
+
+vulkan-tools (1.3.231.0~rc1-1lunarg22.04-1) jammy; urgency=medium
+
+  [ Richard S. Wright Jr ]
+  * Updated known good version of MoltenVK
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.225
+
+  [ Brad Smith ]
+  * vulkaninfo/cube: added support for OpenBSD
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.226
+
+  [ Brandon Jones ]
+  * Move BUILD.gn values into the scope that uses them
+
+  [ Brad Smith ]
+  * build: Also include XCB header path
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.227
+  * build: Update to header 1.3.228
+  * build: Update to header 1.3.229
+  * build: Update to header 1.3.230
+
+  [ Jan Beich ]
+  * cube: silence -DNDEBUG warning for KHR_display after 27c21248221f
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.231
+
+  [ John Zupin ]
+  * packaging: update deps versions
+
+ -- john <john@odin>  Tue, 18 Oct 2022 11:54:09 -0600
+
+vulkan-tools (1.3.224.0~rc2-1lunarg20.04-1) focal; urgency=medium
+
+  [ John Zupin ]
+  * packaging: update control deps
+
+ -- john <john@odin>  Thu, 18 Aug 2022 14:19:02 -0600
+
+vulkan-tools (1.3.224.0~rc1-1lunarg20.04-1) focal; urgency=medium
+
+  [ Richard S. Wright Jr ]
+  * Updated MoltenVK known good to 1.1.10
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.217
+  * build: Update to header 1.3.218
+
+  [ Michel Zou ]
+  * win32: use _set_abort_behavior from ucrt
+
+  [ Spundun Bhatt ]
+  * Log Surface Extension Error, but don't fail on it.
+
+  [ Chang Chen ]
+  * cmake: Use ${VULKAN_SDK} environment variable paths prior to the system default paths.
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.219
+  * build: Update to header 1.3.220
+  * build: Update to header 1.3.221
+  * build: Update to header 1.3.222
+
+  [ jfthibert ]
+  * Set usage on transient image based on format
+
+  [ Jan Engelhardt ]
+  * vulkaninfo: include wayland-client because its functions are used
+
+  [ Mike Schuchardt ]
+  * ci: Fix github android build
+  * build: Update to header 1.3.223
+
+  [ Charles Giessen ]
+  * vulkaninfo: Prevent infinite loops
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.224
+
+ -- john <john@odin>  Tue, 16 Aug 2022 09:28:44 -0600
+
+vulkan-tools (1.3.216.0~rc1-1lunarg20.04-1) focal; urgency=medium
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.215
+
+  [ Charles Giessen ]
+  * vulkaninfo: Set sType in PhysDevGroupProps
+  * vkcubepp: Use correct extension for portability enumeration
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.216
+
+ -- john <john@odin>  Thu, 09 Jun 2022 10:21:58 -0600
+
+vulkan-tools (1.3.214.0~rc1-1lunarg20.04-1) focal; urgency=medium
+
+  [ Charles Giessen ]
+  * cube,vulkaninfo: Add portability_enumeration if present
+  * mock_icd: Remove fallthroughs in switches
+
+  [ Brian Osman ]
+  * Guard chromium-specific configs in BUILD.gn
+
+  [ Charles Giessen ]
+  * docs: Replace references to DevSim with Profiles
+
+  [ Richard S. Wright Jr ]
+  * Updated MoltenVK tag
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.212
+  * ci: Remove fbactions/setup-winsdk
+  * build: Update to header 1.3.213
+  * cubepp: Fix VK_KHR_display compile error
+  * ci: Build cube with multiple WSI options
+  * build: Update to header 1.3.214
+
+  [ Michel Zou ]
+  * Avoid _set_abort_behavior on MINGW
+
+  [ shironeko ]
+  * cube: add null check on wl_*_destroy functions
+
+ -- john <john@odin>  Wed, 25 May 2022 15:04:00 -0600
+
+vulkan-tools (1.3.211.0~rc3-1lunarg20.04-1) focal; urgency=medium
+
+  [ Charles Giessen ]
+  * docs: Replace references to DevSim with Profiles
+
+ -- john <john@odin>  Fri, 15 Apr 2022 11:12:03 -0600
+
+vulkan-tools (1.3.211.0~rc2-1lunarg20.04-1) focal; urgency=medium
+
+  [ Charles Giessen ]
+  * cube,vulkaninfo: Add portability_enumeration if present
+
+ -- john <john@odin>  Wed, 13 Apr 2022 15:20:53 -0600
+
+vulkan-tools (1.3.211.0~rc1-1lunarg20.04-1) focal; urgency=medium
+
+  [ Charles Giessen ]
+  * cubepp: Fix regression in VK_KHR_display
+  * cubepp: Fix wayland regression
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.210
+  * build: Update to header 1.3.211
+
+  [ Loko Kung ]
+  * Factor out typemap_helper header in BUILD rules for reusability in Dawn without depending on entire icd lib.
+
+  [ Md Abdullah Al Fahim ]
+  * Show surface information on GGP platform
+
+  [ John Zupin ]
+  * packaging: update deps versions for vulkan
+
+ -- john <john@odin>  Mon, 11 Apr 2022 13:31:18 -0600
+
+vulkan-tools (1.3.209.0~rc1-1lunarg20.04-1) focal; urgency=medium
+
+  [ Richard S. Wright Jr ]
+  * Updated MoltenVK known good tag to 1.1.7
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.205
+
+  [ Charles Giessen ]
+  * vulkaninfo: Enable portability subset extension if present
+
+  [ Mike Schuchardt ]
+  * vulkaninfo: Enable portability extension for device groups
+
+  [ Jeremy Hayes ]
+  * Make device selection output constistent
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.206
+
+  [ Tony-LunarG ]
+  * build: Add install target for vkcube-wayland
+
+  [ Richard S. Wright Jr ]
+  * Update known_good.json
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.207
+  * build: Update to header 1.3.208
+
+  [ Charles Giessen ]
+  * cubepp: Cleanup usage of C++ and vulkan.hpp
+  * cubepp: Copy cubes swapchain format selection
+  * vkcubepp: Address feedback from code-review
+  * cubepp: Use uint32_t and Demo&
+  * cubepp: Add debug utils messenger
+  * vulkaninfo: Replace devsim with Profile json output
+  * vulkaninfo: Make default json filename unique
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.209
+
+ -- john <john@odin>  Tue, 29 Mar 2022 14:24:27 -0600
+
+vulkan-tools (1.3.204.0~rc3-1lunarg20.04-1) focal; urgency=medium
+
+  [ Charles Giessen ]
+  * vulkaninfo: Enable portability subset extension if present
+
+  [ Mike Schuchardt ]
+  * vulkaninfo: Enable portability extension for device groups
+
+ -- John Zupin <john@odin>  Fri, 11 Feb 2022 14:40:24 -0700
+
+vulkan-tools (1.3.204.0~rc2-1lunarg20.04-1) focal; urgency=medium
+
+  [ Tony-LunarG ]
+  * build: Add build target for vkcube-wayland
+
+  [ Charles Giessen ]
+  * vulkaninfo: Fix padding for integer dot product
+  * vulkaninfo: Generate pNext chain properly
+
+  [ ziga-lunarg ]
+  * vulkan tools: Fix image usage error reported by validation layers
+
+  [ Charles Giessen ]
+  * vulkaninfo: Prevent WinCRT debug popups
+  * vulkaninfo: Return non-zero from failure
+  * vulkaninfo: Add Device & driver UUID to summary
+  * vulkaninfo: Support QueueProperties pNext chain
+  * vulkaninfo: Use filename in json output desc
+  * vulkaninfo: Fix spelling mistakes
+  * vulkaninfo: Use better casting where possible
+  * vulkaninfo: Simplify WSI macro defines
+  * vulkaninfo: Refactor printer to use stack for data
+  * vulkaninfo: min_key_width now set in the object stack
+  * vulkaninfo: Use gpu version only for AppGpu
+  * vulkaninfo: Chain printers use correct version
+  * vulkaninfo: Remove redundant parameter in GgpuDumpQueueProps
+  * vulkaninfo: Put value in unknown flag strings
+  * vulkaninfo: Use enum names in switches
+  * vulkaninfo: bitmask printers check for 0 value
+  * vulkaninfo: Remove set width in json functions
+  * vulkaninfo: Make chain iterators optional
+  * vulkaninfo: Support structs from multiple extensions
+  * vulkaninfo: Update generated copyright
+  * vulkaninfo: Use constants in pythong script
+  * vulkaninfo: Use single quote in generation script
+  * vulkaninfo: Use """ where appropriate in script
+  * vulkaninfo: remove redundant str() in script
+
+ -- John Zupin <john@odin>  Mon, 07 Feb 2022 13:47:18 -0700
+
+vulkan-tools (1.3.204.0~rc1-1lunarg20.04-1) focal; urgency=medium
+
+  [ Charles Giessen ]
+  * vulkaninfo: Prevent drivers writing out of bounds
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.2.199
+
+  [ Charles Giessen ]
+  * vulkaninfo: Use DebugReport callback
+  * vulkaninfo: Make printing ToolProperties optional
+
+  [ Richard S. Wright Jr ]
+  * Update known_good.json
+
+  [ janharaldfredriksen-arm ]
+  * scripts: initialize properties for VK_EXT_fragment_density_map2
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.2.200
+
+  [ Charles Giessen ]
+  * vulkaninfo: Refactor Win32 function loading
+  * vulkaninfo: Fix formatting
+  * vulkaninfo: Remove unecessary surface macro guards
+  * vulkaninfo: Refactor main function
+  * vulkaninfo: Allow specifying file output
+  * vulkaninfo: Error check --output
+  * vulkaninfo: Fixup argument parsing for --output
+  * vulkaninfo: Rename trivially_optional to vulkaninfo_optional
+
+  [ Mark Young ]
+  * vkcube/vkcubepp: Add option to force validation errors
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.2.201
+
+  [ Charles Giessen ]
+  * ci: Use windows-latest in github actions
+
+  [ Lionel Landwerlin ]
+  * scripts: Fix codegen to support VK_KHR_format_feature_flags2
+
+  [ C Stout ]
+  * Fix error messages upon failure to connect to window systems.
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.2.203
+
+  [ Tony-LunarG ]
+  * build: Add dependency on wayland-protocols
+
+  [ SupervisedThinking ]
+  * cmake/FindWaylandProtocols: fix wayland protocol path generation for cross compile
+
+  [ Alexis Hetu ]
+  * Add support for building on ChromeOS
+
+  [ John Zupin ]
+  * packaging: update copyright
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.3.204
+
+  [ Charles Giessen ]
+  * vulkaninfo: Update to 1.3
+
+  [ nyorain ]
+  * Fix FreeCommandBuffers leak
+  * Fix DestroyCommandPool command buffer leak
+  * mockicd: Fix queue destruction for multiple devices
+
+  [ Charles Giessen ]
+  * vulkaninfo: Fix padding for integer dot product
+  * vulkaninfo: Generate pNext chain properly
+
+  [ John Zupin ]
+  * packaging: add wayland-protocols as build dep
+
+ -- John Zupin <john@odin>  Thu, 03 Feb 2022 15:54:02 -0700
+
+vulkan-tools (1.2.198.0~rc2-1lunarg20.04-1) focal; urgency=medium
+
+  [ Charles Giessen ]
+  * vulkaninfo: Use DebugReport callback
+  * vulkaninfo: Make printing ToolProperties optional
+
+ -- John Zupin <john@odin>  Wed, 17 Nov 2021 10:15:11 -0700
+
+vulkan-tools (1.2.198.0~rc1-1lunarg20.04-1) focal; urgency=medium
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.2.190
+
+  [ Jeremy Hayes ]
+  * cubepp: Fix gitlab 828.
+
+  [ Richard S. Wright Jr ]
+  * Update known good to the latest MoltenVK tag
+
+  [ Vladimir Panteleev ]
+  * vulkaninfo: Fix error message when gpus.size()==0
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.2.191
+  * scripts: Ignore compatibility constants in wrapper
+  * build: Update to header 1.2.192
+  * build: Update to header 1.2.193
+
+  [ Charles Giessen ]
+  * vulkaninf: Support 64 bit flags
+  * scripts: Use f-strings in vulkaninfo generator
+
+  [ Mike Schuchardt ]
+  * build: Remove unused components from android build
+  * ci: Add android build to github actions
+
+  [ Charles Giessen ]
+  * build: Update update_deps
+
+  [ Mike Schuchardt ]
+  * scripts: Fix codegen with hard-coded enum indices
+  * build: Update to header 1.2.194
+
+  [ Charles Giessen ]
+  * vulkaninfo: Generate vulkaninfo.rc file
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.2.195
+
+  [ Eleni Maria Stea ]
+  * vkcube: Reorder setting of pipeline stage flags
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.2.196
+  * build: Update to header 1.2.197
+  * build: Update to header 1.2.198
+
+  [ Charles Giessen ]
+  * vulkaninfo: Prevent drivers writing out of bounds
+
+ -- John Zupin <john@odin>  Tue, 16 Nov 2021 16:57:29 -0700
+
+vulkan-tools (1.2.189.0~rc2-1lunarg20.04-1) focal; urgency=medium
+
+  [ Jeremy Hayes ]
+  * cubepp: Fix gitlab 828.
+
+ -- John Zupin <john@odin>  Fri, 03 Sep 2021 10:57:35 -0600
+
+vulkan-tools (1.2.189.0~rc1-1lunarg20.04-1) focal; urgency=medium
+
+  [ Charles Giessen ]
+  * vulkaninfo: Fix image format query arguments
+
+  [ Xiaolei Yu ]
+  * vulkaninfo: Fix device version check
+
+  [ Bob Ellison ]
+  * windows: updated copyright notices
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.2.183
+
+  [ richard-lunarg ]
+  * known_good.json updated for latest MoltenVK tag
+
+  [ Tony-LunarG ]
+  * docs: Fix cube wsi selection variable
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.2.184
+
+  [ Eleni Maria Stea ]
+  * vulkaninfo/cube: added support for FreeBSD
+
+  [ Bob Ellison ]
+  * vulkaninfo: correct copyright date
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.2.185
+  * mockicd: Commit missing generated files
+  * ci: Add verification step for generated source
+  * build: Update to header 1.2.186
+  * build: Update to header 1.2.187
+  * scripts: Use altlen instead of parsing latexmath
+  * build: Update to header 1.2.188
+  * build: Update to header 1.2.189
+
+ -- John Zupin <john@odin>  Fri, 27 Aug 2021 16:35:10 -0600
+
+vulkan-tools (1.2.182.0~rc2-1lunarg20.04-1) focal; urgency=medium
+
+  [ Bob Ellison ]
+  * windows: updated copyright notices
+
+ -- John Zupin <john@odin>  Mon, 05 Jul 2021 09:34:50 -0600
+
+vulkan-tools (1.2.182.0~rc1-1lunarg20.04-1) focal; urgency=medium
+
+  [ Mike Schuchardt ]
+  * scripts: Switch from mkpath to makedirs
+  * build: Update to header 1.2.177
+
+  [ Charles Giessen ]
+  * vulkaninfo: Fix signed conversion warning in MSVC
+
+  [ Richard S. Wright Jr ]
+  * Update known_good.json
+
+  [ Charles Giessen ]
+  * vulkaninfo: Add pipelineUUID printing to text,html
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.2.178
+
+  [ Tobin Ehlis ]
+  * icd:Consider DS when setting format bits
+
+  [ Jeremy Kniager ]
+  * vulkaninfo: Add check for printing memory budget
+
+  [ Charles Giessen ]
+  * vulkaninfo: use trivial_optional type instead of pair
+  * vulkaninfo: Tidy up code
+  * vulkaninfo: Remove redundant platform guards
+  * vulkaninfo: Update License and Refactor AppGpu
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.2.179
+
+  [ Jeremy Kniager ]
+  * tests: Run update on Linux before tests
+
+  [ Jake Turner ]
+  * Trigger demo quit from applicationWillTerminate
+
+  [ Arman Uguray ]
+  * vkcube: Fix disturbed rotation after many iterations
+
+  [ Tony-LunarG ]
+  * vkcube: Resize on SUBOPTIMAL if necessary
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.2.180
+
+  [ Tony-LunarG ]
+  * vkcube: Fix compilier warnings
+
+  [ Charles Giessen ]
+  * vulkaninfo: Fix compiler warnings
+  * vulkaninfo: Use autogen supportedSurfaceCounters
+  * vulkaninfo: Improve formatting of surface caps
+
+  [ Manuel Stoeckl ]
+  * cube: Port Wayland impl from wl-shell to xdg-shell
+
+  [ Jeremy Kniager ]
+  * build: Add Werror and warning flags to builds
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.2.181
+
+  [ richard-lunarg ]
+  * vkcube: fix crash on exit from double delete
+
+  [ Tony-LunarG ]
+  * vkcube: Fix alpha enum type
+
+  [ Charles Giessen ]
+  * vulkaninfo: Dont print None in vkconfig output
+
+  [ Tony-LunarG ]
+  * vkcube: Remove unused variable
+
+  [ Joshua Ashton ]
+  * cube: Don't constantly call vkAllocateCommandBuffers and vkBeginCommandBuffer when minimised
+  * cube: Handle occlusion where currentExtent == 0xFFFFFFFF
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.2.182
+
+  [ Tony-LunarG ]
+  * vkcube: Remove unused variable from Wayland build
+
+  [ John Zupin ]
+  * packaging: update control file for 1.2.182.0 SDK
+
+ -- John Zupin <john@odin>  Fri, 25 Jun 2021 15:16:18 -0600
+
+vulkan-tools (1.2.176.0~rc1-1lunarg20.04-1) focal; urgency=medium
+
+  [ Shannon McPherson ]
+  * scripts: Update copyright in `common_codegen.py`
+  * build: Update known-good files for 1.2.171 header
+
+  [ Mike Schuchardt ]
+  * build: Update known-good files for 1.2.172 header
+
+  [ Tony-LunarG ]
+  * cube: Select phy device for DISPLAY
+
+  [ John Zupin ]
+  * packaging: update debian/copyright file
+
+  [ Mike Schuchardt ]
+  * build: Update known-good files for 1.2.173 header
+  * build: Update to header 1.2.174
+
+  [ Jeremy Kniager ]
+  * repo: Switch to github actions for CI
+  * docs: Update README to point to GitHub Actions
+
+  [ Mike Schuchardt ]
+  * build: Update to header 1.2.176
+
+  [ John Zupin ]
+  * packaging: updated control version deps
+
+ -- John Zupin <john@odin>  Tue, 27 Apr 2021 14:26:56 -0600
+
+vulkan-tools (1.2.170.0~rc2-1lunarg20.04-1) focal; urgency=medium
+
+  * packaging: updated LunarG's copyrights
+
+ -- John Zupin <john@odin>  Thu, 25 Feb 2021 14:30:35 -0700
+
+vulkan-tools (1.2.170.0~rc1-1lunarg20.04-1) focal; urgency=medium
+
+  [ Charles Giessen ]
+  * vulkaninfo: Fix win32 fullscreen pnext chain
+
+  [ Joe Hermaszewski ]
+  * Make getTimeInNanoseconds get time in nanoseconds
+
+  [ richard-lunarg ]
+  * Vulkaninfo for iOS devices
+
+  [ Shannon McPherson ]
+  * build: Update known-good files for 1.2.165 header
+
+  [ Richard S. Wright Jr ]
+  * vkcube: Updated to support portability extension properly
+  * Defined VK_ENABLE_BETA_EXTENSIONS so that VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME would be defined
+  * vkcube: portabilty extension as text so it builds on all platforms
+  * Document Vulkan Info for iOS
+
+  [ Witold Baryluk ]
+  * vkcube: Improve GPU auto-selection
+
+  [ Shannon McPherson ]
+  * build: Update known-good files for 1.2.166 header
+
+  [ Charles Giessen ]
+  * vulkaninfo: Fix spelling in FindPhysicalDevices
+
+  [ Nicolas Caramelli ]
+  * vkcube: Add options --width and --height to specify width and height
+
+  [ Tony-LunarG ]
+  * vkcube: Fix compiler warning
+
+  [ Shannon McPherson ]
+  * build: Update known-good files for 1.2.169 header
+
+  [ Mike Schuchardt ]
+  * build: Update known-good files for 1.2.170 header
+
+  [ John Zupin ]
+  * packaging: update control deps version to 170
+
+ -- John Zupin <john@odin>  Mon, 22 Feb 2021 18:00:42 -0700
+
+vulkan-tools (1.2.162.1~rc1-1lunarg20.04-1) focal; urgency=medium
+
+  [ Richard S. Wright Jr ]
+  * vkcube: Updated to support portability extension properly
+  * Defined VK_ENABLE_BETA_EXTENSIONS so that VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME would be defined
+  * vkcube: portabilty extension as text so it builds on all platforms
+
+  [ John Zupin ]
+  * packaging: update vulkan deps version
+
+ -- John Zupin <john@odin>  Thu, 07 Jan 2021 11:32:21 -0700
+
+vulkan-tools (1.2.162.0-1lunarg20.04-2) focal; urgency=medium
+
+  [ Charles Giessen ]
+  * vulkaninfo: Fix win32 fullscreen pnext chain
+
+ -- John Zupin <john@odin>  Mon, 14 Dec 2020 09:23:05 -0700
+
+vulkan-tools (1.2.162.0-1lunarg20.04-1) focal; urgency=medium
+
+  [ richard-lunarg ]
+  * Fixed paths for MoltenVK changes
+  * Update known_good.json for MoltenVK
+
+  [ Nathaniel Cesario ]
+  * build: Fix linux/windows build in single directory
+
+  [ Charles Giessen ]
+  * vulkaninfo: properly macro guard the portability features.
+  * vulkaninfo: Add more portability macro guards
+
+  [ Shannon McPherson ]
+  * build: Update known-good files for 1.2.156 header
+  * build: Update known-good files for 1.2.157 header
+  * build: Update known-good files for 1.2.158 header
+
+  [ Nathaniel Cesario ]
+  * mockicd: Remove VK_KHR_portability_subset
+
+  [ Shannon McPherson ]
+  * build: Update known-good files for 1.2.159 header
+
+  [ orbea ]
+  * cmake: Silence warnings.
+
+  [ Shannon McPherson ]
+  * build: Update known-good files for 1.2.160 header
+
+  [ Charles Giessen ]
+  * vulkaninfo: Make json output print extensions
+  * vulkaninfo: add option to always open details for HTML
+
+  [ Shannon McPherson ]
+  * build: Update known-good files for 1.2.161 header
+
+  [ Mike Schuchardt ]
+  * scripts: Remove assert for nested array types
+
+  [ Richard S. Wright Jr ]
+  * vulkaninfo: WIP: Modified for use from iOS
+  * vulkaninfo: Fix to pass appveyor tests
+  * vulkaninfo: cleanup and comments
+
+  [ richard-lunarg ]
+  * vulkaninfo: clang-format cleanup
+  * vulkaninfo: clang-format cleanup
+
+  [ Shannon McPherson ]
+  * build: Update known-good files for 1.2.162 header
+
+ -- John Zupin <john@odin>  Tue, 08 Dec 2020 11:11:38 -0700
+
+vulkan-tools (1.2.154.0-1lunarg20.04-4) focal; urgency=medium
+
+  [ Charles Giessen ]
+  * vulkaninfo: Add more portability macro guards
+
+ -- John Zupin <john@odin>  Fri, 02 Oct 2020 10:06:45 -0600
+
+vulkan-tools (1.2.154.0-1lunarg20.04-3) focal; urgency=medium
+
+  [ richard-lunarg ]
+  * Fixed paths for MoltenVK changes
+  * Update known_good.json for MoltenVK
+
+  [ Charles Giessen ]
+  * vulkaninfo: properly macro guard the portability features.
+
+ -- John Zupin <john@odin>  Thu, 01 Oct 2020 15:39:08 -0600
+
+vulkan-tools (1.2.154.0-1lunarg20.04-2) focal; urgency=medium
+
+  * package: update deps version
+
+ -- John Zupin <john@odin>  Wed, 30 Sep 2020 16:50:50 -0600
+
+vulkan-tools (1.2.154.0-1lunarg20.04-1) focal; urgency=medium
+
+  [ Charles Giessen ]
+  * vulkaninfo: fix device ext list having bad items
+  * vulkaninfo: add `--summary` option that shows basic system info
+
+  [ Nicolas Caramelli ]
+  * Add support for VK_EXT_directfb_surface extension
+  * Fix formatting errors
+
+  [ Jeremy Kniager ]
+  * build: Update MoltenVK version in known-good.json
+
+  [ Shannon McPherson ]
+  * build: Update known-good files for 1.2.151 header
+
+  [ Jamie Madill ]
+  * Bump mock ICD surface max extents.
+
+  [ Biswapriyo Nath ]
+  * CMake: Check MSVC while deciding MSVC_VERSION
+  * cube: Check _MSC_VER instead of _WIN32 for pragma directive
+  * vulkaninfo: Check if NOMINMAX is already defined
+  * cube: satisfy clang-format
+
+  [ Jamie Madill ]
+  * Update GN to include header dependencies.
+
+  [ Bob Ellison ]
+  * android: NDK 21d
+
+  [ Shannon McPherson ]
+  * build: Update known-good files for 1.2.152 header
+  * build: Update known-good files for 1.2.153 header
+  * build: Update known-good files for 1.2.154 header
+
+  [ Charles Giessen ]
+  * vulkaninfo: Add json output for portability subset
+
+ -- John Zupin <john@odin>  Mon, 28 Sep 2020 17:31:59 -0600
+
+vulkan-tools (1.2.148.0-1ubuntu20.04-3) focal; urgency=medium
+
+  * control: updated description
+  * control: update to cooperate with vulkan-utils package
+  * control: update to use libvulkan-dev as build dep
+
+ -- John Zupin <john@odin>  Thu, 20 Aug 2020 14:17:01 -0600
+
+vulkan-tools (1.2.148.0-1ubuntu20.04-2) focal; urgency=medium
+
+  [ Charles Giessen ]
+  * vulkaninfo: fix device ext list having bad items
+
+  [ John Zupin ]
+  * control: grammer for description
+  * debian: remove README.Debian
+
+ -- John Zupin <john@odin>  Fri, 31 Jul 2020 17:17:46 -0600
+
+vulkan-tools (1.2.148.0-1lunarg20.04-1) focal; urgency=medium
+
+  [ Charles Giessen ]
+  * vulkaninfo: fix indent with for present support
+
+  [ Tobin Ehlis ]
+  * icd:Correctly Support Vulkan 1.1
+  * icd: Cleanup supported VK API version
+
+  [ Charles Giessen ]
+  * vulkaninfo: fix output style for memory types
+  * vulkaninfo: add more asserts to catch bad formatting
+  * vulkaninfo: fix ordering issues in generated code
+
+  [ Shannon McPherson ]
+  * scripts: Use named params for generator options
+  * build: Update known-good files for 1.2.145 header
+
+  [ Jeremy Kniager ]
+  * build: Update MoltenVK version in known-good.json
+
+  [ Shannon McPherson ]
+  * build: Update known-good files for 1.2.146 header
+
+  [ Bob Ellison ]
+  * scripts: udpate_deps retry on clone or fetch failure
+
+  [ Shannon McPherson ]
+  * build: Update known-good files for 1.2.147 header
+
+  [ John Zupin ]
+  * control: add version to dependency and add libvulkan1 as depend
+
+  [ Bob Ellison ]
+  * scripts: fix update_deps retry clone
+
+  [ Tony-LunarG ]
+  * cube: Add option to select phys device
+
+  [ Shannon McPherson ]
+  * build: Update known-good files for 1.2.148 header
+
+  [ John Zupin ]
+  * copyright: updated for release
+  * control: update required headers to 1.2.148.0
+
+ -- John Zupin <john@odin>  Mon, 27 Jul 2020 17:18:41 -0600
+
+vulkan-tools (1.2.141-1) bionic; urgency=medium
+
+  * Initial release
+
+ -- John Zupin <johnz@lunarg.com>  Wed, 01 Jul 2020 11:18:04 -0600

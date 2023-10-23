@@ -1,0 +1,34 @@
+Source: vulkan-loader
+Section: graphics
+Priority: optional
+Maintainer: John Zupin <johnz@lunarg.com>
+Build-Depends: debhelper (>= 10),
+ cmake,
+ vulkan-headers (>= 1.3.224.0~rc1),
+ libwayland-dev,
+ libwayland-egl1,
+ libx11-xcb-dev,
+ libx11-dev,
+ libxcb1-dev,
+ libxrandr-dev,
+ pkg-config,
+ python3
+Standards-Version: 4.1.2
+Homepage: https://github.com/KhronosGroup/Vulkan-Loader
+Vcs-Git: https://github.com/KhronosGroup/Vulkan-Loader
+Vcs-Browser: https://github.com/KhronosGroup/Vulkan-Loader
+
+Package: libvulkan1
+Architecture: linux-any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Recommends: mesa-vulkan-drivers | vulkan-icd
+Breaks: libvulkan-dev (<< 1.1.70+dfsg1-2), vulkan-loader
+Replaces: libvulkan-dev (<< 1.1.70+dfsg1-2), vulkan-loader
+Multi-Arch: same
+Description: This package contains the Vulkan loader
+
+Package: libvulkan-dev
+Architecture: linux-any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libvulkan1 (>= 1.3.224.0~rc1)
+Multi-Arch: same
+Description: This package contains the Vulkan loader
