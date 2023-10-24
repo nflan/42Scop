@@ -9,29 +9,31 @@
 #                                                                              #
 # **************************************************************************** #
 
-NAME = 	scop
-NAMEB = scop_bonus
+NAME =	scop
+NAMEB =	scop_bonus
 
-INC =			inc/scop.h
-INCB =			inc/scop_bonus.h
+INC_DIR =			incs/
+INCB_DIR =			incs_bonus/
 OBJ_DIR =		obj
 OBJB_DIR =		obj_bonus
-SRC_DIR =		src
-SRCB_DIR =		src_bonus
+SRC_DIR =		srcs
+SRCB_DIR =		srcs_bonus
 
-SRC =			$(SRC_FT:%=$(SRC_DIR)/%.c)
-SRCB =			$(SRCB_FT:%=$(SRCB_DIR)/%.c)
+INC =			$(addsuffix .hpp, $(addprefix $(INC_DIR), scop))
+
+SRC =			$(SRC_FT:%=$(SRC_DIR)/%.cpp)
+SRCB =			$(SRCB_FT:%=$(SRCB_DIR)/%.cpp)
 
 OBJ =			$(SRC:$(SRC_DIR)%.c=$(OBJ_DIR)%.o)
 OBJB =			$(SRCB:$(SRCB_DIR)%.c=$(OBJB_DIR)%.o)
 
-CXX = g++ $(CXXFLAGS)
+CXX =	g++ $(CXXFLAGS)
 
-RM = rm -fr
+RM =	rm -fr
 
-CXXFLAGS = -std=c++17 -O2
+CXXFLAGS =	-std=c++17 -O2
 
-LDFLAGS = -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
+LDFLAGS =	-lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi -I/mnt/nfs/homes/nflan/sgoinfre/bin/glm
 
 # VulkanTest:	main.cpp
 # g++ $(CXXFLAGS) -o VulkanTest main.cpp $(LDFLAGS)
@@ -42,7 +44,7 @@ LDFLAGS = -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
 #HOW TO LIST .c 
 #	ls -l | awk '{print $9}' | grep -E ".c$"| sed "s/\.c/ \\\/g" | sed '$s/\\$//g'
 
-SRC_FT =
+SRC_FT =	scop
 
 SRCB_FT =
 
@@ -58,8 +60,8 @@ $(OBJ) : $(INC) | $(OBJ_DIR)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CXX) -c $< -o $@
 
-$(NAME): $(OBJ_DIR) $(SRC) $(MLX) $(OBJ) $(LIBFT)
-	$(CXX) $(OBJ) -o $(LDFLAGS) $@
+$(NAME): $(OBJ_DIR) $(SRC) $(OBJ)
+	$(CXX) $(OBJ) $(LDFLAGS) -o $@
 
 bonus: $(NAMEB)
 
@@ -71,7 +73,7 @@ $(OBJB) : $(INCB) | $(OBJB_DIR)
 $(OBJB_DIR)/%.o: $(SRCB_DIR)/%.c
 	$(CXX) -c $< -o $@
 
-$(NAMEB): $(OBJB_DIR) $(SRCB) $(MLX) $(OBJB) $(LIBFT)
+$(NAMEB): $(OBJB_DIR) $(SRCB) $(OBJB)
 	$(CXX) $(OBJB) -o $(LDFLAGS) $@
 
 clean:

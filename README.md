@@ -16,3 +16,18 @@ key, and the same key allows us to go back to the different colors. A soft trans
 between the two is requested.
 
 Resources are available on the projet on 42 intra
+
+
+POUR COMPILER
+Verifier les installations:
+
+- https://vulkan-tutorial.com/fr/Environnement_de_developpement#page_Paquets-Vulkan
+
+- glslc:
+	https://github.com/google/shaderc/blob/main/downloads.md
+	prendre GCC
+	A mettre dans bin et si pas droit bah rajouter le path
+
+- Ensuite, s'il manque glm:
+	https://glm.g-truc.net/0.9.6/index.html
+	puis rajouter dans le makefile -I/PATH/glm
