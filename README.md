@@ -1,10 +1,11 @@
 # ft_scop
-Basic GPU rendering with OpenGL
+Basic GPU rendering with Vulkan
 
 Graphic rendering with: Vulkan
 Base code: C++
 
-II.2 What you need to do
+What you need to do
+
 Your goal is to create a small program that will show a 3D object conceived with a modelization program like Blender. The 3D object is stored in a .obj file. You will be at least
 in charge of parsing to obtain the requested rendering.
 In a window, your 3D object will be displayed in perspective (which means that what
