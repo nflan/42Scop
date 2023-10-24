@@ -16,7 +16,7 @@ Finally, a texture must be applicable simply on the object when we press a dedic
 key, and the same key allows us to go back to the different colors. A soft transition
 between the two is requested.
 
-Resources are available on the projet on 42 intra
+Resources are available on the project page on 42 intra
 
 
 POUR COMPILER
