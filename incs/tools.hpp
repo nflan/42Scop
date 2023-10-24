@@ -1,38 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   scop.cpp                                           :+:      :+:    :+:   */
+/*   tools.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/10/24 15:51:36 by nflan             #+#    #+#             */
-/*   Updated: 2023/10/24 19:05:47 by nflan            ###   ########.fr       */
+/*   Created: 2023/10/24 18:06:10 by nflan             #+#    #+#             */
+/*   Updated: 2023/10/24 18:10:16 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+#ifndef TRIANGLE_HPP
+#define TRIANGLE_HPP
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#include <iostream>
-#include <stdexcept>
-#include <functional>
-#include <cstdlib>
+extern bool	QUIT;
 
-#include "../incs/Triangle.hpp"
 
-int main()
-{
-	Triangle app;
-
-	try
-	{
-		app.run();
-	} 
-	catch (const std::exception& e)
-	{
-		std::cerr << e.what() << std::endl;
-		return EXIT_FAILURE;
-	}
-
-	return EXIT_SUCCESS;
-}
+#endif
