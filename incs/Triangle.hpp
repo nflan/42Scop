@@ -6,7 +6,7 @@
 /*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 16:11:00 by nflan             #+#    #+#             */
-/*   Updated: 2023/10/25 17:30:21 by nflan            ###   ########.fr       */
+/*   Updated: 2023/10/25 19:58:40 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,6 +78,12 @@ class Triangle
 		void	createImageViews();
 		void	createGraphicsPipeline(); //https://vulkan-tutorial.com/fr/Dessiner_un_triangle/Pipeline_graphique_basique/Introduction
 		VkShaderModule	createShaderModule(const std::vector<char>& code); //avant d'envoyer les infos des shaders dans la pipeline
+		void	createRenderPass();//https://vulkan-tutorial.com/fr/Dessiner_un_triangle/Pipeline_graphique_basique/Render_pass
+		void	createFramebuffers();
+		void	createCommandPool();
+		void	createCommandBuffers();
+		void	drawFrame();
+		void	createSyncObjects();
 
 		GLFWwindow*					_window;
 		VkInstance					_instance;
@@ -89,6 +95,7 @@ class Triangle
 
 		VkQueue						_graphicsQueue; // auto detruit au destroy de vkdevice
 		VkQueue						_presentQueue;
+		VkPipeline					_graphicsPipeline;
 
 		VkSwapchainKHR				_swapChain;
 		std::vector<VkImage>		_swapChainImages; // images de la swap chain (auto del avec la swapchain)
@@ -96,6 +103,26 @@ class Triangle
 		VkExtent2D					_swapChainExtent;
 
 		std::vector<VkImageView>	_swapChainImageViews;
+
+		//RENDER PASS
+		VkRenderPass				_renderPass;
+		VkPipelineLayout			_pipelineLayout;
+
+		//FRAMEBUFFERS
+		std::vector<VkFramebuffer>	_swapChainFramebuffers;
+
+		//COMMAND POOLS
+		VkCommandPool				_commandPool;
+		//ALLOCATION DES COMMAND BUFFERS
+		std::vector<VkCommandBuffer>	_commandBuffers;
+
+		//SEMAPHORES
+		std::vector<VkSemaphore>	_imageAvailableSemaphores;
+		std::vector<VkSemaphore>	_renderFinishedSemaphores;
+		std::vector<VkFence>		_inFlightFences;//les fences permettent au programme d'attendre l'exécution complète d'une opération. Nous allons créer une fence pour chaque frame
+		std::vector<VkFence>		_imagesInFlight;
+		size_t						_currentFrame = 0;
+
 };
 
 #endif
