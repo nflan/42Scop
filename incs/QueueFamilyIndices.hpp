@@ -6,7 +6,7 @@
 /*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/25 13:23:00 by nflan             #+#    #+#             */
-/*   Updated: 2023/10/25 13:42:24 by nflan            ###   ########.fr       */
+/*   Updated: 2023/10/25 14:52:58 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,9 +18,10 @@
 
 struct QueueFamilyIndices {
 	std::optional<uint32_t>	graphicsFamily;
+	std::optional<uint32_t>	presentFamily;
 
 	bool isComplete() {
-		return graphicsFamily.has_value();
+		return graphicsFamily.has_value() && presentFamily.has_value();
 	}
 };
 
