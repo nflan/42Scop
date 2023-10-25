@@ -6,7 +6,7 @@
 /*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 16:11:00 by nflan             #+#    #+#             */
-/*   Updated: 2023/10/24 19:09:03 by nflan            ###   ########.fr       */
+/*   Updated: 2023/10/25 13:25:48 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,12 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include "tools.hpp"
+#include "QueueFamilyIndices.hpp"
 #include <vector>
 #include <iostream>
 #include <stdexcept>
 #include <functional>
+#include <map>
 #include <cstdlib>
 #include <cstring>
 
@@ -51,13 +53,18 @@ class Triangle
 		void	cleanup( void ); // clean
 		void	createInstance( void ); // create instance vulkan
 		bool	checkValidationLayerSupport( void ); //check layer (protections)
-		std::vector<const char*>	getRequiredExtensions();
-		void	setupDebugMessenger( void );
+		std::vector<const char*>	getRequiredExtensions(); // recup extensions debug
+		void	setupDebugMessenger( void ); // debug
+		void	pickPhysicalDevice(); // recuperations de toutes les cg
+		bool	isDeviceSuitable(VkPhysicalDevice device); // voir si la cg correspond a ce qu'on va faire
+		int		rateDeviceSuitability(VkPhysicalDevice device); // score en fonction des fonctionnalites de la cg
+		QueueFamilyIndices	findQueueFamilies(VkPhysicalDevice device); // trouver la famille de queue "graphique"
 
 		GLFWwindow*	_window;
 		VkInstance	_instance;
 		VkDebugUtilsMessengerEXT	_debugMessenger;
-
+		VkPhysicalDevice	_physicalDevice; // auto detruit a la fin de l'instance
+		std::vector<VkPhysicalDevice>	_devices;
 };
 
 #endif

@@ -31,7 +31,7 @@ CXX =	g++ $(CXXFLAGS)
 
 RM =	rm -fr
 
-CXXFLAGS =	-std=c++17 -O2
+CXXFLAGS =	-std=c++20 -O2# -DNDEBUG
 
 LDFLAGS =	-lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi -I/mnt/nfs/homes/nflan/sgoinfre/bin/glm
 

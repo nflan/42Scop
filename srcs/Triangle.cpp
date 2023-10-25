@@ -6,7 +6,7 @@
 /*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 16:10:26 by nflan             #+#    #+#             */
-/*   Updated: 2023/10/24 19:10:21 by nflan            ###   ########.fr       */
+/*   Updated: 2023/10/25 13:32:02 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,16 +20,22 @@ VkResult CreateDebugUtilsMessengerEXT(
 {
 	auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
 	if (func != nullptr)
-	{
 		return func(instance, pCreateInfo, pAllocator, pCallback);
-	}
 	else
-	{
 		return VK_ERROR_EXTENSION_NOT_PRESENT;
-	}
 }
 
 bool	QUIT = false;
+
+void DestroyDebugUtilsMessengerEXT(
+		VkInstance instance,
+		VkDebugUtilsMessengerEXT debugMessenger,
+		const VkAllocationCallbacks* pAllocator)
+{
+	auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+	if (func != nullptr)
+		func(instance, debugMessenger, pAllocator);
+}
 
 void	key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	if ((key == GLFW_KEY_Q || key == GLFW_KEY_ESCAPE) && action == GLFW_PRESS)
@@ -105,9 +111,109 @@ objectCount: Le nombre d'objets dans le tableau précédent
 	return VK_FALSE;
 }
 
-void	Triangle::initVulkan( void ) {
+void	Triangle::initVulkan( void )
+{
 	this->createInstance();
 	this->setupDebugMessenger();
+	this->pickPhysicalDevice();
+}
+
+void	Triangle::pickPhysicalDevice( void )
+{
+	this->_physicalDevice = VK_NULL_HANDLE;
+	uint32_t deviceCount = 0;
+	vkEnumeratePhysicalDevices(this->_instance, &deviceCount, nullptr);
+	if (deviceCount == 0) //si pas de carte graphique rien ne sert de lancer
+		throw std::runtime_error("aucune carte graphique ne supporte Vulkan!");
+
+	this->_devices.resize(deviceCount);
+	vkEnumeratePhysicalDevices(this->_instance, &deviceCount, this->_devices.data());
+	//selection des cg
+	// L'utilisation d'une map permet de les trier automatiquement de manière ascendante
+	std::multimap<int, VkPhysicalDevice> candidates;
+
+	for (const auto& device : this->_devices) {
+		int score = rateDeviceSuitability(device);
+		candidates.insert(std::make_pair(score, device));
+	}
+
+	// Voyons si la meilleure possède les fonctionnalités dont nous ne pouvons nous passer
+	if (candidates.rbegin()->first > 0) {
+		this->_physicalDevice = candidates.rbegin()->second;
+	} else {
+		throw std::runtime_error("aucun GPU ne peut executer ce programme!");
+	}
+}
+
+int	Triangle::rateDeviceSuitability(VkPhysicalDevice device)
+{
+	int score = 0;
+	VkPhysicalDeviceFeatures	deviceFeatures;
+	VkPhysicalDeviceProperties	deviceProperties;
+
+	vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+	vkGetPhysicalDeviceProperties(device, &deviceProperties);
+
+	// Les carte graphiques dédiées ont un énorme avantage en terme de performances
+	if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+		score += 1000;
+	}
+
+	// La taille maximale des textures affecte leur qualité
+	score += deviceProperties.limits.maxImageDimension2D;
+
+	// L'application (fictive) ne peut fonctionner sans les geometry shaders
+	if (!deviceFeatures.geometryShader) {
+		return 0;
+	}
+
+	return score;
+}
+//contraintes que devront remplir les physical devices.
+bool	Triangle::isDeviceSuitable(VkPhysicalDevice device)
+{
+	for (const auto& device : this->_devices) {
+		if (isDeviceSuitable(device)) {
+			this->_physicalDevice = device;
+			break;
+		}
+	}
+
+	if (this->_physicalDevice == VK_NULL_HANDLE) {
+		throw std::runtime_error("aucun GPU ne peut exécuter ce programme!");
+	}
+
+	VkPhysicalDeviceProperties deviceProperties;
+	vkGetPhysicalDeviceProperties(device, &deviceProperties);
+
+	VkPhysicalDeviceFeatures deviceFeatures;
+	vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+
+	QueueFamilyIndices indices = findQueueFamilies(device);
+
+	return indices.isComplete();
+}
+
+QueueFamilyIndices	Triangle::findQueueFamilies(VkPhysicalDevice device) {
+	QueueFamilyIndices indices;
+
+	uint32_t queueFamilyCount = 0;
+	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+
+	std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+	int i = 0;
+	for (const auto& queueFamily : queueFamilies)
+	{
+		if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+			indices.graphicsFamily = i;
+		if (indices.isComplete())
+			break;
+		i++;
+	}
+
+	return indices;
 }
 
 void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
@@ -119,20 +225,20 @@ void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& create
 }
 
 void Triangle::setupDebugMessenger() {
-	if (!enableValidationLayers) return;
+	if (!enableValidationLayers)
+		return;
 
 	VkDebugUtilsMessengerCreateInfoEXT createInfo;
 	populateDebugMessengerCreateInfo(createInfo);
 
-	if (CreateDebugUtilsMessengerEXT(this->_instance, &createInfo, nullptr, &this->_debugMessenger) != VK_SUCCESS) {
+	if (CreateDebugUtilsMessengerEXT(this->_instance, &createInfo, nullptr, &this->_debugMessenger) != VK_SUCCESS)
 		throw std::runtime_error("failed to set up debug messenger!");
-	}
 }
 
 void Triangle::createInstance() {
-	if (enableValidationLayers && !checkValidationLayerSupport()) {
-		throw std::runtime_error("les validations layers sont activées mais ne sont pas disponibles!");
-	}
+	if (enableValidationLayers && !checkValidationLayerSupport())
+		throw std::runtime_error("validation layers requested, but not available!");
+
 	VkApplicationInfo appInfo{}; // informations optionnelles mais utiles pour optimiser
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO; // expliciter le type
 	appInfo.pApplicationName = "Hello Triangle"; // nom de l'app
@@ -144,48 +250,43 @@ void Triangle::createInstance() {
 	VkInstanceCreateInfo createInfo{}; // structure permettant la création de l'instance. Celle-ci n'est pas optionnelle. -> informer le driver des extensions et des validation layers
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &appInfo;
+
 	auto extensions = getRequiredExtensions();
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 	createInfo.ppEnabledExtensionNames = extensions.data();
 
-	uint32_t		glfwExtensionCount = 0;
-	const char**	glfwExtensions;
-	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
+	if (enableValidationLayers)
+	{
+		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+		createInfo.ppEnabledLayerNames = validationLayers.data();
 
-	createInfo.enabledExtensionCount = glfwExtensionCount;
-	createInfo.ppEnabledExtensionNames = glfwExtensions;
+		populateDebugMessengerCreateInfo(debugCreateInfo);
+		createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*) &debugCreateInfo;
+	} else
+	{
+		createInfo.enabledLayerCount = 0;
 
-	createInfo.enabledLayerCount = 0;
-
-	VkDebugUtilsMessengerEXT callback; // fournir la fonction a Vulkan
-	/*	uint32_t extensionCount = 0;
-		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-		std::vector<VkExtensionProperties> extensions(extensionCount);
-
-		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
-		std::cout << "Extensions disponibles :\n";
-
-		for (const auto& extension : extensions) {
-		std::cout << '\t' << extension.extensionName << '\n';
-		}
-		*/
-	std::cout << "j'init vulkan" << std::endl;
-	if (vkCreateInstance(&createInfo, nullptr, &this->_instance) != VK_SUCCESS) {
-		throw std::runtime_error("Echec de la création de l'instance!");
+		createInfo.pNext = nullptr;
 	}
+
+	if (vkCreateInstance(&createInfo, nullptr, &this->_instance) != VK_SUCCESS)
+		throw std::runtime_error("failed to create instance!");
 	//Pointeur sur une structure contenant l'information pour la création
 	//Pointeur sur une fonction d'allocation que nous laisserons toujours nullptr
 	//Pointeur sur une variable stockant une référence au nouvel objet
 }
 
-bool	Triangle::checkValidationLayerSupport() {
+bool	Triangle::checkValidationLayerSupport()
+{
 	uint32_t layerCount;
 	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
 	std::vector<VkLayerProperties> availableLayers(layerCount);
 	vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-	for (const char* layerName : validationLayers) {
+	for (const char* layerName : validationLayers)
+	{
 		bool layerFound = false;
 
 		for (const auto& layerProperties : availableLayers)
@@ -204,29 +305,33 @@ bool	Triangle::checkValidationLayerSupport() {
 	return true;
 }
 
-std::vector<const char*>	Triangle::getRequiredExtensions() {
+std::vector<const char*>	Triangle::getRequiredExtensions()
+{
 	uint32_t glfwExtensionCount = 0;
 	const char** glfwExtensions;
 	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
 	std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
-	if (enableValidationLayers) {
+	if (enableValidationLayers)
 		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-	}
 
 	return extensions;
 }
 
-void	Triangle::mainLoop( void ) {
+void	Triangle::mainLoop( void )
+{
 	while (!glfwWindowShouldClose(this->_window) && !QUIT) {
 		glfwSetKeyCallback(this->_window, key_callback);
 		glfwPollEvents();
 	}
-};
+}
 
-void	Triangle::cleanup( void ) {
+void	Triangle::cleanup( void )
+{
+	if (enableValidationLayers)
+		DestroyDebugUtilsMessengerEXT(this->_instance, this->_debugMessenger, nullptr);
 	vkDestroyInstance(this->_instance, nullptr);
 	glfwDestroyWindow(this->_window);
 	glfwTerminate();
-};
+}
