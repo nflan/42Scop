@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Display.cpp                                       :+:      :+:    :+:   */
+/*   Display.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 16:10:26 by nflan             #+#    #+#             */
-/*   Updated: 2023/10/26 14:48:29 by nflan            ###   ########.fr       */
+/*   Updated: 2023/10/26 17:26:50 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,10 +83,10 @@ Display::~Display() {}
 
 void Display::run()
 {
-	initWindow();
-	initVulkan();
-	mainLoop();
-	cleanup();
+	this->initWindow();
+	this->initVulkan();
+	this->mainLoop();
+	this->cleanup();
 }
 
 static void	framebufferResizeCallback(GLFWwindow* window, int width, int height)
@@ -122,6 +122,7 @@ void	Display::initVulkan( void )
 	this->createGraphicsPipeline();
 	this->createFramebuffers();
 	this->createCommandPool();
+	this->createVertexBuffer();
 	this->createCommandBuffers();
 	this->createSyncObjects();
 }
@@ -140,6 +141,9 @@ void	Display::mainLoop( void )
 void	Display::cleanup( void )
 {
 	this->cleanupSwapChain();
+
+	vkDestroyBuffer(this->_device, this->_vertexBuffer, nullptr);
+	vkFreeMemory(this->_device, this->_vertexBufferMemory, nullptr);
 
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{
@@ -204,6 +208,59 @@ void Display::createInstance()
 	//Pointeur sur une structure contenant l'information pour la création
 	//Pointeur sur une fonction d'allocation que nous laisserons toujours nullptr
 	//Pointeur sur une variable stockant une référence au nouvel objet
+}
+
+uint32_t	Display::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
+{
+	//on recupere les types de memoire de la CG
+	//on ne va pas le faire mais on peut choisir celle qui est la plus performante !
+	vkGetPhysicalDeviceMemoryProperties(this->_physicalDevice, &this->_memProperties);
+
+	//on cherche un type de memoire qui correspond au buffer
+	for (uint32_t i = 0; i < this->_memProperties.memoryTypeCount; i++)
+		if (typeFilter & (1 << i) && (this->_memProperties.memoryTypes[i].propertyFlags & properties) == properties)
+			return i;
+	throw std::runtime_error("aucun type de memoire ne satisfait le buffer!");
+}
+
+void	Display::createVertexBuffer()
+{
+	VkBufferCreateInfo bufferInfo{};
+	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferInfo.size = sizeof(vertices[0]) * vertices.size();
+	bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; //exclusive ou current comme swap chain et ses queues
+	bufferInfo.flags = 0; //permet de config le buffer pour avoir plusieurs emplacements dans la memoire mais la on le laisse par defaut
+
+	if (vkCreateBuffer(this->_device, &bufferInfo, nullptr, &this->_vertexBuffer) != VK_SUCCESS)
+		throw std::runtime_error("echec de la creation d'un vertex buffer!");
+
+	vkGetBufferMemoryRequirements(this->_device, this->_vertexBuffer, &this->_memRequirements);
+
+	VkMemoryAllocateInfo	allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	allocInfo.allocationSize = this->_memRequirements.size;
+	allocInfo.memoryTypeIndex = findMemoryType(this->_memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+	if (vkAllocateMemory(this->_device, &allocInfo, nullptr, &this->_vertexBufferMemory) != VK_SUCCESS)
+		throw std::runtime_error("echec d'une allocation de memoire!");
+
+	vkBindBufferMemory(this->_device, this->_vertexBuffer, this->_vertexBufferMemory, 0);
+	/*
+	 * Le quatrième indique le décalage entre le début de la mémoire et le début du buffer. Nous avons alloué cette mémoire spécialement pour ce buffer, nous pouvons donc mettre 0. Si vous décidez d'allouer un grand espace mémoire pour y mettre plusieurs buffers, sachez qu'il faut que ce nombre soit divisible par memRequirements.alignement. Notez que cette stratégie est la manière recommandée de gérer la mémoire des GPUs (https://developer.nvidia.com/vulkan-memory-management)
+	 */
+	vkMapMemory(this->_device, this->_vertexBufferMemory, 0, bufferInfo.size, 0, &this->_data);
+	/*
+	 * Cette fonction nous permet d'accéder à une région spécifique d'une ressource. Nous devons pour cela indiquer un décalage et une taille. Nous mettons ici respectivement 0 et bufferInfo.size. Il est également possible de fournir la valeur VK_WHOLE_SIZE pour mapper d'un coup toute la ressource. L'avant-dernier paramètre est un champ de bits pour l'instant non implémenté par Vulkan. Il est impératif de la laisser à 0. Enfin, le dernier paramètre permet de fournir un pointeur vers la mémoire ainsi mappée.
+	 */
+	memcpy(this->_data, vertices.data(), (size_t) bufferInfo.size);
+	vkUnmapMemory(this->_device, this->_vertexBufferMemory);
+	/*
+	 * Vous pouvez maintenant utiliser memcpy pour copier les vertices dans la mémoire, puis démapper le buffer à l'aide de vkUnmapMemory. Malheureusement le driver peut décider de cacher les données avant de les copier dans le buffer. Il est aussi possible que les données soient copiées mais que ce changement ne soit pas visible immédiatement. Il y a deux manières de régler ce problème :
+
+	 Utiliser une pile de mémoire cohérente avec la RAM, ce qui est indiqué par VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+	 Appeler vkFlushMappedMemoryRanges après avoir copié les données, puis appeler vkInvalidateMappedMemory avant d'accéder à la mémoire
+	 */
 }
 
 void	Display::recreateSwapChain()
@@ -329,7 +386,7 @@ void	Display::drawFrame()
 	presentInfo.pImageIndices = &imageIndex;
 	presentInfo.pResults = nullptr; // Optionnel
 
-//	VkResult	result = vkAcquireNextImageKHR(this->_device, this->_swapChain, UINT64_MAX, this->_imageAvailableSemaphores[this->_currentFrame], VK_NULL_HANDLE, &imageIndex);
+	//	VkResult	result = vkAcquireNextImageKHR(this->_device, this->_swapChain, UINT64_MAX, this->_imageAvailableSemaphores[this->_currentFrame], VK_NULL_HANDLE, &imageIndex);
 
 	result = vkQueuePresentKHR(this->_presentQueue, &presentInfo);
 	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || this->framebufferResized)
@@ -384,7 +441,11 @@ void	Display::createCommandBuffers()
 
 		//Commandes d'affichage basiques
 		vkCmdBindPipeline(this->_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, this->_graphicsPipeline);
-		vkCmdDraw(this->_commandBuffers[i], 3, 1, 0, 0);
+		VkBuffer	vertexBuffers[] = {this->_vertexBuffer};
+		VkDeviceSize	offsets[] = {0};
+		vkCmdBindVertexBuffers(this->_commandBuffers[i], 0, 1, vertexBuffers, offsets);
+
+		vkCmdDraw(this->_commandBuffers[i], static_cast<uint32_t>(vertices.size()), 1, 0, 0);
 		/*
 		 *	vertexCount : même si nous n'avons pas de vertex buffer, nous avons techniquement trois vertices à dessiner
 instanceCount : sert au rendu instancié (instanced rendering); indiquez 1 si vous ne l'utilisez pas
@@ -490,14 +551,14 @@ void	Display::createGraphicsPipeline()
 	auto	vertShaderModule = createShaderModule(vertShaderCode); //creation du pipeline -> compile et mis sur la carte. on peut donc detruire une fois que la pipeline est finie
 	auto	fragShaderModule = createShaderModule(fragShaderCode);
 
-	VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
+	VkPipelineShaderStageCreateInfo	vertShaderStageInfo{};
 	vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
 	vertShaderStageInfo.module = vertShaderModule;
 	vertShaderStageInfo.pName = "main";
 	//	vertShaderStageInfo.pSpecializationInfo = nullptr; -> pour optimiser, virer du code avant la compile si pas besoin
 
-	VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
+	VkPipelineShaderStageCreateInfo	fragShaderStageInfo{};
 	fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
 	fragShaderStageInfo.module = fragShaderModule;
@@ -506,14 +567,17 @@ void	Display::createGraphicsPipeline()
 
 	VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
 
-	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
-	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertexInputInfo.vertexBindingDescriptionCount = 0;
-	vertexInputInfo.pVertexBindingDescriptions = nullptr; // Optionnel
-	vertexInputInfo.vertexAttributeDescriptionCount = 0;
-	vertexInputInfo.pVertexAttributeDescriptions = nullptr; // Optionnel
+	auto	bindingDescription = Vertex::getBindingDescription();
+	auto	attributeDescriptions = Vertex::getAttributeDescriptions();
 
-	VkPipelineInputAssemblyStateCreateInfo inputAssembly{}; //interessant pour points / lignes / triangles / contigus ou non : https://vulkan-tutorial.com/fr/Dessiner_un_triangle/Pipeline_graphique_basique/Fonctions_fixees
+	VkPipelineVertexInputStateCreateInfo	vertexInputInfo{};
+	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+	vertexInputInfo.vertexBindingDescriptionCount = 1;
+	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+	vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+	vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+
+	VkPipelineInputAssemblyStateCreateInfo	inputAssembly{}; //interessant pour points / lignes / triangles / contigus ou non : https://vulkan-tutorial.com/fr/Dessiner_un_triangle/Pipeline_graphique_basique/Fonctions_fixees
 	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	inputAssembly.primitiveRestartEnable = VK_FALSE;
@@ -622,7 +686,7 @@ Tout autre mode que fill doit être activé lors de la mise en place du logical 
 	pipelineInfo.pMultisampleState = &multisampling;
 	pipelineInfo.pDepthStencilState = nullptr; // Optionnel
 	pipelineInfo.pColorBlendState = &colorBlending;
-//	pipelineInfo.pDynamicState = &dynamicState; // fonctionne pas atm
+	//	pipelineInfo.pDynamicState = &dynamicState; // fonctionne pas atm
 	static_cast<void>(dynamicState);
 	pipelineInfo.pDynamicState = nullptr; // Optionnel
 

@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Display.hpp                                       :+:      :+:    :+:   */
+/*   Display.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 16:11:00 by nflan             #+#    #+#             */
-/*   Updated: 2023/10/26 13:23:28 by nflan            ###   ########.fr       */
+/*   Updated: 2023/10/26 17:59:45 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,10 +15,12 @@
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
 #include <iostream>
 #include "tools.hpp"
 #include "QueueFamilyIndices.hpp"
 #include "SwapChainSupportDetails.hpp"
+#include "Vertex.hpp"
 #include <vector>
 #include <iostream>
 #include <stdexcept>
@@ -88,6 +90,8 @@ class Display
 		void	createSyncObjects();
 		void	recreateSwapChain();
 		void	cleanupSwapChain();
+		void	createVertexBuffer();
+		uint32_t	findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 		GLFWwindow*					_window;
 		VkInstance					_instance;
@@ -127,6 +131,19 @@ class Display
 		std::vector<VkFence>		_imagesInFlight;
 		size_t						_currentFrame = 0;
 
+		//Vertex
+		const std::vector<Vertex> vertices = {
+			{{0.0f, -0.5f}, {1.0f, 1.0f, 1.0f}},
+			{{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+			{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+		};
+		//VertexBuffers
+		VkBuffer					_vertexBuffer;
+		VkMemoryRequirements		_memRequirements;
+		VkPhysicalDeviceMemoryProperties	_memProperties;
+		VkDeviceMemory				_vertexBufferMemory;
+		//remplissage du vertex
+		void*						_data;
 };
 
 #endif
