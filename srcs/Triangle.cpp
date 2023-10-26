@@ -6,7 +6,7 @@
 /*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 16:10:26 by nflan             #+#    #+#             */
-/*   Updated: 2023/10/26 14:35:08 by nflan            ###   ########.fr       */
+/*   Updated: 2023/10/26 14:45:33 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,7 +103,7 @@ void	Triangle::initWindow( void )
 	glfwInit();
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
 	this->_window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr); //largeur, haute, titre, momiteur (si on veut un ecran particulier), propre a openGL
 	glfwSetWindowUserPointer(this->_window, this);
