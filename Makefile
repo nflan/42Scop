@@ -19,7 +19,7 @@ OBJB_DIR =		obj_bonus
 SRC_DIR =		srcs
 SRCB_DIR =		srcs_bonus
 
-INC =			$(addsuffix .hpp, $(addprefix $(INC_DIR), scop))
+INC =			$(addsuffix .hpp, $(addprefix $(INC_DIR), scop Display))
 
 SRC =			$(SRC_FT:%=$(SRC_DIR)/%.cpp)
 SRCB =			$(SRCB_FT:%=$(SRCB_DIR)/%.cpp)
@@ -44,7 +44,7 @@ LDFLAGS =	-lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi -I/mnt/nf
 #HOW TO LIST .c 
 #	ls -l | awk '{print $9}' | grep -E ".c$"| sed "s/\.c/ \\\/g" | sed '$s/\\$//g'
 
-SRC_FT =	scop Triangle
+SRC_FT =	scop Display
 
 SRCB_FT =
 

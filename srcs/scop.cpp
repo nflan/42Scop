@@ -6,7 +6,7 @@
 /*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 15:51:36 by nflan             #+#    #+#             */
-/*   Updated: 2023/10/25 15:45:24 by nflan            ###   ########.fr       */
+/*   Updated: 2023/10/26 14:57:07 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,11 +18,11 @@
 #include <functional>
 #include <cstdlib>
 
-#include "../incs/Triangle.hpp"
+#include "../incs/Display.hpp"
 
 int main()
 {
-	Triangle app;
+	Display	app;
 
 	try
 	{

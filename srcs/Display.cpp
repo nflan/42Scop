@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Triangle.cpp                                       :+:      :+:    :+:   */
+/*   Display.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 16:10:26 by nflan             #+#    #+#             */
-/*   Updated: 2023/10/26 14:45:33 by nflan            ###   ########.fr       */
+/*   Updated: 2023/10/26 14:48:29 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../incs/Triangle.hpp"
+#include "../incs/Display.hpp"
 
 bool	QUIT = false;
 const int MAX_FRAMES_IN_FLIGHT = 2;
@@ -63,16 +63,15 @@ void	key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		QUIT = true;
 }
 
-Triangle::Triangle( void ) {
-}
+Display::Display( void ) {}
 
-Triangle::Triangle( const Triangle & o) {
+Display::Display( const Display & o) {
 	if (this != &o)
 		*this = o;
 	return ;
 }
 
-Triangle &	Triangle::operator=( const Triangle& o )
+Display &	Display::operator=( const Display& o )
 {
 	if (this == &o)
 		return (*this);
@@ -80,9 +79,9 @@ Triangle &	Triangle::operator=( const Triangle& o )
 	return (*this);
 }
 
-Triangle::~Triangle() {}
+Display::~Display() {}
 
-void Triangle::run()
+void Display::run()
 {
 	initWindow();
 	initVulkan();
@@ -94,11 +93,11 @@ static void	framebufferResizeCallback(GLFWwindow* window, int width, int height)
 {
 	static_cast<void>(width);
 	static_cast<void>(height);
-	auto app = reinterpret_cast<Triangle*>(glfwGetWindowUserPointer(window));
+	auto app = reinterpret_cast<Display*>(glfwGetWindowUserPointer(window));
 	app->framebufferResized = true;
 }
 
-void	Triangle::initWindow( void )
+void	Display::initWindow( void )
 {
 	glfwInit();
 
@@ -110,7 +109,7 @@ void	Triangle::initWindow( void )
 	glfwSetFramebufferSizeCallback(this->_window, framebufferResizeCallback);
 }
 
-void	Triangle::initVulkan( void )
+void	Display::initVulkan( void )
 {
 	this->createInstance();
 	this->setupDebugMessenger();
@@ -127,7 +126,7 @@ void	Triangle::initVulkan( void )
 	this->createSyncObjects();
 }
 
-void	Triangle::mainLoop( void )
+void	Display::mainLoop( void )
 {
 	while (!glfwWindowShouldClose(this->_window) && !QUIT) {
 		glfwSetKeyCallback(this->_window, key_callback);
@@ -138,7 +137,7 @@ void	Triangle::mainLoop( void )
 	vkDeviceWaitIdle(this->_device); //attente de la fin des semaphores pour quitter
 }
 
-void	Triangle::cleanup( void )
+void	Display::cleanup( void )
 {
 	this->cleanupSwapChain();
 
@@ -164,7 +163,7 @@ void	Triangle::cleanup( void )
 	glfwTerminate();
 }
 
-void Triangle::createInstance()
+void Display::createInstance()
 {
 	if (enableValidationLayers && !checkValidationLayerSupport())
 		throw std::runtime_error("validation layers requested, but not available!");
@@ -207,8 +206,19 @@ void Triangle::createInstance()
 	//Pointeur sur une variable stockant une référence au nouvel objet
 }
 
-void	Triangle::recreateSwapChain()
+void	Display::recreateSwapChain()
 {
+	// Quand fenetre minimisee, mise en pause du rendu
+	int	width = 0;
+	int	height = 0;
+	glfwGetFramebufferSize(this->_window, &width, &height);
+	while (width == 0 || height == 0)
+	{
+		glfwGetFramebufferSize(this->_window, &width, &height);
+		glfwWaitEvents();
+	}
+	//
+
 	vkDeviceWaitIdle(this->_device);
 
 	this->cleanupSwapChain();
@@ -221,7 +231,7 @@ void	Triangle::recreateSwapChain()
 	this->createCommandBuffers();
 }
 
-void	Triangle::cleanupSwapChain()
+void	Display::cleanupSwapChain()
 {
 	for (size_t i = 0; i < this->_swapChainFramebuffers.size(); i++) {
 		vkDestroyFramebuffer(this->_device, this->_swapChainFramebuffers[i], nullptr);
@@ -239,7 +249,7 @@ void	Triangle::cleanupSwapChain()
 	vkDestroySwapchainKHR(this->_device, this->_swapChain, nullptr);
 }
 
-void	Triangle::createSyncObjects()
+void	Display::createSyncObjects()
 {
 	this->_imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
 	this->_renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
@@ -261,7 +271,7 @@ void	Triangle::createSyncObjects()
 	}
 }
 
-void	Triangle::drawFrame()
+void	Display::drawFrame()
 {
 	/*
 	   1)Acquérir une image depuis la swap chain
@@ -332,7 +342,7 @@ void	Triangle::drawFrame()
 	this->_currentFrame = (this->_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-void	Triangle::createCommandBuffers()
+void	Display::createCommandBuffers()
 {
 	this->_commandBuffers.resize(this->_swapChainFramebuffers.size());
 
@@ -386,7 +396,7 @@ firstInstance : utilisé comme décalage pour l'instanced rendering et définit 
 	}
 }
 
-void	Triangle::createCommandPool()
+void	Display::createCommandPool()
 {
 	QueueFamilyIndices	queueFamilyIndices = findQueueFamilies(this->_physicalDevice);
 
@@ -401,7 +411,7 @@ void	Triangle::createCommandPool()
 		throw std::runtime_error("échec de la création d'une command pool!");
 }
 
-void	Triangle::createFramebuffers()
+void	Display::createFramebuffers()
 {
 	this->_swapChainFramebuffers.resize(this->_swapChainImageViews.size());
 	for (size_t i = 0; i < this->_swapChainImageViews.size(); i++) {
@@ -424,7 +434,7 @@ void	Triangle::createFramebuffers()
 
 }
 
-void	Triangle::createRenderPass()
+void	Display::createRenderPass()
 {
 	//DESCRIPTION DE L'ATTACHEMENT
 	VkAttachmentDescription colorAttachment{};
@@ -472,7 +482,7 @@ void	Triangle::createRenderPass()
 		throw std::runtime_error("échec de la création de la render pass!");
 }
 
-void	Triangle::createGraphicsPipeline()
+void	Display::createGraphicsPipeline()
 {
 	auto	vertShaderCode = readFile("shaders/vert.spv");
 	auto	fragShaderCode = readFile("shaders/frag.spv");
@@ -632,7 +642,7 @@ Tout autre mode que fill doit être activé lors de la mise en place du logical 
 	vkDestroyShaderModule(this->_device, fragShaderModule, nullptr);
 }
 
-VkShaderModule	Triangle::createShaderModule(const std::vector<char>& code) // buffer contenant le bytecode et créera un VkShaderModule avec ce code.
+VkShaderModule	Display::createShaderModule(const std::vector<char>& code) // buffer contenant le bytecode et créera un VkShaderModule avec ce code.
 {
 	VkShaderModuleCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -646,7 +656,7 @@ VkShaderModule	Triangle::createShaderModule(const std::vector<char>& code) // bu
 	return shaderModule;
 }
 
-void	Triangle::createImageViews()
+void	Display::createImageViews()
 {
 	this->_swapChainImageViews.resize(this->_swapChainImages.size());
 
@@ -719,7 +729,7 @@ objectCount: Le nombre d'objets dans le tableau précédent
 	return VK_FALSE;
 }
 
-void	Triangle::createSwapChain()
+void	Display::createSwapChain()
 {
 	SwapChainSupportDetails	swapChainSupport = this->querySwapChainSupport(this->_physicalDevice);
 
@@ -778,13 +788,13 @@ void	Triangle::createSwapChain()
 	this->_swapChainExtent = extent;
 }
 
-void	Triangle::createSurface()
+void	Display::createSurface()
 {
 	if (glfwCreateWindowSurface(this->_instance, this->_window, nullptr, &this->_surface) != VK_SUCCESS)
 		throw std::runtime_error("échec de la création de la window surface!");
 }
 
-void	Triangle::createLogicalDevice()
+void	Display::createLogicalDevice()
 {
 	QueueFamilyIndices	indices = findQueueFamilies(this->_physicalDevice);
 
@@ -828,7 +838,7 @@ void	Triangle::createLogicalDevice()
 	vkGetDeviceQueue(this->_device, indices.presentFamily.value(), 0, &this->_presentQueue);
 }
 
-void	Triangle::pickPhysicalDevice( void )
+void	Display::pickPhysicalDevice( void )
 {
 	uint32_t deviceCount = 0;
 	vkEnumeratePhysicalDevices(this->_instance, &deviceCount, nullptr);
@@ -863,7 +873,7 @@ void	Triangle::pickPhysicalDevice( void )
 	}
 }
 
-int	Triangle::rateDeviceSuitability(VkPhysicalDevice device)
+int	Display::rateDeviceSuitability(VkPhysicalDevice device)
 {
 	int score = 0;
 	VkPhysicalDeviceFeatures	deviceFeatures;
@@ -888,7 +898,7 @@ int	Triangle::rateDeviceSuitability(VkPhysicalDevice device)
 	return score;
 }
 //contraintes que devront remplir les physical devices.
-bool	Triangle::isDeviceSuitable(VkPhysicalDevice device)
+bool	Display::isDeviceSuitable(VkPhysicalDevice device)
 {
 	bool	extensionsSupported = checkDeviceExtensionSupport(device);
 
@@ -910,7 +920,7 @@ bool	Triangle::isDeviceSuitable(VkPhysicalDevice device)
 	return indices.isComplete() && extensionsSupported && swapChainAdequate;
 }
 
-VkSurfaceFormatKHR	Triangle::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
+VkSurfaceFormatKHR	Display::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
 {
 	for (const auto& availableFormat : availableFormats)
 		if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
@@ -919,7 +929,7 @@ VkSurfaceFormatKHR	Triangle::chooseSwapSurfaceFormat(const std::vector<VkSurface
 	return availableFormats[0];
 }
 
-VkPresentModeKHR	Triangle::chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes) {
+VkPresentModeKHR	Display::chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes) {
 	for (const auto& availablePresentMode : availablePresentModes)
 		if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
 			return availablePresentMode;
@@ -927,7 +937,7 @@ VkPresentModeKHR	Triangle::chooseSwapPresentMode(const std::vector<VkPresentMode
 	return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D	Triangle::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
+VkExtent2D	Display::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
 {
 	if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
 		return capabilities.currentExtent;
@@ -948,7 +958,7 @@ VkExtent2D	Triangle::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabiliti
 	}
 }
 
-bool	Triangle::checkDeviceExtensionSupport(VkPhysicalDevice device)
+bool	Display::checkDeviceExtensionSupport(VkPhysicalDevice device)
 {
 	uint32_t	extensionCount;
 	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
@@ -965,7 +975,7 @@ bool	Triangle::checkDeviceExtensionSupport(VkPhysicalDevice device)
 	return requiredExtensions.empty();
 }
 
-SwapChainSupportDetails	Triangle::querySwapChainSupport(VkPhysicalDevice device)
+SwapChainSupportDetails	Display::querySwapChainSupport(VkPhysicalDevice device)
 {
 	SwapChainSupportDetails	details;
 
@@ -992,7 +1002,7 @@ SwapChainSupportDetails	Triangle::querySwapChainSupport(VkPhysicalDevice device)
 	return details;
 }
 
-QueueFamilyIndices	Triangle::findQueueFamilies(VkPhysicalDevice device) {
+QueueFamilyIndices	Display::findQueueFamilies(VkPhysicalDevice device) {
 	QueueFamilyIndices	indices;
 
 	uint32_t	queueFamilyCount = 0;
@@ -1018,7 +1028,7 @@ QueueFamilyIndices	Triangle::findQueueFamilies(VkPhysicalDevice device) {
 	return indices;
 }
 
-void Triangle::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
+void Display::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
 	createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 	createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
@@ -1026,7 +1036,7 @@ void Triangle::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoE
 	createInfo.pfnUserCallback = debugCallback;
 }
 
-void Triangle::setupDebugMessenger() {
+void Display::setupDebugMessenger() {
 	if (!enableValidationLayers)
 		return;
 
@@ -1037,7 +1047,7 @@ void Triangle::setupDebugMessenger() {
 		throw std::runtime_error("failed to set up debug messenger!");
 }
 
-std::vector<const char*>	Triangle::getRequiredExtensions()
+std::vector<const char*>	Display::getRequiredExtensions()
 {
 	uint32_t	glfwExtensionCount = 0;
 	const char**	glfwExtensions;
@@ -1051,7 +1061,7 @@ std::vector<const char*>	Triangle::getRequiredExtensions()
 	return extensions;
 }
 
-bool	Triangle::checkValidationLayerSupport()
+bool	Display::checkValidationLayerSupport()
 {
 	uint32_t layerCount;
 	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);

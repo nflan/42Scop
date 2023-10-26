@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Triangle.hpp                                       :+:      :+:    :+:   */
+/*   Display.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,8 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef TRIANGLE_HPP
-#define TRIANGLE_HPP
+#ifndef DISPLAY_HPP
+#define DISPLAY_HPP
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -45,13 +45,13 @@ constexpr bool enableValidationLayers = false;
 constexpr bool enableValidationLayers = true;
 #endif
 
-class Triangle
+class Display
 {
 	public:
-		Triangle( void );
-		Triangle( const Triangle & );
-		Triangle &	operator=( const Triangle& o );
-		~Triangle( void );
+		Display( void );
+		Display( const Display & );
+		Display &	operator=( const Display& o );
+		~Display( void );
 
 		void	run( void );
 		bool	framebufferResized = false;
@@ -78,9 +78,9 @@ class Triangle
 		VkExtent2D	chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities); // choisir le format de l'image, souvent taille de la fenetre, le width et height sont limites par cette derniere, mais s'ils sont en uint32 max, alors on peut choisir ce qu'on desire
 		void	createSwapChain(); //recup les informations des precedentes fonctions sur la swap
 		void	createImageViews();
-		void	createGraphicsPipeline(); //https://vulkan-tutorial.com/fr/Dessiner_un_triangle/Pipeline_graphique_basique/Introduction
+		void	createGraphicsPipeline(); //https://vulkan-tutorial.com/fr/Dessiner_un_Display/Pipeline_graphique_basique/Introduction
 		VkShaderModule	createShaderModule(const std::vector<char>& code); //avant d'envoyer les infos des shaders dans la pipeline
-		void	createRenderPass();//https://vulkan-tutorial.com/fr/Dessiner_un_triangle/Pipeline_graphique_basique/Render_pass
+		void	createRenderPass();//https://vulkan-tutorial.com/fr/Dessiner_un_Display/Pipeline_graphique_basique/Render_pass
 		void	createFramebuffers();
 		void	createCommandPool();
 		void	createCommandBuffers();
