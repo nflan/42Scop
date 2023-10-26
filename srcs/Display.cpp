@@ -63,6 +63,12 @@ void	key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		QUIT = true;
 }
 
+const std::vector<Vertex>	vertices = {
+	{{0.0f, -0.5f}, {1.0f, 1.0f, 1.0f}},
+	{{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+	{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+};
+
 Display::Display( void ) {}
 
 Display::Display( const Display & o) {
@@ -210,6 +216,36 @@ void Display::createInstance()
 	//Pointeur sur une variable stockant une référence au nouvel objet
 }
 
+void	Display::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
+{
+    VkBufferCreateInfo bufferInfo{};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = size;
+    bufferInfo.usage = usage;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    if (vkCreateBuffer(this->_device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+        throw std::runtime_error("echec de la creation d'un buffer!");
+    }
+
+    VkMemoryRequirements memRequirements;
+    vkGetBufferMemoryRequirements(this->_device, buffer, &memRequirements);
+
+    VkMemoryAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+
+    if (vkAllocateMemory(this->_device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
+        throw std::runtime_error("echec de l'allocation de memoire!");
+    }
+
+    vkBindBufferMemory(this->_device, buffer, bufferMemory, 0);
+		/*
+	 * Le quatrième indique le décalage entre le début de la mémoire et le début du buffer. Nous avons alloué cette mémoire spécialement pour ce buffer, nous pouvons donc mettre 0. Si vous décidez d'allouer un grand espace mémoire pour y mettre plusieurs buffers, sachez qu'il faut que ce nombre soit divisible par memRequirements.alignement. Notez que cette stratégie est la manière recommandée de gérer la mémoire des GPUs (https://developer.nvidia.com/vulkan-memory-management)
+	 */
+}
+
 uint32_t	Display::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
 {
 	//on recupere les types de memoire de la CG
@@ -225,35 +261,15 @@ uint32_t	Display::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags prop
 
 void	Display::createVertexBuffer()
 {
-	VkBufferCreateInfo bufferInfo{};
-	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	bufferInfo.size = sizeof(vertices[0]) * vertices.size();
-	bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; //exclusive ou current comme swap chain et ses queues
-	bufferInfo.flags = 0; //permet de config le buffer pour avoir plusieurs emplacements dans la memoire mais la on le laisse par defaut
-
-	if (vkCreateBuffer(this->_device, &bufferInfo, nullptr, &this->_vertexBuffer) != VK_SUCCESS)
-		throw std::runtime_error("echec de la creation d'un vertex buffer!");
-
-	vkGetBufferMemoryRequirements(this->_device, this->_vertexBuffer, &this->_memRequirements);
-
-	VkMemoryAllocateInfo	allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	allocInfo.allocationSize = this->_memRequirements.size;
-	allocInfo.memoryTypeIndex = findMemoryType(this->_memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-	if (vkAllocateMemory(this->_device, &allocInfo, nullptr, &this->_vertexBufferMemory) != VK_SUCCESS)
-		throw std::runtime_error("echec d'une allocation de memoire!");
-
-	vkBindBufferMemory(this->_device, this->_vertexBuffer, this->_vertexBufferMemory, 0);
-	/*
-	 * Le quatrième indique le décalage entre le début de la mémoire et le début du buffer. Nous avons alloué cette mémoire spécialement pour ce buffer, nous pouvons donc mettre 0. Si vous décidez d'allouer un grand espace mémoire pour y mettre plusieurs buffers, sachez qu'il faut que ce nombre soit divisible par memRequirements.alignement. Notez que cette stratégie est la manière recommandée de gérer la mémoire des GPUs (https://developer.nvidia.com/vulkan-memory-management)
-	 */
-	vkMapMemory(this->_device, this->_vertexBufferMemory, 0, bufferInfo.size, 0, &this->_data);
+    VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+    createBuffer(bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, this->_vertexBuffer, this->_vertexBufferMemory);
+	
+	void	*data;
+	vkMapMemory(this->_device, this->_vertexBufferMemory, 0, bufferSize, 0, &data);
 	/*
 	 * Cette fonction nous permet d'accéder à une région spécifique d'une ressource. Nous devons pour cela indiquer un décalage et une taille. Nous mettons ici respectivement 0 et bufferInfo.size. Il est également possible de fournir la valeur VK_WHOLE_SIZE pour mapper d'un coup toute la ressource. L'avant-dernier paramètre est un champ de bits pour l'instant non implémenté par Vulkan. Il est impératif de la laisser à 0. Enfin, le dernier paramètre permet de fournir un pointeur vers la mémoire ainsi mappée.
 	 */
-	memcpy(this->_data, vertices.data(), (size_t) bufferInfo.size);
+	memcpy(data, vertices.data(), (size_t) bufferSize);
 	vkUnmapMemory(this->_device, this->_vertexBufferMemory);
 	/*
 	 * Vous pouvez maintenant utiliser memcpy pour copier les vertices dans la mémoire, puis démapper le buffer à l'aide de vkUnmapMemory. Malheureusement le driver peut décider de cacher les données avant de les copier dans le buffer. Il est aussi possible que les données soient copiées mais que ce changement ne soit pas visible immédiatement. Il y a deux manières de régler ce problème :

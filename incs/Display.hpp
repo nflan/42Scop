@@ -92,6 +92,9 @@ class Display
 		void	cleanupSwapChain();
 		void	createVertexBuffer();
 		uint32_t	findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+		void 	createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+
+
 
 		GLFWwindow*					_window;
 		VkInstance					_instance;
@@ -131,19 +134,11 @@ class Display
 		std::vector<VkFence>		_imagesInFlight;
 		size_t						_currentFrame = 0;
 
-		//Vertex
-		const std::vector<Vertex> vertices = {
-			{{0.0f, -0.5f}, {1.0f, 1.0f, 1.0f}},
-			{{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-			{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
-		};
 		//VertexBuffers
 		VkBuffer					_vertexBuffer;
 		VkMemoryRequirements		_memRequirements;
 		VkPhysicalDeviceMemoryProperties	_memProperties;
 		VkDeviceMemory				_vertexBufferMemory;
-		//remplissage du vertex
-		void*						_data;
 };
 
 #endif
