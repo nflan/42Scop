@@ -6,7 +6,7 @@
 /*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 16:10:26 by nflan             #+#    #+#             */
-/*   Updated: 2023/10/25 20:01:23 by nflan            ###   ########.fr       */
+/*   Updated: 2023/10/26 14:35:08 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,13 +54,17 @@ void DestroyDebugUtilsMessengerEXT(
 		func(instance, debugMessenger, pAllocator);
 }
 
-void	key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+void	key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	static_cast<void> (window);
+	static_cast<void> (scancode);
+	static_cast<void> (mods);
 	if ((key == GLFW_KEY_Q || key == GLFW_KEY_ESCAPE) && action == GLFW_PRESS)
 		QUIT = true;
-};
+}
 
 Triangle::Triangle( void ) {
-};
+}
 
 Triangle::Triangle( const Triangle & o) {
 	if (this != &o)
@@ -68,7 +72,15 @@ Triangle::Triangle( const Triangle & o) {
 	return ;
 }
 
-Triangle::~Triangle() {};
+Triangle &	Triangle::operator=( const Triangle& o )
+{
+	if (this == &o)
+		return (*this);
+	*this = o;
+	return (*this);
+}
+
+Triangle::~Triangle() {}
 
 void Triangle::run()
 {
@@ -78,6 +90,14 @@ void Triangle::run()
 	cleanup();
 }
 
+static void	framebufferResizeCallback(GLFWwindow* window, int width, int height)
+{
+	static_cast<void>(width);
+	static_cast<void>(height);
+	auto app = reinterpret_cast<Triangle*>(glfwGetWindowUserPointer(window));
+	app->framebufferResized = true;
+}
+
 void	Triangle::initWindow( void )
 {
 	glfwInit();
@@ -85,8 +105,10 @@ void	Triangle::initWindow( void )
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-	_window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr); //largeur, haute, titre, momiteur (si on veut un ecran particulier), propre a openGL
-};
+	this->_window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr); //largeur, haute, titre, momiteur (si on veut un ecran particulier), propre a openGL
+	glfwSetWindowUserPointer(this->_window, this);
+	glfwSetFramebufferSizeCallback(this->_window, framebufferResizeCallback);
+}
 
 void	Triangle::initVulkan( void )
 {
@@ -113,33 +135,32 @@ void	Triangle::mainLoop( void )
 		this->drawFrame();
 	}
 
-	vkDeviceWaitIdle(this->_vkDevice); //attente de la fin des semaphores pour quitter
+	vkDeviceWaitIdle(this->_device); //attente de la fin des semaphores pour quitter
 }
 
 void	Triangle::cleanup( void )
 {
+	this->cleanupSwapChain();
+
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{
-		vkDestroySemaphore(this->_vkDevice, this->_renderFinishedSemaphores[i], nullptr);
-		vkDestroySemaphore(this->_vkDevice, this->_imageAvailableSemaphores[i], nullptr);
-		vkDestroyFence(this->_vkDevice, this->_inFlightFences[i], nullptr);
+		vkDestroySemaphore(this->_device, this->_renderFinishedSemaphores[i], nullptr);
+		vkDestroySemaphore(this->_device, this->_imageAvailableSemaphores[i], nullptr);
+		vkDestroyFence(this->_device, this->_inFlightFences[i], nullptr);
 	}
-	vkDestroyCommandPool(this->_vkDevice, this->_commandPool, nullptr);
-	vkDestroyPipeline(this->_vkDevice, this->_graphicsPipeline, nullptr);
-	vkDestroyPipelineLayout(this->_vkDevice, this->_pipelineLayout, nullptr);
-	for (auto framebuffer : this->_swapChainFramebuffers)
-		vkDestroyFramebuffer(this->_vkDevice, framebuffer, nullptr);
-	vkDestroyRenderPass(this->_vkDevice, this->_renderPass, nullptr);
-	for (auto imageView : this->_swapChainImageViews) {
-		vkDestroyImageView(this->_vkDevice, imageView, nullptr);
-	}
-	vkDestroySwapchainKHR(this->_vkDevice, this->_swapChain, nullptr);
-	vkDestroyDevice(this->_vkDevice, nullptr);
+
+	vkDestroyCommandPool(this->_device, this->_commandPool, nullptr);
+
+	vkDestroyDevice(this->_device, nullptr);
+
 	if (enableValidationLayers)
 		DestroyDebugUtilsMessengerEXT(this->_instance, this->_debugMessenger, nullptr);
+
 	vkDestroySurfaceKHR(this->_instance, this->_surface, nullptr);
 	vkDestroyInstance(this->_instance, nullptr);
+
 	glfwDestroyWindow(this->_window);
+
 	glfwTerminate();
 }
 
@@ -186,6 +207,38 @@ void Triangle::createInstance()
 	//Pointeur sur une variable stockant une référence au nouvel objet
 }
 
+void	Triangle::recreateSwapChain()
+{
+	vkDeviceWaitIdle(this->_device);
+
+	this->cleanupSwapChain();
+
+	this->createSwapChain();
+	this->createImageViews();
+	this->createRenderPass();
+	this->createGraphicsPipeline();
+	this->createFramebuffers();
+	this->createCommandBuffers();
+}
+
+void	Triangle::cleanupSwapChain()
+{
+	for (size_t i = 0; i < this->_swapChainFramebuffers.size(); i++) {
+		vkDestroyFramebuffer(this->_device, this->_swapChainFramebuffers[i], nullptr);
+	}
+
+	vkFreeCommandBuffers(this->_device, this->_commandPool, static_cast<uint32_t>(this->_commandBuffers.size()), this->_commandBuffers.data());
+
+	vkDestroyPipeline(this->_device, this->_graphicsPipeline, nullptr);
+	vkDestroyPipelineLayout(this->_device, this->_pipelineLayout, nullptr);
+	vkDestroyRenderPass(this->_device, this->_renderPass, nullptr);
+
+	for (size_t i = 0; i < this->_swapChainImageViews.size(); i++)
+		vkDestroyImageView(this->_device, this->_swapChainImageViews[i], nullptr);
+
+	vkDestroySwapchainKHR(this->_device, this->_swapChain, nullptr);
+}
+
 void	Triangle::createSyncObjects()
 {
 	this->_imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
@@ -202,7 +255,7 @@ void	Triangle::createSyncObjects()
 
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{
-		if (vkCreateSemaphore(this->_vkDevice, &semaphoreInfo, nullptr, &this->_imageAvailableSemaphores[i]) != VK_SUCCESS || vkCreateSemaphore(this->_vkDevice, &semaphoreInfo, nullptr, &this->_renderFinishedSemaphores[i]) != VK_SUCCESS || vkCreateFence(this->_vkDevice, &fenceInfo, nullptr, &this->_inFlightFences[i]) != VK_SUCCESS)
+		if (vkCreateSemaphore(this->_device, &semaphoreInfo, nullptr, &this->_imageAvailableSemaphores[i]) != VK_SUCCESS || vkCreateSemaphore(this->_device, &semaphoreInfo, nullptr, &this->_renderFinishedSemaphores[i]) != VK_SUCCESS || vkCreateFence(this->_device, &fenceInfo, nullptr, &this->_inFlightFences[i]) != VK_SUCCESS)
 
 			throw std::runtime_error("échec de la création des objets de synchronisation pour une frame!");
 	}
@@ -215,14 +268,21 @@ void	Triangle::drawFrame()
 	   2)Exécuter le command buffer correspondant au framebuffer dont l'attachement est l'image obtenue
 	   3)Retourner l'image à la swap chain pour présentation
 	   */
-	vkWaitForFences(this->_vkDevice, 1, &this->_inFlightFences[this->_currentFrame], VK_TRUE, UINT64_MAX);//VK_TRUE permet d'attendre que TOUTES les fences soient good
+	vkWaitForFences(this->_device, 1, &this->_inFlightFences[this->_currentFrame], VK_TRUE, UINT64_MAX);//VK_TRUE permet d'attendre que TOUTES les fences soient good
 
 	uint32_t	imageIndex;
-	vkAcquireNextImageKHR(this->_vkDevice, this->_swapChain, UINT64_MAX, this->_imageAvailableSemaphores[this->_currentFrame], VK_NULL_HANDLE, &imageIndex);
+	VkResult	result = vkAcquireNextImageKHR(this->_device, this->_swapChain, UINT64_MAX, this->_imageAvailableSemaphores[this->_currentFrame], VK_NULL_HANDLE, &imageIndex);
+	if (result == VK_ERROR_OUT_OF_DATE_KHR)
+	{
+		recreateSwapChain();
+		return;
+	} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+		throw std::runtime_error("échec de la présentation d'une image à la swap chain!");
+	}
 
 	// Vérifier si une frame précédente est en train d'utiliser cette image (il y a une fence à attendre)
 	if (this->_imagesInFlight[imageIndex] != VK_NULL_HANDLE)
-		vkWaitForFences(this->_vkDevice, 1, &this->_imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
+		vkWaitForFences(this->_device, 1, &this->_imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
 	// Marque l'image comme étant à nouveau utilisée par cette frame
 	this->_imagesInFlight[imageIndex] = this->_inFlightFences[this->_currentFrame];
 
@@ -243,7 +303,7 @@ void	Triangle::drawFrame()
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = signalSemaphores;
 
-	vkResetFences(this->_vkDevice, 1, &this->_inFlightFences[this->_currentFrame]);//obliger de rester a la main
+	vkResetFences(this->_device, 1, &this->_inFlightFences[this->_currentFrame]);//obliger de rester a la main
 	if (vkQueueSubmit(this->_graphicsQueue, 1, &submitInfo, this->_inFlightFences[this->_currentFrame]) != VK_SUCCESS)
 		throw std::runtime_error("échec de l'envoi d'un command buffer!");
 
@@ -259,7 +319,16 @@ void	Triangle::drawFrame()
 	presentInfo.pImageIndices = &imageIndex;
 	presentInfo.pResults = nullptr; // Optionnel
 
-	vkQueuePresentKHR(this->_presentQueue, &presentInfo);
+//	VkResult	result = vkAcquireNextImageKHR(this->_device, this->_swapChain, UINT64_MAX, this->_imageAvailableSemaphores[this->_currentFrame], VK_NULL_HANDLE, &imageIndex);
+
+	result = vkQueuePresentKHR(this->_presentQueue, &presentInfo);
+	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || this->framebufferResized)
+	{
+		this->framebufferResized = false;
+		recreateSwapChain();
+	}
+	else if (result != VK_SUCCESS)
+		throw std::runtime_error("échec de la présentation d'une image à la swap chain!");
 	this->_currentFrame = (this->_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
@@ -275,7 +344,7 @@ void	Triangle::createCommandBuffers()
 	//VK_COMMAND_BUFFER_LEVEL_SECONDARY : ne peut pas être directement émis à une queue mais peut être appelé par un autre command buffer
 	allocInfo.commandBufferCount = (uint32_t) this->_commandBuffers.size();
 
-	if (vkAllocateCommandBuffers(this->_vkDevice, &allocInfo, this->_commandBuffers.data()) != VK_SUCCESS)
+	if (vkAllocateCommandBuffers(this->_device, &allocInfo, this->_commandBuffers.data()) != VK_SUCCESS)
 		throw std::runtime_error("échec de l'allocation de command buffers!");
 
 	//Début de l'enregistrement des commandes
@@ -328,7 +397,7 @@ void	Triangle::createCommandPool()
 	poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
 	poolInfo.flags = 0; // Optionel
 
-	if (vkCreateCommandPool(this->_vkDevice, &poolInfo, nullptr, &this->_commandPool) != VK_SUCCESS)
+	if (vkCreateCommandPool(this->_device, &poolInfo, nullptr, &this->_commandPool) != VK_SUCCESS)
 		throw std::runtime_error("échec de la création d'une command pool!");
 }
 
@@ -349,7 +418,7 @@ void	Triangle::createFramebuffers()
 		framebufferInfo.height = this->_swapChainExtent.height;
 		framebufferInfo.layers = 1; //car une seule couche dans la swap chain
 
-		if (vkCreateFramebuffer(this->_vkDevice, &framebufferInfo, nullptr, &this->_swapChainFramebuffers[i]) != VK_SUCCESS)
+		if (vkCreateFramebuffer(this->_device, &framebufferInfo, nullptr, &this->_swapChainFramebuffers[i]) != VK_SUCCESS)
 			throw std::runtime_error("échec de la création d'un framebuffer!");
 	}
 
@@ -399,7 +468,7 @@ void	Triangle::createRenderPass()
 	renderPassInfo.dependencyCount = 1;
 	renderPassInfo.pDependencies = &dependency;
 
-	if (vkCreateRenderPass(this->_vkDevice, &renderPassInfo, nullptr, &this->_renderPass) != VK_SUCCESS)
+	if (vkCreateRenderPass(this->_device, &renderPassInfo, nullptr, &this->_renderPass) != VK_SUCCESS)
 		throw std::runtime_error("échec de la création de la render pass!");
 }
 
@@ -510,12 +579,12 @@ Tout autre mode que fill doit être activé lors de la mise en place du logical 
 	colorBlending.blendConstants[3] = 0.0f; // Optionnel
 
 	//ETATS DYNAMIQUES
-	std::vector<VkDynamicState> dynamicStates = {
+	std::vector<VkDynamicState>	dynamicStates = {
 		VK_DYNAMIC_STATE_VIEWPORT,
 		VK_DYNAMIC_STATE_LINE_WIDTH
 	};
 
-	VkPipelineDynamicStateCreateInfo dynamicState{};
+	VkPipelineDynamicStateCreateInfo	dynamicState{};
 	dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 	dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
 	dynamicState.pDynamicStates = dynamicStates.data();
@@ -528,7 +597,7 @@ Tout autre mode que fill doit être activé lors de la mise en place du logical 
 	pipelineLayoutInfo.pushConstantRangeCount = 0;    // Optionnel
 	pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optionnel
 
-	if (vkCreatePipelineLayout(this->_vkDevice, &pipelineLayoutInfo, nullptr, &this->_pipelineLayout) != VK_SUCCESS)
+	if (vkCreatePipelineLayout(this->_device, &pipelineLayoutInfo, nullptr, &this->_pipelineLayout) != VK_SUCCESS)
 		throw std::runtime_error("échec de la création du pipeline layout!");
 
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
@@ -543,6 +612,8 @@ Tout autre mode que fill doit être activé lors de la mise en place du logical 
 	pipelineInfo.pMultisampleState = &multisampling;
 	pipelineInfo.pDepthStencilState = nullptr; // Optionnel
 	pipelineInfo.pColorBlendState = &colorBlending;
+//	pipelineInfo.pDynamicState = &dynamicState; // fonctionne pas atm
+	static_cast<void>(dynamicState);
 	pipelineInfo.pDynamicState = nullptr; // Optionnel
 
 	pipelineInfo.layout = this->_pipelineLayout;
@@ -554,11 +625,11 @@ Tout autre mode que fill doit être activé lors de la mise en place du logical 
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optionnel -> voir pour utiliser une precedente pipeline pour gagner du temps, si elles se suivent
 	pipelineInfo.basePipelineIndex = -1; // Optionnel
 
-	if (vkCreateGraphicsPipelines(this->_vkDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &this->_graphicsPipeline) != VK_SUCCESS)
+	if (vkCreateGraphicsPipelines(this->_device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &this->_graphicsPipeline) != VK_SUCCESS)
 		throw std::runtime_error("échec de la création de la pipeline graphique!");
 
-	vkDestroyShaderModule(this->_vkDevice, vertShaderModule, nullptr);
-	vkDestroyShaderModule(this->_vkDevice, fragShaderModule, nullptr);
+	vkDestroyShaderModule(this->_device, vertShaderModule, nullptr);
+	vkDestroyShaderModule(this->_device, fragShaderModule, nullptr);
 }
 
 VkShaderModule	Triangle::createShaderModule(const std::vector<char>& code) // buffer contenant le bytecode et créera un VkShaderModule avec ce code.
@@ -569,7 +640,7 @@ VkShaderModule	Triangle::createShaderModule(const std::vector<char>& code) // bu
 	createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
 	VkShaderModule	shaderModule;
-	if (vkCreateShaderModule(this->_vkDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
+	if (vkCreateShaderModule(this->_device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
 		throw std::runtime_error("échec de la création d'un module shader!");
 
 	return shaderModule;
@@ -598,7 +669,7 @@ void	Triangle::createImageViews()
 		/*
 		 * Si vous travailliez sur une application 3D stéréoscopique, vous devrez alors créer une swap chain avec plusieurs couches. Vous pourriez alors créer plusieurs image views pour chaque image. Elles représenteront ce qui sera affiché pour l'œil gauche et pour l'œil droit.
 		 */
-		if (vkCreateImageView(this->_vkDevice, &createInfo, nullptr, &this->_swapChainImageViews[i]) != VK_SUCCESS)
+		if (vkCreateImageView(this->_device, &createInfo, nullptr, &this->_swapChainImageViews[i]) != VK_SUCCESS)
 			throw std::runtime_error("échec de la création d'une image view!");
 	}
 
@@ -608,7 +679,11 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback( // les prototypes permetten
 		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 		VkDebugUtilsMessageTypeFlagsEXT messageType,
 		const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-		void* pUserData) {
+		void* pUserData)
+{
+	static_cast<void>(messageSeverity);
+	static_cast<void>(messageType);
+	static_cast<void>(pUserData);
 	/*
 	   Le premier paramètre indique la sévérité du message, et peut prendre les valeurs suivantes :
 
@@ -693,12 +768,12 @@ void	Triangle::createSwapChain()
 
 	createInfo.oldSwapchain = VK_NULL_HANDLE; // si la swap chain crash (resize par exemple), la nouvelle doit envoyer un pointer sur la precedente mais c'est complique donc on va pas le faire
 
-	if (vkCreateSwapchainKHR(this->_vkDevice, &createInfo, nullptr, &this->_swapChain) != VK_SUCCESS)
+	if (vkCreateSwapchainKHR(this->_device, &createInfo, nullptr, &this->_swapChain) != VK_SUCCESS)
 		throw std::runtime_error("failed to create swap chain!");
 
-	vkGetSwapchainImagesKHR(this->_vkDevice, this->_swapChain, &imageCount, nullptr);
+	vkGetSwapchainImagesKHR(this->_device, this->_swapChain, &imageCount, nullptr);
 	this->_swapChainImages.resize(imageCount);
-	vkGetSwapchainImagesKHR(this->_vkDevice, this->_swapChain, &imageCount, this->_swapChainImages.data());
+	vkGetSwapchainImagesKHR(this->_device, this->_swapChain, &imageCount, this->_swapChainImages.data());
 	this->_swapChainImageFormat = surfaceFormat.format;
 	this->_swapChainExtent = extent;
 }
@@ -746,11 +821,11 @@ void	Triangle::createLogicalDevice()
 	} else {
 		createInfo.enabledLayerCount = 0;
 	}
-	if (vkCreateDevice(this->_physicalDevice, &createInfo, nullptr, &this->_vkDevice) != VK_SUCCESS) {
+	if (vkCreateDevice(this->_physicalDevice, &createInfo, nullptr, &this->_device) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create logical device!");
 	}
-	vkGetDeviceQueue(this->_vkDevice, indices.graphicsFamily.value(), 0, &this->_graphicsQueue); //0 est l'index, qu'une queue ici donc juste 0
-	vkGetDeviceQueue(this->_vkDevice, indices.presentFamily.value(), 0, &this->_presentQueue);
+	vkGetDeviceQueue(this->_device, indices.graphicsFamily.value(), 0, &this->_graphicsQueue); //0 est l'index, qu'une queue ici donc juste 0
+	vkGetDeviceQueue(this->_device, indices.presentFamily.value(), 0, &this->_presentQueue);
 }
 
 void	Triangle::pickPhysicalDevice( void )
@@ -858,7 +933,13 @@ VkExtent2D	Triangle::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabiliti
 		return capabilities.currentExtent;
 	else
 	{
-		VkExtent2D actualExtent = {WIDTH, HEIGHT};
+		int	width, height;
+		glfwGetFramebufferSize(this->_window, &width, &height);
+
+		VkExtent2D actualExtent = {
+			static_cast<uint32_t>(width),
+			static_cast<uint32_t>(height)
+		};
 
 		actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
 		actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height); //clamp comme en css pour la taille min et max

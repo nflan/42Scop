@@ -6,7 +6,7 @@
 /*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 16:11:00 by nflan             #+#    #+#             */
-/*   Updated: 2023/10/25 19:58:40 by nflan            ###   ########.fr       */
+/*   Updated: 2023/10/26 13:23:28 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,9 +50,11 @@ class Triangle
 	public:
 		Triangle( void );
 		Triangle( const Triangle & );
+		Triangle &	operator=( const Triangle& o );
 		~Triangle( void );
 
 		void	run( void );
+		bool	framebufferResized = false;
 	private:
 		void	initWindow( void ); // initWindow
 		void	initVulkan( void ); // initImg
@@ -84,6 +86,8 @@ class Triangle
 		void	createCommandBuffers();
 		void	drawFrame();
 		void	createSyncObjects();
+		void	recreateSwapChain();
+		void	cleanupSwapChain();
 
 		GLFWwindow*					_window;
 		VkInstance					_instance;
@@ -91,7 +95,7 @@ class Triangle
 		VkSurfaceKHR				_surface;
 
 		VkPhysicalDevice			_physicalDevice = VK_NULL_HANDLE; // auto detruit a la fin de l'instance
-		VkDevice					_vkDevice; // specifier ce dont nous allons avoir besoin pour logical device
+		VkDevice					_device; // specifier ce dont nous allons avoir besoin pour logical device
 
 		VkQueue						_graphicsQueue; // auto detruit au destroy de vkdevice
 		VkQueue						_presentQueue;
