@@ -16,10 +16,14 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
+#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/gtc/matrix_transform.hpp>
+
+#include <chrono>
 #include <iostream>
 #include "tools.hpp"
 #include "QueueFamilyIndices.hpp"
 #include "SwapChainSupportDetails.hpp"
+#include "UniformBufferObject.hpp"
 #include "Vertex.hpp"
 #include <vector>
 #include <iostream>
@@ -80,6 +84,7 @@ class Display
 		VkExtent2D	chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities); // choisir le format de l'image, souvent taille de la fenetre, le width et height sont limites par cette derniere, mais s'ils sont en uint32 max, alors on peut choisir ce qu'on desire
 		void	createSwapChain(); //recup les informations des precedentes fonctions sur la swap
 		void	createImageViews();
+		void	createDescriptorSetLayout();
 		void	createGraphicsPipeline(); //https://vulkan-tutorial.com/fr/Dessiner_un_Display/Pipeline_graphique_basique/Introduction
 		VkShaderModule	createShaderModule(const std::vector<char>& code); //avant d'envoyer les infos des shaders dans la pipeline
 		void	createRenderPass();//https://vulkan-tutorial.com/fr/Dessiner_un_Display/Pipeline_graphique_basique/Render_pass
@@ -92,6 +97,10 @@ class Display
 		void	cleanupSwapChain();
 		void	createVertexBuffer();
 		void	createIndexBuffer();
+		void	createUniformBuffers();
+		void 	updateUniformBuffer(uint32_t currentImage);
+		void	createDescriptorPool();
+		void	createDescriptorSets();
 		uint32_t	findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 		void 	createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 		void 	copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
@@ -118,6 +127,7 @@ class Display
 
 		//RENDER PASS
 		VkRenderPass				_renderPass;
+		VkDescriptorSetLayout 		_descriptorSetLayout;
 		VkPipelineLayout			_pipelineLayout;
 		VkPipeline					_graphicsPipeline;
 
@@ -129,6 +139,12 @@ class Display
 		VkDeviceMemory				_vertexBufferMemory;
 		VkBuffer 					_indexBuffer;
 		VkDeviceMemory 				_indexBufferMemory;
+
+		std::vector<VkBuffer> 		_uniformBuffers;
+		std::vector<VkDeviceMemory>	_uniformBuffersMemory;
+
+		VkDescriptorPool 			_descriptorPool;
+		std::vector<VkDescriptorSet>	_descriptorSets;
 
 		//ALLOCATION DES COMMAND BUFFERS
 		std::vector<VkCommandBuffer>	_commandBuffers;
