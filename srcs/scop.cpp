@@ -6,13 +6,13 @@
 /*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 15:51:36 by nflan             #+#    #+#             */
-/*   Updated: 2023/10/26 17:31:29 by nflan            ###   ########.fr       */
+/*   Updated: 2023/10/27 12:18:21 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
+#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
 
 #include <iostream>
 #include <stdexcept>

@@ -6,16 +6,16 @@
 /*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 16:10:26 by nflan             #+#    #+#             */
-/*   Updated: 2023/10/27 11:29:36 by nflan            ###   ########.fr       */
+/*   Updated: 2023/10/27 12:46:37 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../incs/Display.hpp"
 
-bool	QUIT = false;
-const int MAX_FRAMES_IN_FLIGHT = 2;
+bool		QUIT = false;
+const int	MAX_FRAMES_IN_FLIGHT = 2;
 
-VkResult CreateDebugUtilsMessengerEXT(
+VkResult	CreateDebugUtilsMessengerEXT(
 		VkInstance instance,
 		const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
 		const VkAllocationCallbacks* pAllocator,
@@ -218,30 +218,30 @@ void Display::createInstance()
 
 void	Display::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
 {
-    VkBufferCreateInfo bufferInfo{};
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = size;
-    bufferInfo.usage = usage;
-    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	VkBufferCreateInfo bufferInfo{};
+	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferInfo.size = size;
+	bufferInfo.usage = usage;
+	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    if (vkCreateBuffer(this->_device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
-        throw std::runtime_error("echec de la creation d'un buffer!");
-    }
+	if (vkCreateBuffer(this->_device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+		throw std::runtime_error("echec de la creation d'un buffer!");
+	}
 
-    VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(this->_device, buffer, &memRequirements);
+	VkMemoryRequirements memRequirements;
+	vkGetBufferMemoryRequirements(this->_device, buffer, &memRequirements);
 
-    VkMemoryAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+	VkMemoryAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	allocInfo.allocationSize = memRequirements.size;
+	allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
 
-    if (vkAllocateMemory(this->_device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
-        throw std::runtime_error("echec de l'allocation de memoire!");
-    }
+	if (vkAllocateMemory(this->_device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
+		throw std::runtime_error("echec de l'allocation de memoire!");
+	}
 
-    vkBindBufferMemory(this->_device, buffer, bufferMemory, 0);
-		/*
+	vkBindBufferMemory(this->_device, buffer, bufferMemory, 0);
+	/*
 	 * Le quatrième indique le décalage entre le début de la mémoire et le début du buffer. Nous avons alloué cette mémoire spécialement pour ce buffer, nous pouvons donc mettre 0. Si vous décidez d'allouer un grand espace mémoire pour y mettre plusieurs buffers, sachez qu'il faut que ce nombre soit divisible par memRequirements.alignement. Notez que cette stratégie est la manière recommandée de gérer la mémoire des GPUs (https://developer.nvidia.com/vulkan-memory-management)
 	 */
 }
@@ -296,30 +296,30 @@ void 	Display::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize s
 
 void	Display::createVertexBuffer()
 {
-    VkDeviceSize	bufferSize = sizeof(vertices[0]) * vertices.size();
+	VkDeviceSize	bufferSize = sizeof(vertices[0]) * vertices.size();
 
-    VkBuffer	stagingBuffer;
-    VkDeviceMemory	stagingBufferMemory;
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+	VkBuffer	stagingBuffer;
+	VkDeviceMemory	stagingBufferMemory;
+	createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
-    void* data;
-		/*
+	void* data;
+	/*
 	 * Cette fonction nous permet d'accéder à une région spécifique d'une ressource. Nous devons pour cela indiquer un décalage et une taille. Nous mettons ici respectivement 0 et bufferInfo.size. Il est également possible de fournir la valeur VK_WHOLE_SIZE pour mapper d'un coup toute la ressource. L'avant-dernier paramètre est un champ de bits pour l'instant non implémenté par Vulkan. Il est impératif de la laisser à 0. Enfin, le dernier paramètre permet de fournir un pointeur vers la mémoire ainsi mappée.
 	 */
-    vkMapMemory(this->_device, stagingBufferMemory, 0, bufferSize, 0, &data);
-        memcpy(data, vertices.data(), (size_t) bufferSize);
-    vkUnmapMemory(_device, stagingBufferMemory);
+	vkMapMemory(this->_device, stagingBufferMemory, 0, bufferSize, 0, &data);
+	memcpy(data, vertices.data(), (size_t) bufferSize);
+	vkUnmapMemory(_device, stagingBufferMemory);
 	/*
 	 * Vous pouvez maintenant utiliser memcpy pour copier les vertices dans la mémoire, puis démapper le buffer à l'aide de vkUnmapMemory. Malheureusement le driver peut décider de cacher les données avant de les copier dans le buffer. Il est aussi possible que les données soient copiées mais que ce changement ne soit pas visible immédiatement. Il y a deux manières de régler ce problème :
 
 	 Utiliser une pile de mémoire cohérente avec la RAM, ce qui est indiqué par VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 	 Appeler vkFlushMappedMemoryRanges après avoir copié les données, puis appeler vkInvalidateMappedMemory avant d'accéder à la mémoire
 	 */
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, this->_vertexBuffer, this->_vertexBufferMemory);
+	createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, this->_vertexBuffer, this->_vertexBufferMemory);
 
 	copyBuffer(stagingBuffer, this->_vertexBuffer, bufferSize);
-    vkDestroyBuffer(this->_device, stagingBuffer, nullptr);
-    vkFreeMemory(this->_device, stagingBufferMemory, nullptr);
+	vkDestroyBuffer(this->_device, stagingBuffer, nullptr);
+	vkFreeMemory(this->_device, stagingBufferMemory, nullptr);
 }
 
 void	Display::recreateSwapChain()

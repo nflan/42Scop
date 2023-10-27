@@ -6,15 +6,15 @@
 /*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/26 16:32:50 by nflan             #+#    #+#             */
-/*   Updated: 2023/10/26 17:50:47 by nflan            ###   ########.fr       */
+/*   Updated: 2023/10/27 12:18:12 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef VERTEX_HPP
 #define VERTEX_HPP
 
-#include <glm/glm.hpp>
 #define GLFW_INCLUDE_VULKAN
+#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
 #include <GLFW/glfw3.h>
 #include <array>
 

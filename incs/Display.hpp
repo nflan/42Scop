@@ -6,7 +6,7 @@
 /*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 16:11:00 by nflan             #+#    #+#             */
-/*   Updated: 2023/10/27 11:28:14 by nflan            ###   ########.fr       */
+/*   Updated: 2023/10/27 12:17:56 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
+#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
 #include <iostream>
 #include "tools.hpp"
 #include "QueueFamilyIndices.hpp"
