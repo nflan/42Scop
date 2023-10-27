@@ -6,7 +6,7 @@
 /*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 16:10:26 by nflan             #+#    #+#             */
-/*   Updated: 2023/10/26 17:26:50 by nflan            ###   ########.fr       */
+/*   Updated: 2023/10/27 11:29:36 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -248,27 +248,28 @@ void	Display::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemory
 
 uint32_t	Display::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
 {
+	VkPhysicalDeviceMemoryProperties	memProperties;
 	//on recupere les types de memoire de la CG
 	//on ne va pas le faire mais on peut choisir celle qui est la plus performante !
-	vkGetPhysicalDeviceMemoryProperties(this->_physicalDevice, &this->_memProperties);
+	vkGetPhysicalDeviceMemoryProperties(this->_physicalDevice, &memProperties);
 
 	//on cherche un type de memoire qui correspond au buffer
-	for (uint32_t i = 0; i < this->_memProperties.memoryTypeCount; i++)
-		if (typeFilter & (1 << i) && (this->_memProperties.memoryTypes[i].propertyFlags & properties) == properties)
+	for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
+		if (typeFilter & (1 << i) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
 			return i;
 	throw std::runtime_error("aucun type de memoire ne satisfait le buffer!");
 }
 
 void 	Display::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
 {
-    VkCommandBufferAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocInfo.commandPool = _commandPool;
-    allocInfo.commandBufferCount = 1;
+	VkCommandBufferAllocateInfo	allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	allocInfo.commandPool = this->_commandPool;
+	allocInfo.commandBufferCount = 1;
 
-    VkCommandBuffer commandBuffer;
-    vkAllocateCommandBuffers(_device, &allocInfo, &commandBuffer);
+	VkCommandBuffer commandBuffer;
+	vkAllocateCommandBuffers(this->_device, &allocInfo, &commandBuffer);
 
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -283,22 +284,22 @@ void 	Display::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize s
 	vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 	vkEndCommandBuffer(commandBuffer);
 
-	VkSubmitInfo submitInfo{};
+	VkSubmitInfo	submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &commandBuffer;
 
-	vkQueueSubmit(_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-	vkQueueWaitIdle(_graphicsQueue);
-	vkFreeCommandBuffers(_device, _commandPool, 1, &commandBuffer);
+	vkQueueSubmit(this->_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+	vkQueueWaitIdle(this->_graphicsQueue);
+	vkFreeCommandBuffers(this->_device, this->_commandPool, 1, &commandBuffer);
 }
 
 void	Display::createVertexBuffer()
 {
-    VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+    VkDeviceSize	bufferSize = sizeof(vertices[0]) * vertices.size();
 
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
+    VkBuffer	stagingBuffer;
+    VkDeviceMemory	stagingBufferMemory;
     createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
     void* data;
@@ -314,11 +315,11 @@ void	Display::createVertexBuffer()
 	 Utiliser une pile de mémoire cohérente avec la RAM, ce qui est indiqué par VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 	 Appeler vkFlushMappedMemoryRanges après avoir copié les données, puis appeler vkInvalidateMappedMemory avant d'accéder à la mémoire
 	 */
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, _vertexBuffer, _vertexBufferMemory);
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, this->_vertexBuffer, this->_vertexBufferMemory);
 
-	copyBuffer(stagingBuffer, _vertexBuffer, bufferSize);
-    vkDestroyBuffer(_device, stagingBuffer, nullptr);
-    vkFreeMemory(_device, stagingBufferMemory, nullptr);
+	copyBuffer(stagingBuffer, this->_vertexBuffer, bufferSize);
+    vkDestroyBuffer(this->_device, stagingBuffer, nullptr);
+    vkFreeMemory(this->_device, stagingBufferMemory, nullptr);
 }
 
 void	Display::recreateSwapChain()
@@ -524,7 +525,7 @@ void	Display::createCommandPool()
 	//VK_COMMAND_POOL_CREATE_TRANSIENT_BIT : informe que les command buffers sont ré-enregistrés très souvent, ce qui peut inciter Vulkan (et donc le driver) à ne pas utiliser le même type d'allocation
 	//VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT : permet aux command buffers d'être ré-enregistrés individuellement, ce que les autres configurations ne permettent pas
 	poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
-	poolInfo.flags = 0; // Optionel
+	poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT; // Optionel
 
 	if (vkCreateCommandPool(this->_device, &poolInfo, nullptr, &this->_commandPool) != VK_SUCCESS)
 		throw std::runtime_error("échec de la création d'une command pool!");

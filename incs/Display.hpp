@@ -6,7 +6,7 @@
 /*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/24 16:11:00 by nflan             #+#    #+#             */
-/*   Updated: 2023/10/26 17:59:45 by nflan            ###   ########.fr       */
+/*   Updated: 2023/10/27 11:28:14 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,8 +95,8 @@ class Display
 		void 	createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 		void 	copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
-
 		GLFWwindow*					_window;
+
 		VkInstance					_instance;
 		VkDebugUtilsMessengerEXT	_debugMessenger;
 		VkSurfaceKHR				_surface;
@@ -106,24 +106,27 @@ class Display
 
 		VkQueue						_graphicsQueue; // auto detruit au destroy de vkdevice
 		VkQueue						_presentQueue;
-		VkPipeline					_graphicsPipeline;
 
 		VkSwapchainKHR				_swapChain;
 		std::vector<VkImage>		_swapChainImages; // images de la swap chain (auto del avec la swapchain)
 		VkFormat					_swapChainImageFormat;
 		VkExtent2D					_swapChainExtent;
-
 		std::vector<VkImageView>	_swapChainImageViews;
+		//FRAMEBUFFERS
+		std::vector<VkFramebuffer>	_swapChainFramebuffers;
 
 		//RENDER PASS
 		VkRenderPass				_renderPass;
 		VkPipelineLayout			_pipelineLayout;
-
-		//FRAMEBUFFERS
-		std::vector<VkFramebuffer>	_swapChainFramebuffers;
+		VkPipeline					_graphicsPipeline;
 
 		//COMMAND POOLS
 		VkCommandPool				_commandPool;
+
+		//VertexBuffers
+		VkBuffer					_vertexBuffer;
+		VkDeviceMemory				_vertexBufferMemory;
+
 		//ALLOCATION DES COMMAND BUFFERS
 		std::vector<VkCommandBuffer>	_commandBuffers;
 
@@ -133,12 +136,6 @@ class Display
 		std::vector<VkFence>		_inFlightFences;//les fences permettent au programme d'attendre l'exécution complète d'une opération. Nous allons créer une fence pour chaque frame
 		std::vector<VkFence>		_imagesInFlight;
 		size_t						_currentFrame = 0;
-
-		//VertexBuffers
-		VkBuffer					_vertexBuffer;
-		VkMemoryRequirements		_memRequirements;
-		VkPhysicalDeviceMemoryProperties	_memProperties;
-		VkDeviceMemory				_vertexBufferMemory;
 };
 
 #endif
