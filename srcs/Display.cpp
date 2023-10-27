@@ -259,24 +259,66 @@ uint32_t	Display::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags prop
 	throw std::runtime_error("aucun type de memoire ne satisfait le buffer!");
 }
 
+void 	Display::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+{
+    VkCommandBufferAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocInfo.commandPool = _commandPool;
+    allocInfo.commandBufferCount = 1;
+
+    VkCommandBuffer commandBuffer;
+    vkAllocateCommandBuffers(_device, &allocInfo, &commandBuffer);
+
+	VkCommandBufferBeginInfo beginInfo{};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+	vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+	VkBufferCopy copyRegion{};
+	copyRegion.srcOffset = 0; // Optionnel
+	copyRegion.dstOffset = 0; // Optionnel
+	copyRegion.size = size;
+	vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+	vkEndCommandBuffer(commandBuffer);
+
+	VkSubmitInfo submitInfo{};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffer;
+
+	vkQueueSubmit(_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+	vkQueueWaitIdle(_graphicsQueue);
+	vkFreeCommandBuffers(_device, _commandPool, 1, &commandBuffer);
+}
+
 void	Display::createVertexBuffer()
 {
     VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
-    createBuffer(bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, this->_vertexBuffer, this->_vertexBufferMemory);
-	
-	void	*data;
-	vkMapMemory(this->_device, this->_vertexBufferMemory, 0, bufferSize, 0, &data);
-	/*
+
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+    void* data;
+		/*
 	 * Cette fonction nous permet d'accéder à une région spécifique d'une ressource. Nous devons pour cela indiquer un décalage et une taille. Nous mettons ici respectivement 0 et bufferInfo.size. Il est également possible de fournir la valeur VK_WHOLE_SIZE pour mapper d'un coup toute la ressource. L'avant-dernier paramètre est un champ de bits pour l'instant non implémenté par Vulkan. Il est impératif de la laisser à 0. Enfin, le dernier paramètre permet de fournir un pointeur vers la mémoire ainsi mappée.
 	 */
-	memcpy(data, vertices.data(), (size_t) bufferSize);
-	vkUnmapMemory(this->_device, this->_vertexBufferMemory);
+    vkMapMemory(this->_device, stagingBufferMemory, 0, bufferSize, 0, &data);
+        memcpy(data, vertices.data(), (size_t) bufferSize);
+    vkUnmapMemory(_device, stagingBufferMemory);
 	/*
 	 * Vous pouvez maintenant utiliser memcpy pour copier les vertices dans la mémoire, puis démapper le buffer à l'aide de vkUnmapMemory. Malheureusement le driver peut décider de cacher les données avant de les copier dans le buffer. Il est aussi possible que les données soient copiées mais que ce changement ne soit pas visible immédiatement. Il y a deux manières de régler ce problème :
 
 	 Utiliser une pile de mémoire cohérente avec la RAM, ce qui est indiqué par VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 	 Appeler vkFlushMappedMemoryRanges après avoir copié les données, puis appeler vkInvalidateMappedMemory avant d'accéder à la mémoire
 	 */
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, _vertexBuffer, _vertexBufferMemory);
+
+	copyBuffer(stagingBuffer, _vertexBuffer, bufferSize);
+    vkDestroyBuffer(_device, stagingBuffer, nullptr);
+    vkFreeMemory(_device, stagingBufferMemory, nullptr);
 }
 
 void	Display::recreateSwapChain()

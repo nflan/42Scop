@@ -15,7 +15,7 @@
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
+#include <glm/glm.hpp>
 #include <iostream>
 #include "tools.hpp"
 #include "QueueFamilyIndices.hpp"
@@ -93,7 +93,7 @@ class Display
 		void	createVertexBuffer();
 		uint32_t	findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 		void 	createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-
+		void 	copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
 
 		GLFWwindow*					_window;
