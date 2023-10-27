@@ -63,10 +63,15 @@ void	key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		QUIT = true;
 }
 
-const std::vector<Vertex>	vertices = {
-	{{0.0f, -0.5f}, {1.0f, 1.0f, 1.0f}},
-	{{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-	{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+const std::vector<Vertex> 	vertices = {
+    {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+    {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+    {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+    {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+};
+
+const std::vector<uint16_t>	indices = {
+    0, 1, 2, 2, 3, 0
 };
 
 Display::Display( void ) {}
@@ -129,6 +134,7 @@ void	Display::initVulkan( void )
 	this->createFramebuffers();
 	this->createCommandPool();
 	this->createVertexBuffer();
+	this->createIndexBuffer();
 	this->createCommandBuffers();
 	this->createSyncObjects();
 }
@@ -147,6 +153,9 @@ void	Display::mainLoop( void )
 void	Display::cleanup( void )
 {
 	this->cleanupSwapChain();
+
+    vkDestroyBuffer(this->_device, this->_indexBuffer, nullptr);
+    vkFreeMemory(this->_device, this->_indexBufferMemory, nullptr);
 
 	vkDestroyBuffer(this->_device, this->_vertexBuffer, nullptr);
 	vkFreeMemory(this->_device, this->_vertexBufferMemory, nullptr);
@@ -214,6 +223,26 @@ void Display::createInstance()
 	//Pointeur sur une structure contenant l'information pour la création
 	//Pointeur sur une fonction d'allocation que nous laisserons toujours nullptr
 	//Pointeur sur une variable stockant une référence au nouvel objet
+}
+
+void 	Display::createIndexBuffer() {
+    VkDeviceSize 	bufferSize = sizeof(indices[0]) * indices.size();
+
+    VkBuffer 	stagingBuffer;
+    VkDeviceMemory 	stagingBufferMemory;
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+    void	*data;
+    vkMapMemory(this->_device, stagingBufferMemory, 0, bufferSize, 0, &data);
+    memcpy(data, indices.data(), (size_t) bufferSize);
+    vkUnmapMemory(this->_device, stagingBufferMemory);
+
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, this->_indexBuffer, this->_indexBufferMemory);
+
+    copyBuffer(stagingBuffer, this->_indexBuffer, bufferSize);
+
+    vkDestroyBuffer(this->_device, stagingBuffer, nullptr);
+    vkFreeMemory(this->_device, stagingBufferMemory, nullptr);
 }
 
 void	Display::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
@@ -504,7 +533,8 @@ void	Display::createCommandBuffers()
 		VkDeviceSize	offsets[] = {0};
 		vkCmdBindVertexBuffers(this->_commandBuffers[i], 0, 1, vertexBuffers, offsets);
 
-		vkCmdDraw(this->_commandBuffers[i], static_cast<uint32_t>(vertices.size()), 1, 0, 0);
+		vkCmdBindIndexBuffer(this->_commandBuffers[i], this->_indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+		vkCmdDrawIndexed(this->_commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 		/*
 		 *	vertexCount : même si nous n'avons pas de vertex buffer, nous avons techniquement trois vertices à dessiner
 instanceCount : sert au rendu instancié (instanced rendering); indiquez 1 si vous ne l'utilisez pas

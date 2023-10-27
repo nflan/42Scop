@@ -91,6 +91,7 @@ class Display
 		void	recreateSwapChain();
 		void	cleanupSwapChain();
 		void	createVertexBuffer();
+		void	createIndexBuffer();
 		uint32_t	findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 		void 	createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 		void 	copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
@@ -126,6 +127,8 @@ class Display
 		//VertexBuffers
 		VkBuffer					_vertexBuffer;
 		VkDeviceMemory				_vertexBufferMemory;
+		VkBuffer 					_indexBuffer;
+		VkDeviceMemory 				_indexBufferMemory;
 
 		//ALLOCATION DES COMMAND BUFFERS
 		std::vector<VkCommandBuffer>	_commandBuffers;
