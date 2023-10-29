@@ -2,3 +2,7 @@ possibilite d'ameliorer les performances:
 - https://vulkan-tutorial.com/fr/Uniform_buffers/Descriptor_pool_et_sets
 - https://vulkan-tutorial.com/fr/Texture_mapping/Images
 - 
+
+Dans shader.frag:
+- dans le main pour la couleur et pas les textures -> outColor = vec4(fragTexCoord, 0.0, 1.0);
+- couleur + texture : outColor = vec4(fragColor * texture(texSampler, fragTexCoord).rgb, 1.0);

@@ -14,6 +14,7 @@
 #define DISPLAY_HPP
 
 #define GLFW_INCLUDE_VULKAN
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <GLFW/glfw3.h>
 #include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
 #include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/gtc/matrix_transform.hpp>
@@ -113,8 +114,12 @@ class Display
 		void	transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 		void	copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 		void	createTextureImageView();
-		VkImageView	createImageView(VkImage image, VkFormat format);
+		VkImageView	createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 		void	createTextureSampler();
+		void	createDepthResources();
+		VkFormat	findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+		VkFormat	findDepthFormat();
+		bool	hasStencilComponent(VkFormat format);
 
 
 		GLFWwindow*					_window;
@@ -175,6 +180,10 @@ class Display
 		VkImageView					_textureImageView;
 		VkSampler					_textureSampler;
 
+		//Image de profondeur et view
+		VkImage						_depthImage;
+		VkDeviceMemory				_depthImageMemory;
+		VkImageView					_depthImageView;
 };
 
 #endif
