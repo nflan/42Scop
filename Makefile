@@ -31,12 +31,13 @@ CXX =	g++ $(CXXFLAGS)
 
 RM =	rm -fr
 
-CXXFLAGS =	-std=c++20 -O2# -DNDEBUG
+CXXFLAGS =	-std=c++17 -O3# -DNDEBUG
 
 GLM_INCLUDE_PATH = /mnt/nfs/homes/nflan/sgoinfre/bin/glm
-STB_INCLUDE_PATH = /mnt/nfs/homes/nflan/sgoinfre/bin/stb/test
+STB_INCLUDE_PATH = /mnt/nfs/homes/nflan/sgoinfre/bin/stb
+OBJLOADER_INCLUDE_PATH = /mnt/nfs/homes/nflan/sgoinfre/bin/tinyobjloader
 
-LDFLAGS =	-lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi -I$(GLM_INCLUDE_PATH) -I$(STB_INCLUDE_PATH)
+LDFLAGS =	-lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi -I$(GLM_INCLUDE_PATH) -I$(STB_INCLUDE_PATH) -I$(OBJLOADER_INCLUDE_PATH)
 
 # VulkanTest:	main.cpp
 # g++ $(CXXFLAGS) -o VulkanTest main.cpp $(LDFLAGS)

@@ -13,6 +13,8 @@
 #include "../incs/Display.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "/mnt/nfs/homes/nflan/sgoinfre/bin/stb/stb_image.h"
+#define TINYOBJLOADER_IMPLEMENTATION
+#include </mnt/nfs/homes/nflan/sgoinfre/bin/tinyobjloader/tiny_obj_loader.h>
 
 bool		QUIT = false;
 const int	MAX_FRAMES_IN_FLIGHT = 2;
@@ -28,6 +30,16 @@ VkResult	CreateDebugUtilsMessengerEXT(
 		return func(instance, pCreateInfo, pAllocator, pCallback);
 	else
 		return VK_ERROR_EXTENSION_NOT_PRESENT;
+}
+
+namespace std {
+    template<> struct hash<Vertex> {
+        size_t operator()(Vertex const& vertex) const {
+            return ((hash<glm::vec3>()(vertex.pos) ^
+                   (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
+                   (hash<glm::vec2>()(vertex.texCoord) << 1);
+        }
+    };
 }
 
 static	std::vector<char> readFile(const std::string& filename) {
@@ -64,23 +76,6 @@ void	key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if ((key == GLFW_KEY_Q || key == GLFW_KEY_ESCAPE) && action == GLFW_PRESS)
 		QUIT = true;
 }
-
-const std::vector<Vertex>	vertices = {
-    {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-    {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-    {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-    {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
-
-    {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-    {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-    {{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-    {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
-};
-
-const std::vector<uint16_t>	indices = {
-    0, 1, 2, 2, 3, 0,
-    4, 5, 6, 6, 7, 4
-};
 
 Display::Display( void ) {}
 
@@ -146,6 +141,7 @@ void	Display::initVulkan( void )
 	this->createFramebuffers();
 	this->createTextureImageView();
 	this->createTextureSampler();
+	this->loadModel();
 	this->createVertexBuffer();
 	this->createIndexBuffer();
 	this->createUniformBuffers();
@@ -310,6 +306,48 @@ void Display::createInstance()
 	//Pointeur sur une variable stockant une référence au nouvel objet
 }
 
+void	Display::loadModel()
+{
+	tinyobj::attrib_t	attrib;
+    std::vector<tinyobj::shape_t>	shapes;
+    std::vector<tinyobj::material_t>	materials;
+    std::string	warn, err;
+
+    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, MODEL_PATH.c_str()))
+        throw std::runtime_error(warn + err);
+
+	std::unordered_map<Vertex, uint32_t> uniqueVertices{};
+
+	for (const auto& shape : shapes)
+	{
+		for (const auto& index : shape.mesh.indices)
+		{
+			Vertex vertex{};
+
+			vertex.pos = {
+				attrib.vertices[3 * index.vertex_index + 0],
+				attrib.vertices[3 * index.vertex_index + 1],
+				attrib.vertices[3 * index.vertex_index + 2]
+			};
+
+			vertex.texCoord = {
+				attrib.texcoords[2 * index.texcoord_index + 0],
+				1.0f - attrib.texcoords[2 * index.texcoord_index + 1]//textures a l'envers parce que OBJ part d'en bas a gauche et Vulkan en haut a gauche
+			};
+
+			vertex.color = {1.0f, 1.0f, 1.0f};
+
+			if (uniqueVertices.count(vertex) == 0)
+			{
+				uniqueVertices[vertex] = static_cast<uint32_t>(this->_vertices.size());
+				this->_vertices.push_back(vertex);
+			}
+
+			this->_indices.push_back(uniqueVertices[vertex]);
+		}
+	}
+}
+
 void	Display::createTextureSampler()
 {
 	VkSamplerCreateInfo	samplerInfo{}; //permet d'indiquer les filtres et les transformations à appliquer.
@@ -384,7 +422,7 @@ void	Display::createDepthResources()
 void	Display::createTextureImage()
 {
 	int	texWidth, texHeight, texChannels;
-    stbi_uc	*pixels = stbi_load("textures/texture.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+    stbi_uc	*pixels = stbi_load(TEXTURE_PATH.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
     VkDeviceSize	imageSize = texWidth * texHeight * 4;
 
     if (!pixels)
@@ -595,8 +633,9 @@ void	Display::createDescriptorSetLayout()
 	}
 }
 
-void 	Display::createIndexBuffer() {
-    VkDeviceSize 	bufferSize = sizeof(indices[0]) * indices.size();
+void 	Display::createIndexBuffer()
+{
+    VkDeviceSize 	bufferSize = sizeof(this->_indices[0]) * this->_indices.size();
 
     VkBuffer 	stagingBuffer;
     VkDeviceMemory 	stagingBufferMemory;
@@ -604,7 +643,7 @@ void 	Display::createIndexBuffer() {
 
     void	*data;
     vkMapMemory(this->_device, stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, indices.data(), (size_t) bufferSize);
+    memcpy(data, this->_indices.data(), (size_t) bufferSize);
     vkUnmapMemory(this->_device, stagingBufferMemory);
 
     createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, this->_indexBuffer, this->_indexBufferMemory);
@@ -755,7 +794,7 @@ void	Display::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, 
 
 void	Display::createVertexBuffer()
 {
-	VkDeviceSize	bufferSize = sizeof(vertices[0]) * vertices.size();
+	VkDeviceSize	bufferSize = sizeof(this->_vertices[0]) * this->_vertices.size();
 
 	VkBuffer	stagingBuffer;
 	VkDeviceMemory	stagingBufferMemory;
@@ -766,10 +805,10 @@ void	Display::createVertexBuffer()
 	 * Cette fonction nous permet d'accéder à une région spécifique d'une ressource. Nous devons pour cela indiquer un décalage et une taille. Nous mettons ici respectivement 0 et bufferInfo.size. Il est également possible de fournir la valeur VK_WHOLE_SIZE pour mapper d'un coup toute la ressource. L'avant-dernier paramètre est un champ de bits pour l'instant non implémenté par Vulkan. Il est impératif de la laisser à 0. Enfin, le dernier paramètre permet de fournir un pointeur vers la mémoire ainsi mappée.
 	 */
 	vkMapMemory(this->_device, stagingBufferMemory, 0, bufferSize, 0, &data);
-	memcpy(data, vertices.data(), (size_t) bufferSize);
+	memcpy(data, this->_vertices.data(), (size_t) bufferSize);
 	vkUnmapMemory(_device, stagingBufferMemory);
 	/*
-	 * Vous pouvez maintenant utiliser memcpy pour copier les vertices dans la mémoire, puis démapper le buffer à l'aide de vkUnmapMemory. Malheureusement le driver peut décider de cacher les données avant de les copier dans le buffer. Il est aussi possible que les données soient copiées mais que ce changement ne soit pas visible immédiatement. Il y a deux manières de régler ce problème :
+	 * Vous pouvez maintenant utiliser memcpy pour copier les this->_vertices dans la mémoire, puis démapper le buffer à l'aide de vkUnmapMemory. Malheureusement le driver peut décider de cacher les données avant de les copier dans le buffer. Il est aussi possible que les données soient copiées mais que ce changement ne soit pas visible immédiatement. Il y a deux manières de régler ce problème :
 
 	 Utiliser une pile de mémoire cohérente avec la RAM, ce qui est indiqué par VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 	 Appeler vkFlushMappedMemoryRanges après avoir copié les données, puis appeler vkInvalidateMappedMemory avant d'accéder à la mémoire
@@ -943,12 +982,12 @@ void	Display::createCommandBuffers()
 		VkDeviceSize	offsets[] = {0};
 		vkCmdBindVertexBuffers(this->_commandBuffers[i], 0, 1, vertexBuffers, offsets);
 
-		vkCmdBindIndexBuffer(this->_commandBuffers[i], this->_indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+		vkCmdBindIndexBuffer(this->_commandBuffers[i], this->_indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 		
 		vkCmdBindDescriptorSets(this->_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, this->_pipelineLayout, 0, 1, &this->_descriptorSets[i], 0, nullptr);
-		vkCmdDrawIndexed(this->_commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+		vkCmdDrawIndexed(this->_commandBuffers[i], static_cast<uint32_t>(this->_indices.size()), 1, 0, 0, 0);
 		/*
-		 *	vertexCount : même si nous n'avons pas de vertex buffer, nous avons techniquement trois vertices à dessiner
+		 *	vertexCount : même si nous n'avons pas de vertex buffer, nous avons techniquement trois this->_vertices à dessiner
 instanceCount : sert au rendu instancié (instanced rendering); indiquez 1 si vous ne l'utilisez pas
 firstVertex : utilisé comme décalage dans le vertex buffer et définit ainsi la valeur la plus basse pour glVertexIndex
 firstInstance : utilisé comme décalage pour l'instanced rendering et définit ainsi la valeur la plus basse pour gl_InstanceIndex*/

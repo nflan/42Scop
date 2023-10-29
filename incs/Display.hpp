@@ -15,6 +15,8 @@
 
 #define GLFW_INCLUDE_VULKAN
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#define GLM_ENABLE_EXPERIMENTAL
+#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/gtx/hash.hpp>
 #include <GLFW/glfw3.h>
 #include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
 #include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/gtc/matrix_transform.hpp>
@@ -32,12 +34,16 @@
 #include <functional>
 #include <fstream>
 #include <map>
+#include <unordered_map>
 #include <set>
 #include <cstdlib>
 #include <cstring>
 
-const uint32_t WIDTH = 800;
-const uint32_t HEIGHT = 600;
+const uint32_t	WIDTH = 800;
+const uint32_t	HEIGHT = 600;
+
+const std::string	MODEL_PATH = "models/viking_room.obj";
+const std::string	TEXTURE_PATH = "textures/viking_room.png";
 
 const std::vector<const char*> deviceExtensions = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME
@@ -120,6 +126,7 @@ class Display
 		VkFormat	findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 		VkFormat	findDepthFormat();
 		bool	hasStencilComponent(VkFormat format);
+		void	loadModel();
 
 
 		GLFWwindow*					_window;
@@ -152,6 +159,8 @@ class Display
 		VkCommandPool				_commandPool;
 
 		//VertexBuffers
+		std::vector<Vertex>			_vertices;
+		std::vector<uint32_t>		_indices;
 		VkBuffer					_vertexBuffer;
 		VkDeviceMemory				_vertexBufferMemory;
 		VkBuffer 					_indexBuffer;
