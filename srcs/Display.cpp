@@ -154,6 +154,34 @@ void	Display::mainLoop( void )
 	vkDeviceWaitIdle(this->_device); //attente de la fin des semaphores pour quitter
 }
 
+void	Display::recreateSwapChain()
+{
+	// Quand fenetre minimisee, mise en pause du rendu
+	int	width = 0;
+	int	height = 0;
+	glfwGetFramebufferSize(this->_window, &width, &height);
+	while (width == 0 || height == 0)
+	{
+		glfwGetFramebufferSize(this->_window, &width, &height);
+		glfwWaitEvents();
+	}
+	//
+
+	vkDeviceWaitIdle(this->_device);
+
+	this->cleanupSwapChain();
+
+	this->createSwapChain();
+	this->createImageViews();
+	this->createRenderPass();
+	this->createGraphicsPipeline();
+	this->createFramebuffers();
+	this->createUniformBuffers();
+	this->createDescriptorPool();
+	this->createDescriptorSets();
+	this->createCommandBuffers();
+}
+
 void	Display::cleanupSwapChain()
 {
 	for (size_t i = 0; i < this->_swapChainFramebuffers.size(); i++) {
@@ -186,7 +214,8 @@ void	Display::cleanup( void )
 
 	if (this->_descriptorPool != nullptr)
     	vkDestroyDescriptorPool(this->_device, this->_descriptorPool, nullptr);
-    vkDestroyDescriptorSetLayout(this->_device, this->_descriptorSetLayout, nullptr);
+    
+	vkDestroyDescriptorSetLayout(this->_device, this->_descriptorSetLayout, nullptr);
 
     vkDestroyBuffer(this->_device, this->_indexBuffer, nullptr);
     vkFreeMemory(this->_device, this->_indexBufferMemory, nullptr);
@@ -463,33 +492,6 @@ void	Display::createVertexBuffer()
 	copyBuffer(stagingBuffer, this->_vertexBuffer, bufferSize);
 	vkDestroyBuffer(this->_device, stagingBuffer, nullptr);
 	vkFreeMemory(this->_device, stagingBufferMemory, nullptr);
-}
-
-void	Display::recreateSwapChain()
-{
-	// Quand fenetre minimisee, mise en pause du rendu
-	int	width = 0;
-	int	height = 0;
-	glfwGetFramebufferSize(this->_window, &width, &height);
-	while (width == 0 || height == 0)
-	{
-		glfwGetFramebufferSize(this->_window, &width, &height);
-		glfwWaitEvents();
-	}
-	//
-
-	vkDeviceWaitIdle(this->_device);
-
-	this->cleanupSwapChain();
-
-	this->createSwapChain();
-	this->createImageViews();
-	this->createRenderPass();
-	this->createGraphicsPipeline();
-	this->createFramebuffers();
-	this->createUniformBuffers();
-	this->createDescriptorPool();
-	this->createCommandBuffers();
 }
 
 void	Display::createSyncObjects()
