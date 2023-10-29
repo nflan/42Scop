@@ -114,19 +114,20 @@ class Display
 
 		//images mais a voir pour changer plus tard
 		void	createTextureImage();
-		void	createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+		void	createImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 		VkCommandBuffer	beginSingleTimeCommands();
 		void	endSingleTimeCommands(VkCommandBuffer commandBuffer);
-		void	transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+		void	transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
 		void	copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 		void	createTextureImageView();
-		VkImageView	createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
+		VkImageView	createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipl);
 		void	createTextureSampler();
 		void	createDepthResources();
 		VkFormat	findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 		VkFormat	findDepthFormat();
 		bool	hasStencilComponent(VkFormat format);
 		void	loadModel();
+		void	generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
 
 
 		GLFWwindow*					_window;
@@ -183,6 +184,7 @@ class Display
 		size_t						_currentFrame = 0;
 
 		//textures d'image (pixels -> texels)
+		uint32_t					_mipLevels;
 		VkImage						_textureImage;
 		VkDeviceMemory				_textureImageMemory;
 		//reference a la vue pour la texture

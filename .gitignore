@@ -1,5 +1,6 @@
 resources/
 tags
-.obj
+*.obj
 textures/
 models/
+.vscode
