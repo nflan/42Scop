@@ -33,7 +33,10 @@ RM =	rm -fr
 
 CXXFLAGS =	-std=c++20 -O2# -DNDEBUG
 
-LDFLAGS =	-lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi -I/mnt/nfs/homes/nflan/sgoinfre/bin/glm
+GLM_INCLUDE_PATH = /mnt/nfs/homes/nflan/sgoinfre/bin/glm
+STB_INCLUDE_PATH = /mnt/nfs/homes/nflan/sgoinfre/bin/stb/test
+
+LDFLAGS =	-lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi -I$(GLM_INCLUDE_PATH) -I$(STB_INCLUDE_PATH)
 
 # VulkanTest:	main.cpp
 # g++ $(CXXFLAGS) -o VulkanTest main.cpp $(LDFLAGS)

@@ -1,0 +1,4 @@
+possibilite d'ameliorer les performances:
+- https://vulkan-tutorial.com/fr/Uniform_buffers/Descriptor_pool_et_sets
+- https://vulkan-tutorial.com/fr/Texture_mapping/Images
+- 

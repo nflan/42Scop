@@ -105,6 +105,18 @@ class Display
 		void 	createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 		void 	copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
+		//images mais a voir pour changer plus tard
+		void	createTextureImage();
+		void	createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+		VkCommandBuffer	beginSingleTimeCommands();
+		void	endSingleTimeCommands(VkCommandBuffer commandBuffer);
+		void	transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+		void	copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+		void	createTextureImageView();
+		VkImageView	createImageView(VkImage image, VkFormat format);
+		void	createTextureSampler();
+
+
 		GLFWwindow*					_window;
 
 		VkInstance					_instance;
@@ -155,6 +167,14 @@ class Display
 		std::vector<VkFence>		_inFlightFences;//les fences permettent au programme d'attendre l'exécution complète d'une opération. Nous allons créer une fence pour chaque frame
 		std::vector<VkFence>		_imagesInFlight;
 		size_t						_currentFrame = 0;
+
+		//textures d'image (pixels -> texels)
+		VkImage						_textureImage;
+		VkDeviceMemory				_textureImageMemory;
+		//reference a la vue pour la texture
+		VkImageView					_textureImageView;
+		VkSampler					_textureSampler;
+
 };
 
 #endif
