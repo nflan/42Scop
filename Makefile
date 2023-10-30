@@ -31,7 +31,7 @@ CXX =	g++ $(CXXFLAGS)
 
 RM =	rm -fr
 
-CXXFLAGS =	-std=c++17 -O3# -DNDEBUG
+CXXFLAGS =	-std=c++20 -O3# -DNDEBUG
 
 GLM_INCLUDE_PATH = /mnt/nfs/homes/nflan/sgoinfre/bin/glm
 STB_INCLUDE_PATH = /mnt/nfs/homes/nflan/sgoinfre/bin/stb

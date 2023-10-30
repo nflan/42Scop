@@ -114,7 +114,7 @@ class Display
 
 		//images mais a voir pour changer plus tard
 		void	createTextureImage();
-		void	createImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+		void	createImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 		VkCommandBuffer	beginSingleTimeCommands();
 		void	endSingleTimeCommands(VkCommandBuffer commandBuffer);
 		void	transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
@@ -128,7 +128,8 @@ class Display
 		bool	hasStencilComponent(VkFormat format);
 		void	loadModel();
 		void	generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
-
+		VkSampleCountFlagBits	getMaxUsableSampleCount(VkSampleCountFlags requestedSampleCount);
+		void	createColorResources();
 
 		GLFWwindow*					_window;
 
@@ -195,6 +196,13 @@ class Display
 		VkImage						_depthImage;
 		VkDeviceMemory				_depthImageMemory;
 		VkImageView					_depthImageView;
+
+		//Multisampling -> anti-aliasing
+		VkSampleCountFlagBits		_msaaSamples = VK_SAMPLE_COUNT_1_BIT;//set a 1 car le minimum, comme ne pas s'en servir
+		VkImage						_colorImage;
+		VkDeviceMemory				_colorImageMemory;
+		VkImageView					_colorImageView;
+
 };
 
 #endif
