@@ -1341,9 +1341,8 @@ Tout autre mode que fill doit être activé lors de la mise en place du logical 
 	//MULTISAMPLING (on y repassera plus tard)
 	VkPipelineMultisampleStateCreateInfo multisampling{};
 	multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-	multisampling.sampleShadingEnable = VK_FALSE;
-	multisampling.rasterizationSamples = this->_msaaSamples;
-	multisampling.minSampleShading = 1.0f; // Optionnel
+	multisampling.sampleShadingEnable = VK_TRUE; // Activation du sample shading dans la pipeline	multisampling.rasterizationSamples = this->_msaaSamples;
+    multisampling.minSampleShading = .2f; // Fraction minimale pour le sample shading; plus proche de 1 lisse d'autant plus
 	multisampling.pSampleMask = nullptr; // Optionnel
 	multisampling.alphaToCoverageEnable = VK_FALSE; // Optionnel
 	multisampling.alphaToOneEnable = VK_FALSE; // Optionnel
@@ -1614,6 +1613,7 @@ void	Display::createLogicalDevice()
 
 	VkPhysicalDeviceFeatures deviceFeatures{};
 	deviceFeatures.samplerAnisotropy = VK_TRUE;
+	deviceFeatures.sampleRateShading = VK_TRUE; // Activation du sample shading pour le device
 
 	VkDeviceCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
