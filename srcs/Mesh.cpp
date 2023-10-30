@@ -25,14 +25,14 @@ void Mesh::LoadObjModel(const char *filename)
     std::string line;
     while (std::getline(in, line))
     {
-
+        std::cout << "line = " << line << std::endl;
         if (line.substr(0,2)=="v ")
         {
             std::istringstream  v(line.substr(2));
             glm::vec3   vert;
             double x,y,z;
             v >> x; v >> y; v >> z;
-            vert=glm::vec3(x,y,z);
+            vert = glm::vec3(x,y,z);
             this->_vertices.push_back(vert);
         }
         //check for texture co-ordinate
@@ -47,37 +47,44 @@ void Mesh::LoadObjModel(const char *filename)
         }
         //check for faces
         else if (line.substr(0,2)=="f ")
-        {
+        {//vector de points
             std::istringstream  f(line.substr(2));
-            uint32_t    a,b,c;
-            // uint32_t    A,B,C;
+            std::vector<uint32_t>    faces;
+            uint32_t    tmp;
 
-            // const char* chh=line.c_str();
-            // sscanf (chh, "f %i/%i %i/%i %i/%i",&a,&A,&b,&B,&c,&C);
-            f >> a; f >> b; f >> c;
-            // a--; b--; c--;
-            // A--; B--; C--;
-            this->_faceIndex.push_back(a);
-            this->_faceIndex.push_back(b);
-            this->_faceIndex.push_back(c);
+            while (f.tellg() != -1)
+            {
+                std::cout << "tellg = " << f.tellg() << std::endl;
+                tmp = 0;
+
+                f >> tmp;
+                tmp--;
+                std::cout << "tmp = " << tmp << std::endl;
+                faces.push_back(tmp);
+            }
+            while (faces.size() >= 3)
+            {
+                this->_faceIndex.push_back(faces[0]);
+                this->_faceIndex.push_back(faces[1]);
+                this->_faceIndex.push_back(faces[2]);
+                faces.erase(faces.begin() + 1);
+            }
+            std::cout << this->_faceIndex.size() << std::endl;
             // this->_textureIndex.push_back(A);
             // this->_textureIndex.push_back(B);
             // this->_textureIndex.push_back(C);
         }
 
     }
-
+    std::cout << "vertices.size() = " << this->_vertices.size() << std::endl;
     //calculate all mesh vertices using face index
     for(unsigned int i = 0; i < this->_faceIndex.size(); i++)
     {
         glm::vec3   meshData;
         glm::vec2   texData;
 
-        std::cout << this->_vertices.size() << std::endl;
-        std::cout << this->_faceIndex.size() << std::endl;
-        std::cout << this->_texture.size() << std::endl;
-        std::cout << this->_textureIndex.size() << std::endl;
-
+        std::cout << "i = " << i << std::endl;
+        std::cout << "this->_faceIndex[i] = " << this->_faceIndex[i] << std::endl;
         meshData = glm::vec3(this->_vertices[this->_faceIndex[i]].x, this->_vertices[this->_faceIndex[i]].y, this->_vertices[this->_faceIndex[i]].z);
         if (_texture.size() && _textureIndex[i])
         {

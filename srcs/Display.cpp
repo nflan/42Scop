@@ -276,7 +276,7 @@ void Display::createInstance()
 
 	VkApplicationInfo	appInfo{}; // informations optionnelles mais utiles pour optimiser
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO; // expliciter le type
-	appInfo.pApplicationName = "Hello Triangle"; // nom de l'app
+	appInfo.pApplicationName = "FT_SCOP"; // nom de l'app
 	appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0); // version
 	appInfo.pEngineName = "No Engine"; // engine si utilise
 	appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
@@ -366,26 +366,28 @@ void	Display::loadModel()
 
     // if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, MODEL_PATH.c_str()))
     //     throw std::runtime_error(warn + err);
+	this->_vertices.clear();
+	std::unordered_map<Vertex, uint32_t> uniqueVertices;
 
-	std::unordered_map<Vertex, uint32_t> uniqueVertices{};
-
-	for (uint32_t i = 0; i < this->_mesh.getVertices().size(); i++)
+	for (uint32_t i = 0; i < this->_mesh.getFaceIndex().size(); i++)
 	{
 		Vertex vertex{};
 
-		vertex.pos = this->_mesh.getVertices()[i];
+		vertex.pos = this->_mesh.getMeshVertices()[i];
 		if (this->_mesh.getTexCoord().size() > i)
 			vertex.texCoord = this->_mesh.getTexCoord()[i];
+		else
+			vertex.texCoord = {0.0f, 0.0f};
+		vertex.color = {static_cast <float> (rand()) / static_cast <float> (RAND_MAX), static_cast <float> (rand()) / static_cast <float> (RAND_MAX), static_cast <float> (rand()) / static_cast <float> (RAND_MAX)};
 
-		vertex.color = {1.0f, 1.0f, 1.0f};
-
-		if (uniqueVertices.count(vertex) == 0)
-		{
-			uniqueVertices[vertex] = static_cast<uint32_t>(this->_vertices.size());
-			this->_vertices.push_back(vertex);
-		}
-
-		this->_indices.push_back(uniqueVertices[vertex]);
+		// if (uniqueVertices.count(vertex) == 0)
+		// {
+		// 	uniqueVertices[vertex] = static_cast<uint32_t>(this->_vertices.size());
+		// 	this->_vertices.push_back(vertex);
+		// }
+		this->_vertices.push_back(vertex);
+		this->_indices.push_back(this->_indices.size());
+		// this->_indices.push_back(uniqueVertices[vertex]);
 	}
 }
 
@@ -1060,9 +1062,9 @@ void	Display::updateUniformBuffer(uint32_t currentImage)
     float 	time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
 	UniformBufferObject ubo{};
-	ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	ubo.proj = glm::perspective(glm::radians(45.0f), this->_swapChainExtent.width / (float) this->_swapChainExtent.height, 0.1f, 10.0f);
+	ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	ubo.view = glm::lookAt(glm::vec3(10.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	ubo.proj = glm::perspective(glm::radians(45.0f), this->_swapChainExtent.width / (float) this->_swapChainExtent.height, 0.1f, 20.0f);
 	ubo.proj[1][1] *= -1; //glm fait pour opengl donc inverse x y
 
 	void*	data;
@@ -1208,7 +1210,7 @@ void	Display::createRenderPass()
 	
 	//SUBPASSES ET REFERENCES AUX ATTACHEMENTS
 	VkAttachmentReference colorAttachmentRef{};
-	colorAttachmentRef.attachment = 0; //parce qu'un seul attachement
+	colorAttachmentRef.attachment = 0;
 	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 	VkAttachmentReference	depthAttachmentRef{};
