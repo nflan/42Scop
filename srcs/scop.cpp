@@ -19,14 +19,20 @@
 #include <functional>
 #include <cstdlib>
 
+#include "../incs/Mesh.hpp"
 #include "../incs/Display.hpp"
 
-int main()
+int main(int ac, char **av)
 {
 	Display	app;
+	Mesh	mesh;
 
 	try
 	{
+		if (ac != 2)
+			throw std::invalid_argument("Invalid number of args!");
+		mesh.LoadObjModel(av[1]);
+		app.setMesh(mesh);
 		app.run();
 	} 
 	catch (const std::exception& e)

@@ -19,7 +19,7 @@ OBJB_DIR =		obj_bonus
 SRC_DIR =		srcs
 SRCB_DIR =		srcs_bonus
 
-INC =			$(addsuffix .hpp, $(addprefix $(INC_DIR), scop Display Vertex QueueFamilyIndices SwapChainSupportDetails tools))
+INC =			$(addsuffix .hpp, $(addprefix $(INC_DIR), scop Display Vertex QueueFamilyIndices SwapChainSupportDetails Mesh tools))
 
 SRC =			$(SRC_FT:%=$(SRC_DIR)/%.cpp)
 SRCB =			$(SRCB_FT:%=$(SRCB_DIR)/%.cpp)
@@ -31,7 +31,7 @@ CXX =	g++ $(CXXFLAGS)
 
 RM =	rm -fr
 
-CXXFLAGS =	-std=c++20 -O3# -DNDEBUG
+CXXFLAGS =	-std=c++20 -O3 -g3# -DNDEBUG
 
 GLM_INCLUDE_PATH = /mnt/nfs/homes/nflan/sgoinfre/bin/glm
 STB_INCLUDE_PATH = /mnt/nfs/homes/nflan/sgoinfre/bin/stb
@@ -48,7 +48,7 @@ LDFLAGS =	-lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi -I$(GLM_I
 #HOW TO LIST .c 
 #	ls -l | awk '{print $9}' | grep -E ".c$"| sed "s/\.c/ \\\/g" | sed '$s/\\$//g'
 
-SRC_FT =	scop Display Vertex
+SRC_FT =	scop Display Vertex Mesh
 
 SRCB_FT =
 

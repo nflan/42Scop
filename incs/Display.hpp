@@ -22,8 +22,8 @@
 #include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/gtc/matrix_transform.hpp>
 
 #include <chrono>
-#include <iostream>
 #include "tools.hpp"
+#include "Mesh.hpp"
 #include "QueueFamilyIndices.hpp"
 #include "SwapChainSupportDetails.hpp"
 #include "UniformBufferObject.hpp"
@@ -66,6 +66,7 @@ class Display
 		Display &	operator=( const Display& o );
 		~Display( void );
 
+		void	setMesh(Mesh &);
 		void	run( void );
 		bool	framebufferResized = false;
 	private:
@@ -130,6 +131,8 @@ class Display
 		void	generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
 		VkSampleCountFlagBits	getMaxUsableSampleCount(VkSampleCountFlags requestedSampleCount);
 		void	createColorResources();
+
+		Mesh						_mesh;
 
 		GLFWwindow*					_window;
 

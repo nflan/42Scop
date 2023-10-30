@@ -13,8 +13,6 @@
 #include "../incs/Display.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "/mnt/nfs/homes/nflan/sgoinfre/bin/stb/stb_image.h"
-#define TINYOBJLOADER_IMPLEMENTATION
-#include </mnt/nfs/homes/nflan/sgoinfre/bin/tinyobjloader/tiny_obj_loader.h>
 
 bool		QUIT = false;
 const int	MAX_FRAMES_IN_FLIGHT = 2;
@@ -95,7 +93,9 @@ Display &	Display::operator=( const Display& o )
 
 Display::~Display() {}
 
-void Display::run()
+void	Display::setMesh(Mesh & m) { this->_mesh = m; }
+
+void	Display::run()
 {
 	this->initWindow();
 	this->initVulkan();
@@ -359,43 +359,33 @@ void	Display::createColorResources()
 
 void	Display::loadModel()
 {
-	tinyobj::attrib_t	attrib;
-    std::vector<tinyobj::shape_t>	shapes;
-    std::vector<tinyobj::material_t>	materials;
-    std::string	warn, err;
+	// tinyobj::attrib_t	attrib;
+    // std::vector<tinyobj::shape_t>	shapes;
+    // std::vector<tinyobj::material_t>	materials;
+    // std::string	warn, err;
 
-    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, MODEL_PATH.c_str()))
-        throw std::runtime_error(warn + err);
+    // if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, MODEL_PATH.c_str()))
+    //     throw std::runtime_error(warn + err);
 
 	std::unordered_map<Vertex, uint32_t> uniqueVertices{};
 
-	for (const auto& shape : shapes)
+	for (uint32_t i = 0; i < this->_mesh.getVertices().size(); i++)
 	{
-		for (const auto& index : shape.mesh.indices)
+		Vertex vertex{};
+
+		vertex.pos = this->_mesh.getVertices()[i];
+		if (this->_mesh.getTexCoord().size() > i)
+			vertex.texCoord = this->_mesh.getTexCoord()[i];
+
+		vertex.color = {1.0f, 1.0f, 1.0f};
+
+		if (uniqueVertices.count(vertex) == 0)
 		{
-			Vertex vertex{};
-
-			vertex.pos = {
-				attrib.vertices[3 * index.vertex_index + 0],
-				attrib.vertices[3 * index.vertex_index + 1],
-				attrib.vertices[3 * index.vertex_index + 2]
-			};
-
-			vertex.texCoord = {
-				attrib.texcoords[2 * index.texcoord_index + 0],
-				1.0f - attrib.texcoords[2 * index.texcoord_index + 1]//textures a l'envers parce que OBJ part d'en bas a gauche et Vulkan en haut a gauche
-			};
-
-			vertex.color = {1.0f, 1.0f, 1.0f};
-
-			if (uniqueVertices.count(vertex) == 0)
-			{
-				uniqueVertices[vertex] = static_cast<uint32_t>(this->_vertices.size());
-				this->_vertices.push_back(vertex);
-			}
-
-			this->_indices.push_back(uniqueVertices[vertex]);
+			uniqueVertices[vertex] = static_cast<uint32_t>(this->_vertices.size());
+			this->_vertices.push_back(vertex);
 		}
+
+		this->_indices.push_back(uniqueVertices[vertex]);
 	}
 }
 
@@ -1341,9 +1331,9 @@ Tout autre mode que fill doit être activé lors de la mise en place du logical 
 	//MULTISAMPLING (on y repassera plus tard)
 	VkPipelineMultisampleStateCreateInfo multisampling{};
 	multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-	multisampling.sampleShadingEnable = VK_FALSE;
+	multisampling.sampleShadingEnable = VK_TRUE;
 	multisampling.rasterizationSamples = this->_msaaSamples;
-	multisampling.minSampleShading = 1.0f; // Optionnel
+	multisampling.minSampleShading = 0.2f; // Fraction minimale pour le sample shading; plus proche de 1 lisse d'autant plus
 	multisampling.pSampleMask = nullptr; // Optionnel
 	multisampling.alphaToCoverageEnable = VK_FALSE; // Optionnel
 	multisampling.alphaToOneEnable = VK_FALSE; // Optionnel
@@ -1614,6 +1604,7 @@ void	Display::createLogicalDevice()
 
 	VkPhysicalDeviceFeatures deviceFeatures{};
 	deviceFeatures.samplerAnisotropy = VK_TRUE;
+	deviceFeatures.sampleRateShading = VK_TRUE; // Activation du sample shading pour le device
 
 	VkDeviceCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
