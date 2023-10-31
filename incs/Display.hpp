@@ -24,8 +24,8 @@
 #include <chrono>
 #include "tools.hpp"
 #include "Mesh.hpp"
-#include "QueueFamilyIndices.hpp"
-#include "SwapChainSupportDetails.hpp"
+#include "Window.hpp"
+#include "Device.hpp"
 #include "UniformBufferObject.hpp"
 #include "Vertex.hpp"
 #include <vector>
@@ -45,19 +45,6 @@ const uint32_t	HEIGHT = 600;
 const std::string	MODEL_PATH = "models/viking_room.obj";
 const std::string	TEXTURE_PATH = "textures/viking_room.png";
 
-const std::vector<const char*> deviceExtensions = {
-	VK_KHR_SWAPCHAIN_EXTENSION_NAME
-};
-
-const std::vector<const char*> validationLayers = {
-	"VK_LAYER_KHRONOS_validation"
-};
-#ifdef NDEBUG
-constexpr bool enableValidationLayers = false;
-#else
-constexpr bool enableValidationLayers = true;
-#endif
-
 class Display
 {
 	public:
@@ -70,23 +57,21 @@ class Display
 		void	run( void );
 		bool	framebufferResized = false;
 	private:
-		void	initWindow( void ); // initWindow
 		void	initVulkan( void ); // initImg
 		void	mainLoop( void ); // boucle
 		void	cleanup( void ); // clean
-		void	createInstance( void ); // create instance vulkan
-		bool	checkValidationLayerSupport( void ); //check layer (protections)
-		std::vector<const char*>	getRequiredExtensions(); // recup extensions debug
-		void	setupDebugMessenger( void ); // debug
-		void	populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
-		void	pickPhysicalDevice(); // recuperations de toutes les cg
-		bool	isDeviceSuitable(VkPhysicalDevice device); // voir si la cg correspond a ce qu'on va faire
-		int		rateDeviceSuitability(VkPhysicalDevice device); // score en fonction des fonctionnalites de la cg
-		QueueFamilyIndices	findQueueFamilies(VkPhysicalDevice device); // trouver la famille de queue "graphique"
-		void	createLogicalDevice();
-		void	createSurface( void ); // creation de la surface de fenetre multiplateforme
-		bool	checkDeviceExtensionSupport(VkPhysicalDevice device);
-		SwapChainSupportDetails	querySwapChainSupport(VkPhysicalDevice device);
+		// void	createInstance( void ); // create instance vulkan
+		// bool	checkValidationLayerSupport( void ); //check layer (protections)
+		// std::vector<const char*>	getRequiredExtensions(); // recup extensions debug
+		// void	setupDebugMessenger( void ); // debug
+		// void	populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
+		// void	pickPhysicalDevice(); // recuperations de toutes les cg
+		// bool	isDeviceSuitable(VkPhysicalDevice device); // voir si la cg correspond a ce qu'on va faire
+		// int		rateDeviceSuitability(VkPhysicalDevice device); // score en fonction des fonctionnalites de la cg
+		// QueueFamilyIndices	findQueueFamilies(VkPhysicalDevice device); // trouver la famille de queue "graphique"
+		// void	createLogicalDevice();
+		// bool	checkDeviceExtensionSupport(VkPhysicalDevice device);
+		// SwapChainSupportDetails	querySwapChainSupport(VkPhysicalDevice device);
 		VkSurfaceFormatKHR	chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 		VkPresentModeKHR	chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
 		VkExtent2D	chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities); // choisir le format de l'image, souvent taille de la fenetre, le width et height sont limites par cette derniere, mais s'ils sont en uint32 max, alors on peut choisir ce qu'on desire
@@ -109,42 +94,44 @@ class Display
 		void 	updateUniformBuffer(uint32_t currentImage);
 		void	createDescriptorPool();
 		void	createDescriptorSets();
-		uint32_t	findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-		void 	createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-		void 	copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+		// uint32_t	findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+		// void 	createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+		// void 	copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
 		//images mais a voir pour changer plus tard
 		void	createTextureImage();
 		void	createImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
-		VkCommandBuffer	beginSingleTimeCommands();
-		void	endSingleTimeCommands(VkCommandBuffer commandBuffer);
+		// VkCommandBuffer	beginSingleTimeCommands();
+		// void	endSingleTimeCommands(VkCommandBuffer commandBuffer);
 		void	transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
-		void	copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+		// void	copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 		void	createTextureImageView();
 		VkImageView	createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipl);
 		void	createTextureSampler();
 		void	createDepthResources();
-		VkFormat	findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
-		VkFormat	findDepthFormat();
+		// VkFormat	findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+		// VkFormat	findDepthFormat();
 		bool	hasStencilComponent(VkFormat format);
 		void	loadModel();
 		void	generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
-		VkSampleCountFlagBits	getMaxUsableSampleCount(VkSampleCountFlags requestedSampleCount);
+		// VkSampleCountFlagBits	getMaxUsableSampleCount(VkSampleCountFlags requestedSampleCount);
 		void	createColorResources();
 
 		Mesh						_mesh;
 
-		GLFWwindow*					_window;
+		ft_Window					_window{WIDTH, HEIGHT, "FT_SCOP"};
+		// GLFWwindow*				_window;
 
-		VkInstance					_instance;
-		VkDebugUtilsMessengerEXT	_debugMessenger;
-		VkSurfaceKHR				_surface;
+		// VkInstance					_instance;
+		// VkDebugUtilsMessengerEXT	_debugMessenger;
+		// VkSurfaceKHR				_surface;
 
-		VkPhysicalDevice			_physicalDevice = VK_NULL_HANDLE; // auto detruit a la fin de l'instance
-		VkDevice					_device; // specifier ce dont nous allons avoir besoin pour logical device
+		// VkPhysicalDevice			_physicalDevice = VK_NULL_HANDLE; // auto detruit a la fin de l'instance
+		// VkDevice					_device; // specifier ce dont nous allons avoir besoin pour logical device
 
-		VkQueue						_graphicsQueue; // auto detruit au destroy de vkdevice
-		VkQueue						_presentQueue;
+		// VkQueue						_graphicsQueue; // auto detruit au destroy de vkdevice
+		// VkQueue						_presentQueue;
+		ft_Device					_device{_window};
 
 		VkSwapchainKHR				_swapChain;
 		std::vector<VkImage>		_swapChainImages; // images de la swap chain (auto del avec la swapchain)
@@ -161,7 +148,7 @@ class Display
 		VkPipeline					_graphicsPipeline;
 
 		//COMMAND POOLS
-		VkCommandPool				_commandPool;
+		// VkCommandPool				_commandPool;
 
 		//VertexBuffers
 		std::vector<Vertex>			_vertices;
@@ -201,7 +188,7 @@ class Display
 		VkImageView					_depthImageView;
 
 		//Multisampling -> anti-aliasing
-		VkSampleCountFlagBits		_msaaSamples = VK_SAMPLE_COUNT_1_BIT;//set a 1 car le minimum, comme ne pas s'en servir
+		// VkSampleCountFlagBits		_msaaSamples = VK_SAMPLE_COUNT_1_BIT;//set a 1 car le minimum, comme ne pas s'en servir
 		VkImage						_colorImage;
 		VkDeviceMemory				_colorImageMemory;
 		VkImageView					_colorImageView;
