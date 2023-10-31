@@ -26,6 +26,7 @@
 #include "Mesh.hpp"
 #include "Window.hpp"
 #include "Device.hpp"
+#include "Renderer.hpp"
 #include "UniformBufferObject.hpp"
 #include "Vertex.hpp"
 #include <vector>
@@ -72,20 +73,20 @@ class Display
 		// void	createLogicalDevice();
 		// bool	checkDeviceExtensionSupport(VkPhysicalDevice device);
 		// SwapChainSupportDetails	querySwapChainSupport(VkPhysicalDevice device);
-		VkSurfaceFormatKHR	chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-		VkPresentModeKHR	chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
-		VkExtent2D	chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities); // choisir le format de l'image, souvent taille de la fenetre, le width et height sont limites par cette derniere, mais s'ils sont en uint32 max, alors on peut choisir ce qu'on desire
-		void	createSwapChain(); //recup les informations des precedentes fonctions sur la swap
-		void	createImageViews();
+		// VkSurfaceFormatKHR	chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+		// VkPresentModeKHR	chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
+		// VkExtent2D	chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities); // choisir le format de l'image, souvent taille de la fenetre, le width et height sont limites par cette derniere, mais s'ils sont en uint32 max, alors on peut choisir ce qu'on desire
+		// void	createSwapChain(); //recup les informations des precedentes fonctions sur la swap
+		// void	createImageViews();
 		void	createDescriptorSetLayout();
 		void	createGraphicsPipeline(); //https://vulkan-tutorial.com/fr/Dessiner_un_Display/Pipeline_graphique_basique/Introduction
 		VkShaderModule	createShaderModule(const std::vector<char>& code); //avant d'envoyer les infos des shaders dans la pipeline
-		void	createRenderPass();//https://vulkan-tutorial.com/fr/Dessiner_un_Display/Pipeline_graphique_basique/Render_pass
-		void	createFramebuffers();
+		// void	createRenderPass();//https://vulkan-tutorial.com/fr/Dessiner_un_Display/Pipeline_graphique_basique/Render_pass
+		// void	createFramebuffers();
 		void	createCommandPool();
 		void	createCommandBuffers();
 		void	drawFrame();
-		void	createSyncObjects();
+		// void	createSyncObjects();
 		void	recreateSwapChain();
 		void	cleanupSwapChain();
 		void	createVertexBuffer();
@@ -108,47 +109,34 @@ class Display
 		void	createTextureImageView();
 		VkImageView	createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipl);
 		void	createTextureSampler();
-		void	createDepthResources();
+		// void	createDepthResources();
 		// VkFormat	findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 		// VkFormat	findDepthFormat();
 		bool	hasStencilComponent(VkFormat format);
 		void	loadModel();
 		void	generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
 		// VkSampleCountFlagBits	getMaxUsableSampleCount(VkSampleCountFlags requestedSampleCount);
-		void	createColorResources();
+		// void	createColorResources();
 
 		Mesh						_mesh;
 
 		ft_Window					_window{WIDTH, HEIGHT, "FT_SCOP"};
-		// GLFWwindow*				_window;
-
-		// VkInstance					_instance;
-		// VkDebugUtilsMessengerEXT	_debugMessenger;
-		// VkSurfaceKHR				_surface;
-
-		// VkPhysicalDevice			_physicalDevice = VK_NULL_HANDLE; // auto detruit a la fin de l'instance
-		// VkDevice					_device; // specifier ce dont nous allons avoir besoin pour logical device
-
-		// VkQueue						_graphicsQueue; // auto detruit au destroy de vkdevice
-		// VkQueue						_presentQueue;
 		ft_Device					_device{_window};
+		ft_Renderer					_renderer{_window, _device};
 
-		VkSwapchainKHR				_swapChain;
-		std::vector<VkImage>		_swapChainImages; // images de la swap chain (auto del avec la swapchain)
-		VkFormat					_swapChainImageFormat;
-		VkExtent2D					_swapChainExtent;
-		std::vector<VkImageView>	_swapChainImageViews;
+		// VkSwapchainKHR				_swapChain;
+		// std::vector<VkImage>		_swapChainImages; // images de la swap chain (auto del avec la swapchain)
+		// VkFormat					_swapChainImageFormat;
+		// VkExtent2D					_swapChainExtent;
+		// std::vector<VkImageView>	_swapChainImageViews;
 		//FRAMEBUFFERS
-		std::vector<VkFramebuffer>	_swapChainFramebuffers;
+		// std::vector<VkFramebuffer>	_swapChainFramebuffers;
 
 		//RENDER PASS
-		VkRenderPass				_renderPass;
+		// VkRenderPass				_renderPass;
 		VkDescriptorSetLayout 		_descriptorSetLayout;
 		VkPipelineLayout			_pipelineLayout;
-		VkPipeline					_graphicsPipeline;
-
-		//COMMAND POOLS
-		// VkCommandPool				_commandPool;
+		// VkPipeline					_graphicsPipeline;
 
 		//VertexBuffers
 		std::vector<Vertex>			_vertices;
@@ -168,11 +156,11 @@ class Display
 		std::vector<VkCommandBuffer>	_commandBuffers;
 
 		//SEMAPHORES
-		std::vector<VkSemaphore>	_imageAvailableSemaphores;
-		std::vector<VkSemaphore>	_renderFinishedSemaphores;
-		std::vector<VkFence>		_inFlightFences;//les fences permettent au programme d'attendre l'exécution complète d'une opération. Nous allons créer une fence pour chaque frame
-		std::vector<VkFence>		_imagesInFlight;
-		size_t						_currentFrame = 0;
+		// std::vector<VkSemaphore>	_imageAvailableSemaphores;
+		// std::vector<VkSemaphore>	_renderFinishedSemaphores;
+		// std::vector<VkFence>		_inFlightFences;//les fences permettent au programme d'attendre l'exécution complète d'une opération. Nous allons créer une fence pour chaque frame
+		// std::vector<VkFence>		_imagesInFlight;
+		// size_t						_currentFrame = 0;
 
 		//textures d'image (pixels -> texels)
 		uint32_t					_mipLevels;
@@ -183,15 +171,14 @@ class Display
 		VkSampler					_textureSampler;
 
 		//Image de profondeur et view
-		VkImage						_depthImage;
-		VkDeviceMemory				_depthImageMemory;
-		VkImageView					_depthImageView;
+		// VkImage						_depthImage;
+		// VkDeviceMemory				_depthImageMemory;
+		// VkImageView					_depthImageView;
 
-		//Multisampling -> anti-aliasing
-		// VkSampleCountFlagBits		_msaaSamples = VK_SAMPLE_COUNT_1_BIT;//set a 1 car le minimum, comme ne pas s'en servir
-		VkImage						_colorImage;
-		VkDeviceMemory				_colorImageMemory;
-		VkImageView					_colorImageView;
+		// //Multisampling -> anti-aliasing
+		// VkImage						_colorImage;
+		// VkDeviceMemory				_colorImageMemory;
+		// VkImageView					_colorImageView;
 
 };
 

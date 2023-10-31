@@ -95,15 +95,15 @@ void	Display::initVulkan( void )
 	// this->_window.createWindowSurface(this->_instance, &this->_surface);
 	// this->pickPhysicalDevice();
 	// this->createLogicalDevice();
-	this->createSwapChain();
-	this->createImageViews();
-	this->createRenderPass();
+	// this->createSwapChain();
+	// this->createImageViews();
+	// this->createRenderPass();
 	this->createDescriptorSetLayout();
 	this->createGraphicsPipeline();
 	// this->createCommandPool();
-	this->createColorResources();
-	this->createDepthResources();
-	this->createFramebuffers();
+	// this->createColorResources();
+	// this->createDepthResources();
+	// this->createFramebuffers();
 	this->createTextureImage();
 	this->createTextureImageView();
 	this->createTextureSampler();
@@ -114,7 +114,7 @@ void	Display::initVulkan( void )
 	this->createDescriptorPool();
 	this->createDescriptorSets();
 	this->createCommandBuffers();
-	this->createSyncObjects();
+	// this->createSyncObjects();
 }
 
 void	Display::mainLoop( void )
@@ -133,50 +133,50 @@ void	Display::mainLoop( void )
 	vkDeviceWaitIdle(this->_device.device()); //attente de la fin des semaphores pour quitter
 }
 
-void	Display::recreateSwapChain()
-{
-	// Quand fenetre minimisee, mise en pause du rendu
-	int	width = 0;
-	int	height = 0;
-	while (width == 0 || height == 0)
-	{
-		glfwGetFramebufferSize(this->_window.getWindow(), &width, &height);
-		glfwWaitEvents();
-	}
-	//
+// void	Display::recreateSwapChain()
+// {
+// 	// Quand fenetre minimisee, mise en pause du rendu
+// 	int	width = 0;
+// 	int	height = 0;
+// 	while (width == 0 || height == 0)
+// 	{
+// 		glfwGetFramebufferSize(this->_window.getWindow(), &width, &height);
+// 		glfwWaitEvents();
+// 	}
+// 	//
 
-	vkDeviceWaitIdle(this->_device.device());
+// 	vkDeviceWaitIdle(this->_device.device());
 
-	this->cleanupSwapChain();
+// 	this->cleanupSwapChain();
 
-	this->createSwapChain();
-	this->createImageViews();
-	this->createRenderPass();
-	this->createGraphicsPipeline();
-	this->createColorResources();
-	this->createDepthResources();
-	this->createFramebuffers();
-	this->createUniformBuffers();
-	this->createDescriptorPool();
-	this->createDescriptorSets();
-	this->createCommandBuffers();
-}
+// 	// this->createSwapChain();
+// 	// this->createImageViews();
+// 	// this->createRenderPass();
+// 	this->createGraphicsPipeline();
+// 	// this->createColorResources();
+// 	// this->createDepthResources();
+// 	// this->createFramebuffers();
+// 	this->createUniformBuffers();
+// 	this->createDescriptorPool();
+// 	this->createDescriptorSets();
+// 	// this->createCommandBuffers();
+// }
 
 void	Display::cleanupSwapChain()
 {
-	vkDestroyImageView(this->_device.device(), this->_depthImageView, nullptr);
-    vkDestroyImage(this->_device.device(), this->_depthImage, nullptr);
-    vkFreeMemory(this->_device.device(), this->_depthImageMemory, nullptr);
+	// vkDestroyImageView(this->_device.device(), this->_depthImageView, nullptr);
+    // vkDestroyImage(this->_device.device(), this->_depthImage, nullptr);
+    // vkFreeMemory(this->_device.device(), this->_depthImageMemory, nullptr);
 
-	vkDestroyImageView(this->_device.device(), this->_colorImageView, nullptr);
-    vkDestroyImage(this->_device.device(), this->_colorImage, nullptr);
-    vkFreeMemory(this->_device.device(), this->_colorImageMemory, nullptr);
+	// vkDestroyImageView(this->_device.device(), this->_colorImageView, nullptr);
+    // vkDestroyImage(this->_device.device(), this->_colorImage, nullptr);
+    // vkFreeMemory(this->_device.device(), this->_colorImageMemory, nullptr);
 
-	for (size_t i = 0; i < this->_swapChainFramebuffers.size(); i++) {
-		vkDestroyFramebuffer(this->_device.device(), this->_swapChainFramebuffers[i], nullptr);
-	}
+	// for (size_t i = 0; i < this->_swapChainFramebuffers.size(); i++) {
+	// 	vkDestroyFramebuffer(this->_device.device(), this->_swapChainFramebuffers[i], nullptr);
+	// }
 
-	vkFreeCommandBuffers(this->_device.device(), this->_device.getCommandPool(), static_cast<uint32_t>(this->_commandBuffers.size()), this->_commandBuffers.data());
+	// vkFreeCommandBuffers(this->_device.device(), this->_device.getCommandPool(), static_cast<uint32_t>(this->_commandBuffers.size()), this->_commandBuffers.data());
     
 	for (size_t i = 0; i < this->_swapChainImages.size(); i++) {
         vkDestroyBuffer(this->_device.device(), this->_uniformBuffers[i], nullptr);
@@ -186,14 +186,14 @@ void	Display::cleanupSwapChain()
     vkDestroyDescriptorPool(this->_device.device(), this->_descriptorPool, nullptr);
 	this->_descriptorPool = nullptr;
 	
-	vkDestroyPipeline(this->_device.device(), this->_graphicsPipeline, nullptr);
+	// vkDestroyPipeline(this->_device.device(), this->_graphicsPipeline, nullptr);
 	vkDestroyPipelineLayout(this->_device.device(), this->_pipelineLayout, nullptr);
-	vkDestroyRenderPass(this->_device.device(), this->_renderPass, nullptr);
+	// vkDestroyRenderPass(this->_device.device(), this->_renderPass, nullptr);
 
-	for (size_t i = 0; i < this->_swapChainImageViews.size(); i++)
-		vkDestroyImageView(this->_device.device(), this->_swapChainImageViews[i], nullptr);
+	// for (size_t i = 0; i < this->_swapChainImageViews.size(); i++)
+	// 	vkDestroyImageView(this->_device.device(), this->_swapChainImageViews[i], nullptr);
 
-	vkDestroySwapchainKHR(this->_device.device(), this->_swapChain, nullptr);
+	// vkDestroySwapchainKHR(this->_device.device(), this->_swapChain, nullptr);
 }
 
 void	Display::cleanup( void )
@@ -211,18 +211,18 @@ void	Display::cleanup( void )
 
 	vkDestroyDescriptorSetLayout(this->_device.device(), this->_descriptorSetLayout, nullptr);
 
-    vkDestroyBuffer(this->_device.device(), this->_indexBuffer, nullptr);
-    vkFreeMemory(this->_device.device(), this->_indexBufferMemory, nullptr);
+    // vkDestroyBuffer(this->_device.device(), this->_indexBuffer, nullptr);
+    // vkFreeMemory(this->_device.device(), this->_indexBufferMemory, nullptr);
 
 	vkDestroyBuffer(this->_device.device(), this->_vertexBuffer, nullptr);
 	vkFreeMemory(this->_device.device(), this->_vertexBufferMemory, nullptr);
 
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-	{
-		vkDestroySemaphore(this->_device.device(), this->_renderFinishedSemaphores[i], nullptr);
-		vkDestroySemaphore(this->_device.device(), this->_imageAvailableSemaphores[i], nullptr);
-		vkDestroyFence(this->_device.device(), this->_inFlightFences[i], nullptr);
-	}
+	// for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+	// {
+	// 	vkDestroySemaphore(this->_device.device(), this->_renderFinishedSemaphores[i], nullptr);
+	// 	vkDestroySemaphore(this->_device.device(), this->_imageAvailableSemaphores[i], nullptr);
+	// 	vkDestroyFence(this->_device.device(), this->_inFlightFences[i], nullptr);
+	// }
 
 	// vkDestroyCommandPool(this->_device.device(), this->_commandPool, nullptr);
 
@@ -314,13 +314,13 @@ void	Display::cleanup( void )
 //     return VK_SAMPLE_COUNT_1_BIT;
 // }
 
-void	Display::createColorResources()
-{
-	VkFormat	colorFormat = this->_swapChainImageFormat;
+// void	Display::createColorResources()
+// {
+// 	VkFormat	colorFormat = this->_swapChainImageFormat;
 
-    createImage(this->_swapChainExtent.width, this->_swapChainExtent.height, 1, this->_device.getMsaaSamples(), colorFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, this->_colorImage, this->_colorImageMemory);
-    this->_colorImageView = createImageView(this->_colorImage, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
-}
+//     createImage(this->_swapChainExtent.width, this->_swapChainExtent.height, 1, this->_device.getMsaaSamples(), colorFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, this->_colorImage, this->_colorImageMemory);
+//     this->_colorImageView = createImageView(this->_colorImage, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
+// }
 
 void	Display::loadModel()
 {
@@ -418,14 +418,14 @@ bool	Display::hasStencilComponent(VkFormat format)
     return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }
 
-void	Display::createDepthResources()
-{
-	VkFormat	depthFormat = this->_device.findDepthFormat();
+// void	Display::createDepthResources()
+// {
+// 	VkFormat	depthFormat = this->_device.findDepthFormat();
 
-	this->createImage(this->_swapChainExtent.width, this->_swapChainExtent.height, 1, this->_device.getMsaaSamples(), depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, this->_depthImage, this->_depthImageMemory);
+// 	this->createImage(this->_swapChainExtent.width, this->_swapChainExtent.height, 1, this->_device.getMsaaSamples(), depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, this->_depthImage, this->_depthImageMemory);
 
-	this->_depthImageView = this->createImageView(this->_depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1);
-}
+// 	this->_depthImageView = this->createImageView(this->_depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1);
+// }
 
 void	Display::createTextureImage()
 {
@@ -920,27 +920,27 @@ void	Display::createVertexBuffer()
 	vkFreeMemory(this->_device.device(), stagingBufferMemory, nullptr);
 }
 
-void	Display::createSyncObjects()
-{
-	this->_imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-	this->_renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-	this->_inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
-	this->_imagesInFlight.resize(this->_swapChainImages.size(), VK_NULL_HANDLE);
+// void	Display::createSyncObjects()
+// {
+// 	this->_imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+// 	this->_renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+// 	this->_inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+// 	this->_imagesInFlight.resize(this->_swapChainImages.size(), VK_NULL_HANDLE);
 
-	VkSemaphoreCreateInfo semaphoreInfo{};
-	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+// 	VkSemaphoreCreateInfo semaphoreInfo{};
+// 	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-	VkFenceCreateInfo fenceInfo{};
-	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+// 	VkFenceCreateInfo fenceInfo{};
+// 	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+// 	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-	{
-		if (vkCreateSemaphore(this->_device.device(), &semaphoreInfo, nullptr, &this->_imageAvailableSemaphores[i]) != VK_SUCCESS || vkCreateSemaphore(this->_device.device(), &semaphoreInfo, nullptr, &this->_renderFinishedSemaphores[i]) != VK_SUCCESS || vkCreateFence(this->_device.device(), &fenceInfo, nullptr, &this->_inFlightFences[i]) != VK_SUCCESS)
+// 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+// 	{
+// 		if (vkCreateSemaphore(this->_device.device(), &semaphoreInfo, nullptr, &this->_imageAvailableSemaphores[i]) != VK_SUCCESS || vkCreateSemaphore(this->_device.device(), &semaphoreInfo, nullptr, &this->_renderFinishedSemaphores[i]) != VK_SUCCESS || vkCreateFence(this->_device.device(), &fenceInfo, nullptr, &this->_inFlightFences[i]) != VK_SUCCESS)
 
-			throw std::runtime_error("échec de la création des objets de synchronisation pour une frame!");
-	}
-}
+// 			throw std::runtime_error("échec de la création des objets de synchronisation pour une frame!");
+// 	}
+// }
 
 void	Display::drawFrame()
 {
@@ -1099,108 +1099,108 @@ firstInstance : utilisé comme décalage pour l'instanced rendering et définit 
 	}
 }
 
-void	Display::createFramebuffers()
-{
-	this->_swapChainFramebuffers.resize(this->_swapChainImageViews.size());
-	for (size_t i = 0; i < this->_swapChainImageViews.size(); i++) {
-		std::array<VkImageView, 3> attachments = {
-			this->_colorImageView,
-    		this->_depthImageView,
-    		this->_swapChainImageViews[i]
-		};
+// void	Display::createFramebuffers()
+// {
+// 	this->_swapChainFramebuffers.resize(this->_swapChainImageViews.size());
+// 	for (size_t i = 0; i < this->_swapChainImageViews.size(); i++) {
+// 		std::array<VkImageView, 3> attachments = {
+// 			this->_colorImageView,
+//     		this->_depthImageView,
+//     		this->_swapChainImageViews[i]
+// 		};
 
-		VkFramebufferCreateInfo framebufferInfo{};
-		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		framebufferInfo.renderPass = this->_renderPass;
-		framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-		framebufferInfo.pAttachments = attachments.data();
-		framebufferInfo.width = this->_swapChainExtent.width;
-		framebufferInfo.height = this->_swapChainExtent.height;
-		framebufferInfo.layers = 1; //car une seule couche dans la swap chain
+// 		VkFramebufferCreateInfo framebufferInfo{};
+// 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+// 		framebufferInfo.renderPass = this->_renderPass;
+// 		framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+// 		framebufferInfo.pAttachments = attachments.data();
+// 		framebufferInfo.width = this->_swapChainExtent.width;
+// 		framebufferInfo.height = this->_swapChainExtent.height;
+// 		framebufferInfo.layers = 1; //car une seule couche dans la swap chain
 
-		if (vkCreateFramebuffer(this->_device.device(), &framebufferInfo, nullptr, &this->_swapChainFramebuffers[i]) != VK_SUCCESS)
-			throw std::runtime_error("échec de la création d'un framebuffer!");
-	}
-}
+// 		if (vkCreateFramebuffer(this->_device.device(), &framebufferInfo, nullptr, &this->_swapChainFramebuffers[i]) != VK_SUCCESS)
+// 			throw std::runtime_error("échec de la création d'un framebuffer!");
+// 	}
+// }
 
-void	Display::createRenderPass()
-{
-	//DESCRIPTION DE L'ATTACHEMENT
-	VkAttachmentDescription colorAttachment{};
-	colorAttachment.format = this->_swapChainImageFormat; // qu'un attachement de couleur-> image swap chain
-	colorAttachment.samples = this->_device.getMsaaSamples();
-	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; //action de l'attachement avant rendu (enum)
-	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE; // action de l'attachement apres rendu (enum)
-	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;//stencil? on n'utilise pas
-	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;//stencil? on n'utilise pas
-	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+// void	Display::createRenderPass()
+// {
+// 	//DESCRIPTION DE L'ATTACHEMENT
+// 	VkAttachmentDescription colorAttachment{};
+// 	colorAttachment.format = this->_swapChainImageFormat; // qu'un attachement de couleur-> image swap chain
+// 	colorAttachment.samples = this->_device.getMsaaSamples();
+// 	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; //action de l'attachement avant rendu (enum)
+// 	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE; // action de l'attachement apres rendu (enum)
+// 	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;//stencil? on n'utilise pas
+// 	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;//stencil? on n'utilise pas
+// 	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+// 	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-	//Depth Attachment
-	VkAttachmentDescription	depthAttachment{};
-	depthAttachment.format = this->_device.findDepthFormat();
-	depthAttachment.samples = this->_device.getMsaaSamples();
-	depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+// 	//Depth Attachment
+// 	VkAttachmentDescription	depthAttachment{};
+// 	depthAttachment.format = this->_device.findDepthFormat();
+// 	depthAttachment.samples = this->_device.getMsaaSamples();
+// 	depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+// 	depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+// 	depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+// 	depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+// 	depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+// 	depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-    VkAttachmentDescription colorAttachmentResolve{};
-    colorAttachmentResolve.format = this->_swapChainImageFormat;
-    colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
-    colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+//     VkAttachmentDescription colorAttachmentResolve{};
+//     colorAttachmentResolve.format = this->_swapChainImageFormat;
+//     colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
+//     colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+//     colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+//     colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+//     colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+//     colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+//     colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 	
-	//SUBPASSES ET REFERENCES AUX ATTACHEMENTS
-	VkAttachmentReference colorAttachmentRef{};
-	colorAttachmentRef.attachment = 0;
-	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+// 	//SUBPASSES ET REFERENCES AUX ATTACHEMENTS
+// 	VkAttachmentReference colorAttachmentRef{};
+// 	colorAttachmentRef.attachment = 0;
+// 	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-	VkAttachmentReference	depthAttachmentRef{};
-	depthAttachmentRef.attachment = 1;
-	depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+// 	VkAttachmentReference	depthAttachmentRef{};
+// 	depthAttachmentRef.attachment = 1;
+// 	depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-	VkAttachmentReference colorAttachmentResolveRef{};
-    colorAttachmentResolveRef.attachment = 2;
-    colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+// 	VkAttachmentReference colorAttachmentResolveRef{};
+//     colorAttachmentResolveRef.attachment = 2;
+//     colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-	VkSubpassDescription	subpass{};
-	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-	subpass.colorAttachmentCount = 1;
-	subpass.pColorAttachments = &colorAttachmentRef;
-	subpass.pDepthStencilAttachment = &depthAttachmentRef;
-	subpass.pResolveAttachments = &colorAttachmentResolveRef;
+// 	VkSubpassDescription	subpass{};
+// 	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+// 	subpass.colorAttachmentCount = 1;
+// 	subpass.pColorAttachments = &colorAttachmentRef;
+// 	subpass.pDepthStencilAttachment = &depthAttachmentRef;
+// 	subpass.pResolveAttachments = &colorAttachmentResolveRef;
 
-	//Subpass dependencies
-	VkSubpassDependency	dependency{};
-	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-	dependency.dstSubpass = 0; // dst doit etre > src sauf si VK_SUBPASS_EXTERNAL (vu que c'est avant la 0)
-	dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	dependency.srcAccessMask = 0;
-	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+// 	//Subpass dependencies
+// 	VkSubpassDependency	dependency{};
+// 	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+// 	dependency.dstSubpass = 0; // dst doit etre > src sauf si VK_SUBPASS_EXTERNAL (vu que c'est avant la 0)
+// 	dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+// 	dependency.srcAccessMask = 0;
+// 	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+// 	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-	//PASSE DE RENDU
-	std::array<VkAttachmentDescription, 3> attachments = {colorAttachment, depthAttachment, colorAttachmentResolve};
+// 	//PASSE DE RENDU
+// 	std::array<VkAttachmentDescription, 3> attachments = {colorAttachment, depthAttachment, colorAttachmentResolve};
 
-	VkRenderPassCreateInfo	renderPassInfo{};
-	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-	renderPassInfo.pAttachments = attachments.data();
-	renderPassInfo.subpassCount = 1;
-	renderPassInfo.pSubpasses = &subpass;
-	renderPassInfo.dependencyCount = 1;
-	renderPassInfo.pDependencies = &dependency;
+// 	VkRenderPassCreateInfo	renderPassInfo{};
+// 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+// 	renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+// 	renderPassInfo.pAttachments = attachments.data();
+// 	renderPassInfo.subpassCount = 1;
+// 	renderPassInfo.pSubpasses = &subpass;
+// 	renderPassInfo.dependencyCount = 1;
+// 	renderPassInfo.pDependencies = &dependency;
 
-	if (vkCreateRenderPass(this->_device.device(), &renderPassInfo, nullptr, &this->_renderPass) != VK_SUCCESS)
-		throw std::runtime_error("échec de la création de la render pass!");
-}
+// 	if (vkCreateRenderPass(this->_device.device(), &renderPassInfo, nullptr, &this->_renderPass) != VK_SUCCESS)
+// 		throw std::runtime_error("échec de la création de la render pass!");
+// }
 
 void	Display::createGraphicsPipeline()
 {
@@ -1374,8 +1374,8 @@ Tout autre mode que fill doit être activé lors de la mise en place du logical 
 	if (vkCreateGraphicsPipelines(this->_device.device(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &this->_graphicsPipeline) != VK_SUCCESS)
 		throw std::runtime_error("échec de la création de la pipeline graphique!");
 
-	vkDestroyShaderModule(this->_device.device(), vertShaderModule, nullptr);
-	vkDestroyShaderModule(this->_device.device(), fragShaderModule, nullptr);
+	// vkDestroyShaderModule(this->_device.device(), vertShaderModule, nullptr);
+	// vkDestroyShaderModule(this->_device.device(), fragShaderModule, nullptr);
 }
 
 VkShaderModule	Display::createShaderModule(const std::vector<char>& code) // buffer contenant le bytecode et créera un VkShaderModule avec ce code.
@@ -1426,99 +1426,98 @@ void	Display::createTextureImageView()
     this->_textureImageView = this->createImageView(this->_textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, this->_mipLevels);
 }
 
-void	Display::createSwapChain()
-{
-	SwapChainSupportDetails	swapChainSupport = this->_device.querySwapChainSupport(this->_device.getPhysicalDevice());
+// void	Display::createSwapChain()
+// {
+// 	SwapChainSupportDetails	swapChainSupport = this->_device.querySwapChainSupport(this->_device.getPhysicalDevice());
 
-	VkSurfaceFormatKHR	surfaceFormat = this->chooseSwapSurfaceFormat(swapChainSupport.formats);
-	VkPresentModeKHR	presentMode = this->chooseSwapPresentMode(swapChainSupport.presentModes);
-	VkExtent2D	extent = this->chooseSwapExtent(swapChainSupport.capabilities);
+// 	VkSurfaceFormatKHR	surfaceFormat = this->chooseSwapSurfaceFormat(swapChainSupport.formats);
+// 	VkPresentModeKHR	presentMode = this->chooseSwapPresentMode(swapChainSupport.presentModes);
+// 	VkExtent2D	extent = this->chooseSwapExtent(swapChainSupport.capabilities);
 
-	uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
-	if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
-		imageCount = swapChainSupport.capabilities.maxImageCount;
-	}
+// 	uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
+// 	if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount)
+// 		imageCount = swapChainSupport.capabilities.maxImageCount;
 
-	VkSwapchainCreateInfoKHR createInfo{};
-	createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-	createInfo.surface = this->_device.getSurface();
+// 	VkSwapchainCreateInfoKHR	createInfo{};
+// 	createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+// 	createInfo.surface = this->_device.getSurface();
 
-	createInfo.minImageCount = imageCount;
-	createInfo.imageFormat = surfaceFormat.format;
-	createInfo.imageColorSpace = surfaceFormat.colorSpace;
-	createInfo.imageExtent = extent;
-	createInfo.imageArrayLayers = 1;
-	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-	/*
-	 * Le champ de bits imageUsage spécifie le type d'opérations que nous appliquerons aux images de la swap chain. Dans ce tutoriel nous effectuerons un rendu directement sur les images, nous les utiliserons donc comme color attachement. Vous voudrez peut-être travailler sur une image séparée pour pouvoir appliquer des effets en post-processing. Dans ce cas vous devrez utiliser une valeur comme VK_IMAGE_USAGE_TRANSFER_DST_BIT à la place et utiliser une opération de transfert de mémoire pour placer le résultat final dans une image de la swap chain.
-	 */
-	QueueFamilyIndices	indices = this->_device.findQueueFamilies(this->_device.getPhysicalDevice());
-	uint32_t queueFamilyIndices[] = {indices.graphicsFamily, indices.presentFamily};
+// 	createInfo.minImageCount = imageCount;
+// 	createInfo.imageFormat = surfaceFormat.format;
+// 	createInfo.imageColorSpace = surfaceFormat.colorSpace;
+// 	createInfo.imageExtent = extent;
+// 	createInfo.imageArrayLayers = 1;
+// 	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+// 	/*
+// 	 * Le champ de bits imageUsage spécifie le type d'opérations que nous appliquerons aux images de la swap chain. Dans ce tutoriel nous effectuerons un rendu directement sur les images, nous les utiliserons donc comme color attachement. Vous voudrez peut-être travailler sur une image séparée pour pouvoir appliquer des effets en post-processing. Dans ce cas vous devrez utiliser une valeur comme VK_IMAGE_USAGE_TRANSFER_DST_BIT à la place et utiliser une opération de transfert de mémoire pour placer le résultat final dans une image de la swap chain.
+// 	 */
+// 	QueueFamilyIndices	indices = this->_device.findQueueFamilies(this->_device.getPhysicalDevice());
+// 	uint32_t queueFamilyIndices[] = {indices.graphicsFamily, indices.presentFamily};
 
-	if (indices.graphicsFamily != indices.presentFamily)
-	{
-		createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT; // pouvoir travailler a plusieurs queues (presentation et graphique) sur la meme image (moins performant)
-		createInfo.queueFamilyIndexCount = 2;
-		createInfo.pQueueFamilyIndices = queueFamilyIndices;
-	}
-	else
-	{
-		createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE; // pouvoir travailler qu'a une queue a la fois sur chaque image (plus performant et obligatoire quand 1 queue)
-		createInfo.queueFamilyIndexCount = 0; // Optionnel
-		createInfo.pQueueFamilyIndices = nullptr; // Optionnel
-	}
+// 	if (indices.graphicsFamily != indices.presentFamily)
+// 	{
+// 		createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT; // pouvoir travailler a plusieurs queues (presentation et graphique) sur la meme image (moins performant)
+// 		createInfo.queueFamilyIndexCount = 2;
+// 		createInfo.pQueueFamilyIndices = queueFamilyIndices;
+// 	}
+// 	else
+// 	{
+// 		createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE; // pouvoir travailler qu'a une queue a la fois sur chaque image (plus performant et obligatoire quand 1 queue)
+// 		createInfo.queueFamilyIndexCount = 0; // Optionnel
+// 		createInfo.pQueueFamilyIndices = nullptr; // Optionnel
+// 	}
 
-	createInfo.preTransform = swapChainSupport.capabilities.currentTransform; // si on veut transform genre rotate ou symetrie verticale
-	createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR; //si on veut que la fenetre influe sur les couleurs de l'image (generalement non, comme ici)
-	createInfo.presentMode = presentMode; // meilleures performances avec clipped = vk_true
-	createInfo.clipped = VK_TRUE; //pas afficher pixels derrieres
+// 	createInfo.preTransform = swapChainSupport.capabilities.currentTransform; // si on veut transform genre rotate ou symetrie verticale
+// 	createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR; //si on veut que la fenetre influe sur les couleurs de l'image (generalement non, comme ici)
+// 	createInfo.presentMode = presentMode; // meilleures performances avec clipped = vk_true
+// 	createInfo.clipped = VK_TRUE; //pas afficher pixels derrieres
 
-	createInfo.oldSwapchain = VK_NULL_HANDLE; // si la swap chain crash (resize par exemple), la nouvelle doit envoyer un pointer sur la precedente mais c'est complique donc on va pas le faire
+// 	createInfo.oldSwapchain = VK_NULL_HANDLE; // si la swap chain crash (resize par exemple), la nouvelle doit envoyer un pointer sur la precedente mais c'est complique donc on va pas le faire
 
-	if (vkCreateSwapchainKHR(this->_device.device(), &createInfo, nullptr, &this->_swapChain) != VK_SUCCESS)
-		throw std::runtime_error("failed to create swap chain!");
+// 	if (vkCreateSwapchainKHR(this->_device.device(), &createInfo, nullptr, &this->_swapChain) != VK_SUCCESS)
+// 		throw std::runtime_error("failed to create swap chain!");
 
-	vkGetSwapchainImagesKHR(this->_device.device(), this->_swapChain, &imageCount, nullptr);
-	this->_swapChainImages.resize(imageCount);
-	vkGetSwapchainImagesKHR(this->_device.device(), this->_swapChain, &imageCount, this->_swapChainImages.data());
-	this->_swapChainImageFormat = surfaceFormat.format;
-	this->_swapChainExtent = extent;
-}
+// 	vkGetSwapchainImagesKHR(this->_device.device(), this->_swapChain, &imageCount, nullptr);
+// 	this->_swapChainImages.resize(imageCount);
+// 	vkGetSwapchainImagesKHR(this->_device.device(), this->_swapChain, &imageCount, this->_swapChainImages.data());
+// 	this->_swapChainImageFormat = surfaceFormat.format;
+// 	this->_swapChainExtent = extent;
+// }
 
-VkSurfaceFormatKHR	Display::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
-{
-	for (const auto& availableFormat : availableFormats)
-		if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
-			return availableFormat;
-	//si ca foire, on pourrait tester d'autres formats un peux moins bien mais dans un soucis de simplicite, on prend le premier venu
-	return availableFormats[0];
-}
+// VkSurfaceFormatKHR	Display::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
+// {
+// 	for (const auto& availableFormat : availableFormats)
+// 		if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+// 			return availableFormat;
+// 	//si ca foire, on pourrait tester d'autres formats un peux moins bien mais dans un soucis de simplicite, on prend le premier venu
+// 	return availableFormats[0];
+// }
 
-VkPresentModeKHR	Display::chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes) {
-	for (const auto& availablePresentMode : availablePresentModes)
-		if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
-			return availablePresentMode;
-	//si on trouve pas le triple buffering (le meilleur atm), on pourrait en viser un autre mais son prend le mode par default, toujours present, la V-Sync
-	return VK_PRESENT_MODE_FIFO_KHR;
-}
+// VkPresentModeKHR	Display::chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes) {
+// 	for (const auto& availablePresentMode : availablePresentModes)
+// 		if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
+// 			return availablePresentMode;
+// 	//si on trouve pas le triple buffering (le meilleur atm), on pourrait en viser un autre mais son prend le mode par default, toujours present, la V-Sync
+// 	return VK_PRESENT_MODE_FIFO_KHR;
+// }
 
-VkExtent2D	Display::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
-{
-	if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
-		return capabilities.currentExtent;
-	else
-	{
-		int	width, height;
-		glfwGetFramebufferSize(this->_window.getWindow(), &width, &height);
+// VkExtent2D	Display::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
+// {
+// 	if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
+// 		return capabilities.currentExtent;
+// 	else
+// 	{
+// 		int	width, height;
+// 		glfwGetFramebufferSize(this->_window.getWindow(), &width, &height);
 
-		VkExtent2D actualExtent = {
-			static_cast<uint32_t>(width),
-			static_cast<uint32_t>(height)
-		};
+// 		VkExtent2D actualExtent = {
+// 			static_cast<uint32_t>(width),
+// 			static_cast<uint32_t>(height)
+// 		};
 
-		actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-		actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height); //clamp comme en css pour la taille min et max
+// 		actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+// 		actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height); //clamp comme en css pour la taille min et max
 
-		return actualExtent;
-	}
-}
+// 		return actualExtent;
+// 	}
+// }
