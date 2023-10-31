@@ -305,7 +305,7 @@ void ft_Device::createCommandPool()
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily;
     poolInfo.flags =
-        VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+        VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
         //VK_COMMAND_POOL_CREATE_TRANSIENT_BIT : informe que les command buffers sont ré-enregistrés très souvent, ce qui peut inciter Vulkan (et donc le driver) à ne pas utiliser le même type d'allocation
         //VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT : permet aux command buffers d'être ré-enregistrés individuellement, ce que les autres configurations ne permettent pas
     if (vkCreateCommandPool(this->_device_, &poolInfo, nullptr, &this->_commandPool) != VK_SUCCESS) {
