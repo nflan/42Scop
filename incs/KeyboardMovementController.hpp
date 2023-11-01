@@ -13,7 +13,8 @@
 #ifndef KEYBOARDMOVEMENTCONTROLLER_HPP
 #define KEYBOARDMOVEMENTCONTROLLER_HPP
 
-#include "Display.hpp"
+#include "GameObject.hpp"
+#include "Window.hpp"
 
 class   KeyboardMovementController {
 
@@ -32,11 +33,11 @@ class   KeyboardMovementController {
 
         };
 
-        void    moveInPlaneXZ(GLFWwindow* window, float dt, )
+        void    moveInPlaneXZ(GLFWwindow* window, float dt, ft_GameObject& gameObject);
 
-        KeyMappings keys{};
-        float       moveSpeed{3.f};
-        float       lookSpeed{1.5f};
+        KeyMappings _keys{};
+        float       _moveSpeed{3.f};
+        float       _lookSpeed{1.5f};
 };
 
 #endif

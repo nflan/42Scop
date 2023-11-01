@@ -65,35 +65,35 @@ void    RenderSystem::createPipeline(VkRenderPass renderPass)
     this->_pipeline = std::make_unique<ft_Pipeline>(this->_device, "shaders/vert.spv", "shaders/frag.spv", pipelineConfig);
 }
 
-// void    RenderSystem::renderGameObjects(FrameInfo& frameInfo)
-// {
-//     this->_pipeline->bind(frameInfo.commandBuffer);
+void    RenderSystem::renderGameObjects(FrameInfo& frameInfo)
+{
+    this->_pipeline->bind(frameInfo.commandBuffer);
 
-//     vkCmdBindDescriptorSets(
-//         frameInfo.commandBuffer,
-//         VK_PIPELINE_BIND_POINT_GRAPHICS,
-//         pipelineLayout,
-//         0,
-//         1,
-//         &frameInfo.globalDescriptorSet,
-//         0,
-//         nullptr);
+    vkCmdBindDescriptorSets(
+        frameInfo.commandBuffer,
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        this->_pipelineLayout,
+        0,
+        1,
+        &frameInfo.globalDescriptorSet,
+        0,
+        nullptr);
 
-//     for (auto& kv : frameInfo.gameObjects) {
-//         auto& obj = kv.second;
-//         if (obj.model == nullptr) continue;
-//         SimplePushConstantData push{};
-//         push.modelMatrix = obj.transform.mat4();
-//         push.normalMatrix = obj.transform.normalMatrix();
+    for (auto& kv : frameInfo.gameObjects) {
+        auto& obj = kv.second;
+        if (obj.model == nullptr) continue;
+        SimplePushConstantData push{};
+        push.modelMatrix = obj.transform.mat4();
+        push.normalMatrix = obj.transform.normalMatrix();
 
-//         vkCmdPushConstants(
-//             frameInfo.commandBuffer,
-//             pipelineLayout,
-//             VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-//             0,
-//             sizeof(SimplePushConstantData),
-//             &push);
-//         obj.model->bind(frameInfo.commandBuffer);
-//         obj.model->draw(frameInfo.commandBuffer);
-//     }
-// }
+        vkCmdPushConstants(
+            frameInfo.commandBuffer,
+            this->_pipelineLayout,
+            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+            0,
+            sizeof(SimplePushConstantData),
+            &push);
+        obj.model->bind(frameInfo.commandBuffer);
+        obj.model->draw(frameInfo.commandBuffer);
+    }
+}

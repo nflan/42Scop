@@ -33,7 +33,7 @@ RM =	rm -fr
 
 CXXFLAGS =	-std=c++20 -O3 -g3# -DNDEBUG
 
-GLM_INCLUDE_PATH = /mnt/nfs/homes/nflan/sgoinfre/bin/glm
+GLM_INCLUDE_PATH = /home/nflan/bin/glm
 
 LDFLAGS =	-lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi -I$(GLM_INCLUDE_PATH)
 
@@ -46,7 +46,22 @@ LDFLAGS =	-lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi -I$(GLM_I
 #HOW TO LIST .c 
 #	ls -l | awk '{print $9}' | grep -E ".c$"| sed "s/\.c/ \\\/g" | sed '$s/\\$//g'
 
-SRC_FT =	scop Display Device Vertex Mesh Camera Window
+SRC_FT =	Buffer \
+			Camera \
+			Descriptors \
+			Device \
+			Display \
+			GameObject \
+			KeyboardMovementController \
+			Mesh \
+			Model \
+			Pipeline \
+			Renderer \
+			RenderSystem \
+			scop \
+			SwapChain \
+			Vertex \
+			Window 
 
 SRCB_FT =
 

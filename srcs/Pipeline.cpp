@@ -198,9 +198,6 @@ void ft_Pipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo)
     configInfo.dynamicStateInfo.dynamicStateCount =
         static_cast<uint32_t>(configInfo.dynamicStateEnables.size());
     configInfo.dynamicStateInfo.flags = 0;
-
-    configInfo.bindingDescriptions = ft_Model::Vertex::getBindingDescriptions();
-    configInfo.attributeDescriptions = ft_Model::Vertex::getAttributeDescriptions();
 }
 
 void    ft_Pipeline::enableAlphaBlending(PipelineConfigInfo& configInfo)

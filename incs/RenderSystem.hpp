@@ -15,11 +15,11 @@
 
 #include "Camera.hpp"
 #include "Device.hpp"
-// #include "lve_frame_info.hpp"
-// #include "lve_game_object.hpp"
+#include "FrameInfo.hpp"
+#include "GameObject.hpp"
 #include "Pipeline.hpp"
 
-#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
+#include </home/nflan/bin/glm/glm/glm.hpp>
 
 
 // std
@@ -34,7 +34,7 @@ class RenderSystem {
         RenderSystem(const RenderSystem &) = delete;
         RenderSystem &operator=(const RenderSystem &) = delete;
 
-        // void renderGameObjects(FrameInfo &frameInfo);
+        void renderGameObjects(FrameInfo &frameInfo);
 
     private:
         void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);

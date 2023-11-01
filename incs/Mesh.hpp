@@ -14,7 +14,7 @@
 #define MESH_HPP
 
 #define GLFW_INCLUDE_VULKAN
-#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
+#include </home/nflan/bin/glm/glm/glm.hpp>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -25,7 +25,7 @@ class Mesh
     public:
         Mesh();//constructor
         
-        void    LoadObjModel(const char *filename);//function to load obj model
+        void    LoadObjModel(const std::string &filename);//function to load obj model
         std::vector<glm::vec3>  getMeshVertices();//return the vertices of mesh data
         std::vector<glm::vec3>  getVertices();
         std::vector<uint32_t>   getFaceIndex();

@@ -12,7 +12,7 @@
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
+#include </home/nflan/bin/glm/glm/glm.hpp>
 
 #include <iostream>
 #include <stdexcept>
@@ -25,14 +25,14 @@
 int main(int ac, char **av)
 {
 	Display	app;
-	Mesh	mesh;
+	// Mesh	mesh;
 
 	try
 	{
 		if (ac != 2)
 			throw std::invalid_argument("Invalid number of args!");
-		mesh.LoadObjModel(av[1]);
-		app.setMesh(mesh);
+		// mesh.LoadObjModel(av[1]);
+		app.setFile(av[1]);
 		app.run();
 	} 
 	catch (const std::exception& e)

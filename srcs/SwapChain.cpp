@@ -491,7 +491,7 @@ VkPresentModeKHR    ft_SwapChain::chooseSwapPresentMode(const std::vector<VkPres
     {
         if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
         {
-            std::cout << "Present mode: Mailbox" << std::endl;
+            // std::cout << "Present mode: Mailbox" << std::endl;
             return availablePresentMode;
         }
     }
@@ -503,7 +503,7 @@ VkPresentModeKHR    ft_SwapChain::chooseSwapPresentMode(const std::vector<VkPres
     //   }
     // }
 
-    std::cout << "Present mode: V-Sync" << std::endl;
+    // std::cout << "Present mode: V-Sync" << std::endl;
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 

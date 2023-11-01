@@ -14,7 +14,7 @@
 
 Mesh::Mesh() {}
 
-void Mesh::LoadObjModel(const char *filename)
+void Mesh::LoadObjModel(const std::string &filename)
 {
     std::ifstream in(filename, std::ios::in);
     if (!in)

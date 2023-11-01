@@ -168,7 +168,7 @@ void ft_Device::pickPhysicalDevice()
 	for (const auto& device : devices) {
 		if (isDeviceSuitable(device)) {
 			this->_physicalDevice = device;
-			this->_msaaSamples = getMaxUsableSampleCount(VK_SAMPLE_COUNT_8_BIT);
+			this->_msaaSamples = getMaxUsableSampleCount(VK_SAMPLE_COUNT_2_BIT);
 			break;
 		}
 	}
@@ -407,26 +407,26 @@ std::vector<const char *>   ft_Device::getRequiredExtensions()
 
 void    ft_Device::hasGflwRequiredInstanceExtensions()
 {
-  uint32_t  extensionCount = 0;
-  vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-  std::vector<VkExtensionProperties> extensions(extensionCount);
-  vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
+	uint32_t  extensionCount = 0;
+	vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+	std::vector<VkExtensionProperties> extensions(extensionCount);
+	vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
 
-  std::cout << "available extensions:" << std::endl;
-  std::unordered_set<std::string> available;
-  for (const auto &extension : extensions) {
-    std::cout << "\t" << extension.extensionName << std::endl;
-    available.insert(extension.extensionName);
-  }
+	//   std::cout << "available extensions:" << std::endl;
+	std::unordered_set<std::string> available;
+	for (const auto &extension : extensions) {
+		std::cout << "\t" << extension.extensionName << std::endl;
+		available.insert(extension.extensionName);
+	}
 
-  std::cout << "required extensions:" << std::endl;
-  auto requiredExtensions = getRequiredExtensions();
-  for (const auto &required : requiredExtensions) {
-    std::cout << "\t" << required << std::endl;
-    if (available.find(required) == available.end()) {
-      throw std::runtime_error("Missing required glfw extension");
-    }
-  }
+	// std::cout << "required extensions:" << std::endl;
+	auto requiredExtensions = getRequiredExtensions();
+	for (const auto &required : requiredExtensions) {
+		std::cout << "\t" << required << std::endl;
+		if (available.find(required) == available.end()) {
+		throw std::runtime_error("Missing required glfw extension");
+		}
+	}
 }
 
 bool    ft_Device::checkDeviceExtensionSupport(VkPhysicalDevice device)

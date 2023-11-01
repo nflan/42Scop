@@ -1,7 +1,7 @@
 #ifndef UNIFORMBUFFEROBJECT_HPP
 #define UNIFORMBUFFEROBJECT_HPP
 
-#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
+#include </home/nflan/bin/glm/glm/glm.hpp>
 
 
 struct UniformBufferObject {
