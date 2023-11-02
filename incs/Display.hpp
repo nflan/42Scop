@@ -16,10 +16,10 @@
 #define GLFW_INCLUDE_VULKAN
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define GLM_ENABLE_EXPERIMENTAL
-#include </home/nflan/bin/glm/glm/gtx/hash.hpp>
+#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/gtx/hash.hpp>
 #include <GLFW/glfw3.h>
-#include </home/nflan/bin/glm/glm/glm.hpp>
-#include </home/nflan/bin/glm/glm/gtc/matrix_transform.hpp>
+#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
+#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/gtc/matrix_transform.hpp>
 
 #include <chrono>
 #include "tools.hpp"
@@ -28,6 +28,7 @@
 #include "Device.hpp"
 #include "Renderer.hpp"
 #include "GameObject.hpp"
+#include "PointLightSystem.hpp"
 #include "RenderSystem.hpp"
 #include "Descriptors.hpp"
 #include "UniformBufferObject.hpp"
@@ -60,7 +61,7 @@ class Display
 
 		void	setFile(const char* file);
 		void	run( void );
-		bool	framebufferResized = false;
+		// bool	framebufferResized = false;
 	private:
 		// void	initVulkan( void ); // initImg
 		// void	mainLoop( void ); // boucle

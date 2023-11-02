@@ -1,4 +1,5 @@
 #include "../incs/Descriptors.hpp"
+#include <iostream>
 
 // std
 #include <cassert>
@@ -28,9 +29,9 @@ std::unique_ptr<ft_DescriptorSetLayout> ft_DescriptorSetLayout::Builder::build()
 
 // *************** Descriptor Set Layout *********************
 
-ft_DescriptorSetLayout::ft_DescriptorSetLayout(ft_Device &Device, std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings): _device{Device}, _bindings{bindings}
+ft_DescriptorSetLayout::ft_DescriptorSetLayout(ft_Device &device, std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings): _device{device}, _bindings{bindings}
 {
-    std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings{};
+    std::vector<VkDescriptorSetLayoutBinding>   setLayoutBindings{};
     for (auto kv : bindings)
     {
         setLayoutBindings.push_back(kv.second);
@@ -92,19 +93,21 @@ ft_DescriptorPool::ft_DescriptorPool(ft_Device &Device, uint32_t maxSets, VkDesc
 
 ft_DescriptorPool::~ft_DescriptorPool()
 {
-  vkDestroyDescriptorPool(this->_device.device(), this->_descriptorPool, nullptr);
+    vkDestroyDescriptorPool(this->_device.device(), this->_descriptorPool, nullptr);
 }
 
 bool ft_DescriptorPool::allocateDescriptor(const VkDescriptorSetLayout descriptorSetLayout, VkDescriptorSet &descriptor) const
 {
+    SwapChainSupportDetails	swapChainSupport = this->_device.querySwapChainSupport(this->_device.getPhysicalDevice());
+
+    // std::cout << swapChainSupport.capabilities.minImageCount + 1 << std::endl;
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = this->_descriptorPool;
     allocInfo.pSetLayouts = &descriptorSetLayout;
-    allocInfo.descriptorSetCount = 1;//static_cast<uint32_t>(this->_swapChainImages.size());
-
+    allocInfo.descriptorSetCount = 1; //static_cast<uint32_t>(swapChainSupport.capabilities.minImageCount + 1);//static_cast<uint32_t>(this->_swapChainImages.size());
     // Might want to create a "DescriptorPoolManager" class that handles this case, and builds
-    // a new pool whenever an old pool fills up. But this is beyond our current scope
+    // a new pool w henever an old pool fills up. But this is beyond our current scope
     if (vkAllocateDescriptorSets(this->_device.device(), &allocInfo, &descriptor) != VK_SUCCESS)
         return false;
     return true;

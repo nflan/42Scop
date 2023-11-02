@@ -19,7 +19,7 @@ OBJB_DIR =		obj_bonus
 SRC_DIR =		srcs
 SRCB_DIR =		srcs_bonus
 
-INC =			$(addsuffix .hpp, $(addprefix $(INC_DIR), scop Device Window Camera Display Vertex Mesh tools))
+INC =			$(addsuffix .hpp, $(addprefix $(INC_DIR), scop PointLightSystem Device Window Camera Display Vertex Mesh tools))
 
 SRC =			$(SRC_FT:%=$(SRC_DIR)/%.cpp)
 SRCB =			$(SRCB_FT:%=$(SRCB_DIR)/%.cpp)
@@ -58,6 +58,7 @@ SRC_FT =	Buffer \
 			Pipeline \
 			Renderer \
 			RenderSystem \
+			PointLightSystem \
 			scop \
 			SwapChain \
 			Vertex \

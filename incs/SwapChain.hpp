@@ -43,6 +43,7 @@ class ft_SwapChain {
         VkExtent2D      getSwapChainExtent() { return _swapChainExtent; }
         uint32_t        getWidth() { return _swapChainExtent.width; }
         uint32_t        getHeight() { return _swapChainExtent.height; }
+        ft_Device&      getDevice() { return _device; }
 
         float           extentAspectRatio()
         {

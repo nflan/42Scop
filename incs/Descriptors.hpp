@@ -29,7 +29,7 @@ class ft_DescriptorSetLayout {
 
         VkDescriptorSetLayout   getDescriptorSetLayout() const { return _descriptorSetLayout; }
 
-        private:
+    private:
         ft_Device&                                                  _device;
         VkDescriptorSetLayout                                       _descriptorSetLayout;
         std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding>  _bindings;

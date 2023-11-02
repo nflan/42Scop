@@ -14,7 +14,7 @@
 #define MESH_HPP
 
 #define GLFW_INCLUDE_VULKAN
-#include </home/nflan/bin/glm/glm/glm.hpp>
+#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
 #include <iostream>
 #include <fstream>
 #include <sstream>

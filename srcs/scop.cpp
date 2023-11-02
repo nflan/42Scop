@@ -12,7 +12,7 @@
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#include </home/nflan/bin/glm/glm/glm.hpp>
+#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
 
 #include <iostream>
 #include <stdexcept>

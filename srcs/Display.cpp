@@ -12,17 +12,10 @@
 
 #include "../incs/Display.hpp"
 #define STB_IMAGE_IMPLEMENTATION
-#include "/home/nflan/bin/stb/stb_image.h"
+#include "/mnt/nfs/homes/nflan/sgoinfre/bin/stb/stb_image.h"
 
 bool		QUIT = false;
 const int	MAX_FRAMES_IN_FLIGHT = 2;
-
-struct GlobalUbo {
-	glm::mat4 projectionView{1.f};
-	glm::vec4 ambientLightColor{1.f, 1.f, 1.f, .02f};  // w is intensity
-	glm::vec3 lightPosition{-1.f};
-	alignas(16) glm::vec4 lightColor{1.f};  // w is light intensity
-};
 
 namespace std {
     template<> struct hash<Vertex> {
@@ -38,7 +31,7 @@ static	std::vector<char> readFile(const std::string& filename) {
 	std::ifstream	file(filename, std::ios::ate | std::ios::binary); //ate pour commencer a la fin / binary pour dire que c'est un binaire et pas recompiler
 
 	if (!file.is_open())
-		throw std::runtime_error(std::string {"échec de l'ouverture du fichier "} + filename + "!");
+		throw std::runtime_error(std::string {"Failed to open: "} + filename + "!");
 	size_t	fileSize = (size_t) file.tellg(); // on a commence a la fin donc voir ou est le pointeur
 	std::vector<char>	buffer(fileSize);
 
@@ -59,7 +52,13 @@ void	key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		QUIT = true;
 }
 
-Display::Display( void ) {}
+Display::Display() {
+	_globalPool =
+		ft_DescriptorPool::Builder(_device)
+		.setMaxSets(ft_SwapChain::MAX_FRAMES_IN_FLIGHT)
+		.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ft_SwapChain::MAX_FRAMES_IN_FLIGHT)
+		.build();
+}
 
 Display::Display( const Display & o) {
 	if (this != &o)
@@ -81,6 +80,8 @@ void	Display::setFile(const char* file) { this->_file = file; }
 
 void	Display::run()
 {
+	loadGameObjects();
+
 	std::vector<std::unique_ptr<ft_Buffer>> uboBuffers(ft_SwapChain::MAX_FRAMES_IN_FLIGHT);
 	for (int i = 0; i < uboBuffers.size(); i++)
 	{
@@ -98,8 +99,10 @@ void	Display::run()
 			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
 			.build();
 
-	std::vector<VkDescriptorSet> globalDescriptorSets(ft_SwapChain::MAX_FRAMES_IN_FLIGHT);
-	for (int i = 0; i < globalDescriptorSets.size(); i++) {
+	std::vector<VkDescriptorSet>	globalDescriptorSets(ft_SwapChain::MAX_FRAMES_IN_FLIGHT);
+	for (int i = 0; i < globalDescriptorSets.size(); i++)
+	{
+		std::cout << "i = " << i << std::endl;
 		auto bufferInfo = uboBuffers[i]->descriptorInfo();
 		DescriptorWriter(*globalSetLayout, *this->_globalPool)
 			.writeBuffer(0, &bufferInfo)
@@ -110,20 +113,27 @@ void	Display::run()
 		this->_device,
 		this->_renderer.getSwapChainRenderPass(),
 		globalSetLayout->getDescriptorSetLayout()};
+
+	PointLightSystem pointLightSystem{
+		this->_device,
+		this->_renderer.getSwapChainRenderPass(),
+		globalSetLayout->getDescriptorSetLayout()};
 	ft_Camera camera{};
 
 	auto viewerObject = ft_GameObject::createGameObject();
+
 	viewerObject.transform.translation.z = -2.5f;
 	KeyboardMovementController cameraController{};
 
 	auto currentTime = std::chrono::high_resolution_clock::now();
-	while (!this->_window.shouldClose())
+	while (!this->_window.shouldClose() && !QUIT)
 	{
+		glfwSetKeyCallback(this->_window.getWindow(), key_callback);
+	std::cout << "ON a load et on lance" << std::endl;
 		glfwPollEvents();
 
 		auto newTime = std::chrono::high_resolution_clock::now();
-		float frameTime =
-			std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
+		float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
 		currentTime = newTime;
 
 		cameraController.moveInPlaneXZ(this->_window.getWindow(), frameTime, viewerObject);
@@ -132,27 +142,34 @@ void	Display::run()
 		float aspect = this->_renderer.getAspectRatio();
 		camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 100.f);
 
-		if (auto commandBuffer = this->_renderer.beginFrame()) {
-		int frameIndex = this->_renderer.getFrameIndex();
-		FrameInfo frameInfo{
-			frameIndex,
-			frameTime,
-			commandBuffer,
-			camera,
-			globalDescriptorSets[frameIndex],
-			this->_gameObjects};
+		if (auto commandBuffer = this->_renderer.beginFrame())
+		{
+			int frameIndex = this->_renderer.getFrameIndex();
+			FrameInfo frameInfo{
+				frameIndex,
+				frameTime,
+				commandBuffer,
+				camera,
+				globalDescriptorSets[frameIndex],
+				this->_gameObjects};
 
-		// update
-		GlobalUbo	ubo{};
-		ubo.projectionView = camera.getProjection() * camera.getView();
-		uboBuffers[frameIndex]->writeToBuffer(&ubo);
-		uboBuffers[frameIndex]->flush();
+			// update
+			GlobalUbo	ubo{};
+			ubo.projection = camera.getProjection();
+			ubo.view = camera.getView();
+			ubo.inverseView = camera.getInverseView();
+			pointLightSystem.update(frameInfo, ubo);
+			uboBuffers[frameIndex]->writeToBuffer(&ubo);
+			uboBuffers[frameIndex]->flush();
 
-		// render
-		this->_renderer.beginSwapChainRenderPass(commandBuffer);
-		renderSystem.renderGameObjects(frameInfo);
-		this->_renderer.endSwapChainRenderPass(commandBuffer);
-		this->_renderer.endFrame();
+			// render
+			this->_renderer.beginSwapChainRenderPass(commandBuffer);
+			
+			renderSystem.renderGameObjects(frameInfo);
+			pointLightSystem.render(frameInfo);
+
+			this->_renderer.endSwapChainRenderPass(commandBuffer);
+			this->_renderer.endFrame();
 		}
 	}
 
@@ -166,11 +183,11 @@ void	Display::run()
 void Display::loadGameObjects()
 {
   	std::shared_ptr<ft_Model> Model = ft_Model::createModelFromFile(this->_device, this->_file);
-	auto flatVase = ft_GameObject::createGameObject();
-	flatVase.model = Model;
-	flatVase.transform.translation = {-.5f, .5f, 0.f};
-	flatVase.transform.scale = {3.f, 1.5f, 3.f};
-	this->_gameObjects.emplace(flatVase.getId(), std::move(flatVase));
+	auto gameObj = ft_GameObject::createGameObject();
+	gameObj.model = Model;
+	gameObj.transform.translation = {-.5f, .5f, 0.f};
+	gameObj.transform.scale = {3.f, 1.5f, 3.f};
+	this->_gameObjects.emplace(gameObj.getId(), std::move(gameObj));
 
 	// Model = ft_Model::createModelFromFile(this->_device, "models/smooth_vase.obj");
 	// auto smoothVase = ft_GameObject::createGameObject();
@@ -187,13 +204,13 @@ void Display::loadGameObjects()
 	// this->_gameObjects.emplace(floor.getId(), std::move(floor));
 }
 
-static void	framebufferResizeCallback(GLFWwindow* window, int width, int height)
-{
-	static_cast<void>(width);
-	static_cast<void>(height);
-	auto app = reinterpret_cast<Display*>(glfwGetWindowUserPointer(window));
-	app->framebufferResized = true;
-}
+// static void	framebufferResizeCallback(GLFWwindow* window, int width, int height)
+// {
+// 	static_cast<void>(width);
+// 	static_cast<void>(height);
+// 	auto app = reinterpret_cast<Display*>(glfwGetWindowUserPointer(window));
+// 	app->framebufferResized = true;
+// }
 
 
 // void	Display::initVulkan( void )

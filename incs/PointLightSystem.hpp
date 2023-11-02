@@ -1,44 +1,40 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   RenderSystem.hpp                                   :+:      :+:    :+:   */
+/*   PointLightSystem.hpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/10/31 20:05:28 by nflan             #+#    #+#             */
-/*   Updated: 2023/10/31 20:05:28 by nflan            ###   ########.fr       */
+/*   Created: 2023/11/02 11:56:53 by nflan             #+#    #+#             */
+/*   Updated: 2023/11/02 11:56:53 by nflan            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef RENDERSYSTEM_HPP
-#define RENDERSYSTEM_HPP
+#ifndef POINTLIGHTSYSTEM_HPP
+#define POINTLIGHTSYSTEM_HPP
 
-#include "Camera.hpp"
 #include "Device.hpp"
 #include "FrameInfo.hpp"
-#include "GameObject.hpp"
 #include "Pipeline.hpp"
-
-#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
-
 
 // std
 #include <memory>
 #include <vector>
 
-class RenderSystem {
+class PointLightSystem {
     public:
-        RenderSystem(ft_Device &device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
-        ~RenderSystem();
+        PointLightSystem(ft_Device &device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
+        ~PointLightSystem();
 
-        RenderSystem(const RenderSystem &) = delete;
-        RenderSystem &operator=(const RenderSystem &) = delete;
+        PointLightSystem(const PointLightSystem &) = delete;
+        PointLightSystem &operator=(const PointLightSystem &) = delete;
 
-        void renderGameObjects(FrameInfo &frameInfo);
+        void    update(FrameInfo &frameInfo, GlobalUbo &ubo);
+        void    render(FrameInfo &frameInfo);
 
     private:
-        void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
-        void createPipeline(VkRenderPass renderPass);
+        void    createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
+        void    createPipeline(VkRenderPass renderPass);
 
         ft_Device&                      _device;
 

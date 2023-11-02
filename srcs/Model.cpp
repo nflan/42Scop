@@ -18,7 +18,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 // #include <tiny_obj_loader.h>
 #define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/hash.hpp>
+#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/gtx/hash.hpp>
 
 // std
 #include <cassert>
@@ -116,9 +116,12 @@ void    ft_Model::createIndexBuffers(const std::vector<uint32_t> &indices)
 
 void    ft_Model::draw(VkCommandBuffer commandBuffer)
 {
-    if (this->_hasIndexBuffer) {
+    if (this->_hasIndexBuffer)
+    {
         vkCmdDrawIndexed(commandBuffer, this->_indexCount, 1, 0, 0, 0);
-    } else {
+    }
+    else
+    {
         vkCmdDraw(commandBuffer, this->_vertexCount, 1, 0, 0);
     }
 }
@@ -129,28 +132,10 @@ void    ft_Model::bind(VkCommandBuffer commandBuffer)
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
 
-    if (this->_hasIndexBuffer) {
+    if (this->_hasIndexBuffer)
+    {
         vkCmdBindIndexBuffer(commandBuffer, this->_indexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32);
     }
-    }
-
-    std::vector<VkVertexInputBindingDescription> ft_Model::Vertex::getBindingDescriptions() {
-    std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
-    bindingDescriptions[0].binding = 0;
-    bindingDescriptions[0].stride = sizeof(Vertex);
-    bindingDescriptions[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-    return bindingDescriptions;
-    }
-
-    std::vector<VkVertexInputAttributeDescription> ft_Model::Vertex::getAttributeDescriptions() {
-    std::vector<VkVertexInputAttributeDescription> attributeDescriptions{};
-
-    attributeDescriptions.push_back({0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position)});
-    attributeDescriptions.push_back({1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color)});
-    attributeDescriptions.push_back({2, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal)});
-    attributeDescriptions.push_back({3, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)});
-
-    return attributeDescriptions;
 }
 
 /*void    ft_Model::Builder::loadModel(const std::string &filepath)

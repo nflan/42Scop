@@ -14,6 +14,7 @@
 #define PIPELINE_HPP
 
 #include "Device.hpp"
+#include "Model.hpp"
 
 // std
 #include <string>
@@ -53,13 +54,14 @@ class ft_Pipeline
         void        bind(VkCommandBuffer commandBuffer);
 
         static void defaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
+        static void pipelineConfigInfo(PipelineConfigInfo& configInfo, ft_Device& device);
         static void enableAlphaBlending(PipelineConfigInfo& configInfo);
-
+        ft_Device&  getDevice() { return _device; }
     private:
         static std::vector<char>    readFile(const std::string& filepath);
 
-        void createGraphicsPipeline(const std::string& vertFilepath, const std::string& fragFilepath, const PipelineConfigInfo& configInfo);
-        void createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule);
+        void    createGraphicsPipeline(const std::string& vertFilepath, const std::string& fragFilepath, const PipelineConfigInfo& configInfo);
+        VkShaderModule  createShaderModule(const std::vector<char>& code);
 
         ft_Device&      _device;
         VkPipeline      _graphicsPipeline;

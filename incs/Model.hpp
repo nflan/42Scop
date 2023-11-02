@@ -19,8 +19,8 @@
 // libs
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include </home/nflan/bin/glm/glm/glm.hpp>
-#include </home/nflan/bin/glm/glm/gtc/constants.hpp>
+#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
+#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/gtc/constants.hpp>
 
 // std
 #include <memory>
@@ -34,8 +34,27 @@ class ft_Model {
             glm::vec3   normal{};
             glm::vec2   uv{};
 
-            static std::vector<VkVertexInputBindingDescription>     getBindingDescriptions();
-            static std::vector<VkVertexInputAttributeDescription>   getAttributeDescriptions();
+            static std::vector<VkVertexInputBindingDescription>     getBindingDescriptions()
+            {
+                std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
+                bindingDescriptions[0].binding = 0;
+                bindingDescriptions[0].stride = sizeof(ft_Model::Vertex);
+                bindingDescriptions[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+                
+                return bindingDescriptions;
+            }
+
+            static std::vector<VkVertexInputAttributeDescription>   getAttributeDescriptions()
+            {
+                std::vector<VkVertexInputAttributeDescription> attributeDescriptions{};
+
+                attributeDescriptions.push_back({0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position)});
+                attributeDescriptions.push_back({1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color)});
+                attributeDescriptions.push_back({2, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal)});
+                attributeDescriptions.push_back({3, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)});
+
+                return attributeDescriptions;
+            }
 
             bool operator==(const Vertex &other) const {
             return position == other.position && color == other.color && normal == other.normal &&
@@ -58,12 +77,12 @@ class ft_Model {
 
         static std::unique_ptr<ft_Model> createModelFromFile(ft_Device &device, const std::string &filepath);
 
-        void bind(VkCommandBuffer commandBuffer);
-        void draw(VkCommandBuffer commandBuffer);
+        void    bind(VkCommandBuffer commandBuffer);
+        void    draw(VkCommandBuffer commandBuffer);
 
     private:
-        void createVertexBuffers(const std::vector<Vertex> &vertices);
-        void createIndexBuffers(const std::vector<uint32_t> &indices);
+        void    createVertexBuffers(const std::vector<Vertex> &vertices);
+        void    createIndexBuffers(const std::vector<uint32_t> &indices);
 
         ft_Device&                  _device;
 
