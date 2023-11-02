@@ -30,14 +30,15 @@ class   KeyboardMovementController {
             int lookRight = GLFW_KEY_RIGHT;
             int lookUp = GLFW_KEY_UP;
             int lookDown = GLFW_KEY_DOWN;
+            int reset = GLFW_KEY_R;
 
         };
 
         void    moveInPlaneXZ(GLFWwindow* window, float dt, ft_GameObject& gameObject);
 
         KeyMappings _keys{};
-        float       _moveSpeed{3.f};
-        float       _lookSpeed{1.5f};
+        float       _moveSpeed{5.f};
+        float       _lookSpeed{2.f};
 };
 
 #endif

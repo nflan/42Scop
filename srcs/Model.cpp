@@ -214,7 +214,14 @@ void	ft_Model::Builder::loadModel(const std::string &filepath)
 	{
 		Vertex vertex{};
 
-		vertex.position = mesh.getMeshVertices()[i];
+		vertex.position = -mesh.getMeshVertices()[i];
+        if (mesh.getNormals().size() > 1)
+            vertex.normal = mesh.getNormals()[i];
+        else
+        {
+            vertex.normal = {0.0f, 0.0f, 0.0f};
+            std::cout << "pas de normal" << std::endl;
+        }
 		if (mesh.getTexCoord().size() > i)
 			vertex.uv = mesh.getTexCoord()[i];
 		else

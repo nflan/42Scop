@@ -45,6 +45,16 @@ void Mesh::LoadObjModel(const std::string &filename)
             tex=glm::vec2(U,V);
             this->_texture.push_back(tex);
         }
+        //check for light
+        else if (line.substr(0,2)=="vn")
+        {
+            std::istringstream  vn(line.substr(3));
+            glm::vec3 norm;
+            double x,y,z;
+            vn >> x; vn >> y; vn >> z;
+            norm = glm::vec3(x,y,z);
+            this->_normals.push_back(norm);
+        }
         //check for faces
         else if (line.substr(0,2)=="f ")
         {//vector de points
@@ -54,12 +64,10 @@ void Mesh::LoadObjModel(const std::string &filename)
 
             while (f.tellg() != -1)
             {
-                std::cout << "tellg = " << f.tellg() << std::endl;
                 tmp = 0;
 
                 f >> tmp;
                 tmp--;
-                std::cout << "tmp = " << tmp << std::endl;
                 faces.push_back(tmp);
             }
             while (faces.size() >= 3)
@@ -76,15 +84,12 @@ void Mesh::LoadObjModel(const std::string &filename)
         }
 
     }
-    std::cout << "vertices.size() = " << this->_vertices.size() << std::endl;
     //calculate all mesh vertices using face index
     for(unsigned int i = 0; i < this->_faceIndex.size(); i++)
     {
         glm::vec3   meshData;
         glm::vec2   texData;
 
-        std::cout << "i = " << i << std::endl;
-        std::cout << "this->_faceIndex[i] = " << this->_faceIndex[i] << std::endl;
         meshData = glm::vec3(this->_vertices[this->_faceIndex[i]].x, this->_vertices[this->_faceIndex[i]].y, this->_vertices[this->_faceIndex[i]].z);
         if (_texture.size() && _textureIndex[i])
         {
@@ -104,3 +109,4 @@ std::vector<uint32_t>   Mesh::getFaceIndex() { return this->_faceIndex; }
 std::vector<glm::vec2>  Mesh::getTexture() { return this->_texture; }
 std::vector<uint32_t>   Mesh::getTextureIndex() { return this->_textureIndex; }
 std::vector<glm::vec2>  Mesh::getTexCoord() { return this->_texCoord; }
+std::vector<glm::vec3>  Mesh::getNormals() { return this->_normals; }

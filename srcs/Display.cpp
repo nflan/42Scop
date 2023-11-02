@@ -48,7 +48,7 @@ void	key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	static_cast<void> (window);
 	static_cast<void> (scancode);
 	static_cast<void> (mods);
-	if ((key == GLFW_KEY_Q || key == GLFW_KEY_ESCAPE) && action == GLFW_PRESS)
+	if ((key == GLFW_KEY_ESCAPE) && action == GLFW_PRESS)
 		QUIT = true;
 }
 
@@ -129,7 +129,6 @@ void	Display::run()
 	while (!this->_window.shouldClose() && !QUIT)
 	{
 		glfwSetKeyCallback(this->_window.getWindow(), key_callback);
-	std::cout << "ON a load et on lance" << std::endl;
 		glfwPollEvents();
 
 		auto newTime = std::chrono::high_resolution_clock::now();
