@@ -208,6 +208,7 @@ void	ft_Model::Builder::loadModel(const std::string &filepath)
     // if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, MODEL_PATH.c_str()))
     //     throw std::runtime_error(warn + err);
 	this->_vertices.clear();
+    this->_indices.clear();
 	std::unordered_map<Vertex, uint32_t> uniqueVertices;
 
 	for (uint32_t i = 0; i < mesh.getFaceIndex().size(); i++)
@@ -218,10 +219,7 @@ void	ft_Model::Builder::loadModel(const std::string &filepath)
         if (mesh.getNormals().size() > 1)
             vertex.normal = mesh.getNormals()[i];
         else
-        {
             vertex.normal = {0.0f, 0.0f, 0.0f};
-            std::cout << "pas de normal" << std::endl;
-        }
 		if (mesh.getTexCoord().size() > i)
 			vertex.uv = mesh.getTexCoord()[i];
 		else

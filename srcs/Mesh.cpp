@@ -25,7 +25,6 @@ void Mesh::LoadObjModel(const std::string &filename)
     std::string line;
     while (std::getline(in, line))
     {
-        std::cout << "line = " << line << std::endl;
         if (line.substr(0,2)=="v ")
         {
             std::istringstream  v(line.substr(2));
@@ -72,12 +71,13 @@ void Mesh::LoadObjModel(const std::string &filename)
             }
             while (faces.size() >= 3)
             {
+                std::cerr << "j'ajoute des f" << std::endl;
                 this->_faceIndex.push_back(faces[0]);
                 this->_faceIndex.push_back(faces[1]);
                 this->_faceIndex.push_back(faces[2]);
                 faces.erase(faces.begin() + 1);
             }
-            std::cout << this->_faceIndex.size() << std::endl;
+            std::cout << "faceindex " << this->_faceIndex.size() << std::endl;
             // this->_textureIndex.push_back(A);
             // this->_textureIndex.push_back(B);
             // this->_textureIndex.push_back(C);
