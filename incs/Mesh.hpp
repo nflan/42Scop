@@ -40,6 +40,7 @@ class Mesh
         std::vector<glm::vec3>  _meshVertices;//to store all 3D model face vertices
         std::vector<uint32_t>   _faceIndex;//to store the number of face index started with f
         std::vector<glm::vec3>  _normals;
+        std::vector<uint32_t>   _normalsIndex;
         std::vector<glm::vec3>  _normCoord;
         std::vector<glm::vec2>  _texture;
         std::vector<uint32_t>   _textureIndex;

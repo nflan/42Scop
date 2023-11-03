@@ -184,7 +184,7 @@ void Display::loadGameObjects()
   	std::shared_ptr<ft_Model> Model = ft_Model::createModelFromFile(this->_device, this->_file);
 	auto gameObj = ft_GameObject::createGameObject();
 	gameObj.model = Model;
-	gameObj.transform.translation = {0.f, 0.f, 2.f};
+	gameObj.transform.translation = {0.f, 0.f, 0.f};
 	gameObj.transform.scale = {.5f, .5f, .5f};
 	gameObj.transform.rotation = {0.f, 1.f, 0.f};
 	this->_gameObjects.emplace(gameObj.getId(), std::move(gameObj));

@@ -227,7 +227,7 @@ VK_POLYGON_MODE_POINT : les sommets sont dessinées comme des points
 Tout autre mode que fill doit être activé lors de la mise en place du logical device.*/
     configInfo.rasterizationInfo.lineWidth = 1.0f; //taille de ligne, si autre que 1.0f, activer l'extension wideLines
     configInfo.rasterizationInfo.cullMode = VK_CULL_MODE_BACK_BIT;//VK_CULL_MODE_NONE;
-    configInfo.rasterizationInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;// elements devant
+    configInfo.rasterizationInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;// elements devant
     configInfo.rasterizationInfo.depthBiasEnable = VK_FALSE;
     configInfo.rasterizationInfo.depthBiasConstantFactor = 0.0f;  // Optional
     configInfo.rasterizationInfo.depthBiasClamp = 0.0f;           // Optional

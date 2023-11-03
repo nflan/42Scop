@@ -56,27 +56,113 @@ void Mesh::LoadObjModel(const std::string &filename)
         }
         //check for faces
         else if (line.substr(0,2)=="f ")
-        {//vector de points
+        {
+            //vector de points
             std::istringstream  f(line.substr(2));
-            std::vector<uint32_t>    faces;
-            uint32_t    tmp;
+            // std::vector<uint32_t>    faces;
+            std::vector<std::string>    elements;
+            // std::string     tmpline;
+            uint32_t        tmp;
 
-            while (f.tellg() != -1)
+            for (std::string element; f >> element;)
             {
-                tmp = 0;
+                elements.push_back(element);
+            }
+            for (size_t i = 0; i < elements.size(); i++)
+            {
+                if (elements[i].find('/') != std::string::npos)
+                {
+                    std::string   element = elements[i];
+                    size_t  info = 0;         
+                    std::string    vert, uv, norm;
+                    // std::istringstream  spliting(elements[i]);
+                    for (std::string::iterator it = element.begin(); it != element.end(); it++)
+                    {
+                        if (*it != '/')
+                        {
+                            if (info == 0)
+                            {
+                                vert.push_back(*it);
+                            }
+                            else if (info == 1)
+                            {
+                                if (this->_texture.size())
+                                    uv.push_back(*it);
+                                else if (this->_normals.size())
+                                    norm.push_back(*it);
+                            }
+                            else if (info == 2 && this->_normals.size())
+                            {
+                                norm.push_back(*it);
+                            }
+                        }
+                        else if (*it == '/')
+                        {
+                            while (it != element.end() && *it == '/')
+                            {
+                                it++;
+                            }
+                            info++;
+                            std::cerr << std::endl;
+                        }
+                    }
 
-                f >> tmp;
-                tmp--;
-                faces.push_back(tmp);
+                    this->_faceIndex.push_back(static_cast<uint32_t>(std::stoul(vert)) - 1);
+                    if (uv.size())
+                    {
+                        std::cerr << "push back dans texture -> " << static_cast<uint32_t>(std::stoul(uv)) - 1 << std::endl;
+                        this->_textureIndex.push_back(static_cast<uint32_t>(std::stoul(uv)) - 1);
+                        std::cerr << this->_textureIndex.size() << std::endl;
+                    }
+                    if (norm.size())
+                    {
+                        std::cerr << "push back dans norm -> " << static_cast<uint32_t>(std::stoul(norm)) - 1 << std::endl;
+                        this->_normalsIndex.push_back(static_cast<uint32_t>(std::stoul(norm)) - 1);
+                        std::cerr << this->_normalsIndex.size() << std::endl;
+                    }
+                }
+                else
+                {
+                    while (elements.size() >= 3)
+                    {
+                        this->_faceIndex.push_back(static_cast<uint32_t>(std::stoul(elements[0])) - 1);
+                        this->_faceIndex.push_back(static_cast<uint32_t>(std::stoul(elements[1])) - 1);
+                        this->_faceIndex.push_back(static_cast<uint32_t>(std::stoul(elements[2])) - 1);
+                        elements.erase(elements.begin() + 1);
+                    }
+                }
             }
-            while (faces.size() >= 3)
-            {
-                this->_faceIndex.push_back(faces[0]);
-                this->_faceIndex.push_back(faces[1]);
-                this->_faceIndex.push_back(faces[2]);
-                faces.erase(faces.begin() + 1);
-            }
-            std::cout << "faceindex " << this->_faceIndex.size() << std::endl;
+            // while (f.tellg() != -1)
+            // {
+            //     tmpline.clear();
+            //     tmp = 0;
+            //     f >> tmpline;
+            //     elements = 
+            //     int i = 0;
+            //     while (tmpline.find("/") != std::string::npos)
+            //     {
+            //         i++;
+            //         tmp = static_cast<uint32_t>(std::stoul(tmpline.substr(0, tmpline.find("/"))));
+            //         tmpline = tmpline.erase(0, tmpline.find("/") + 1);
+            //         std::cout << tmp << std::endl;
+            //         std::cout << tmpline << std::endl;
+            //         std::cerr << "i = " << i << " inf?" << std::endl;
+            //         // tmp--;
+            //     // faces.push_back(tmp);
+            //     }
+            //     tmp = static_cast<uint32_t>(std::stoul(tmpline.substr(0, tmpline.find("/"))));
+            //     // tmp--;
+            //     std::cout << tmp << std::endl;
+            //     // faces.push_back(tmp);
+            // }
+            // while (faces.size() >= 3)
+            // {
+            //     this->_faceIndex.push_back(faces[0]);
+            //     this->_faceIndex.push_back(faces[1]);
+            //     this->_faceIndex.push_back(faces[2]);
+            //     faces.erase(faces.begin() + 1);
+            // }
+            // std::cout << "faceindex " << this->_faceIndex.size() << std::endl;
             // this->_textureIndex.push_back(A);
             // this->_textureIndex.push_back(B);
             // this->_textureIndex.push_back(C);
@@ -91,14 +177,18 @@ void Mesh::LoadObjModel(const std::string &filename)
         glm::vec3   normData;
 
         meshData = glm::vec3(this->_vertices[this->_faceIndex[i]].x, this->_vertices[this->_faceIndex[i]].y, this->_vertices[this->_faceIndex[i]].z);
-        if (_texture.size() && _textureIndex[i])
+        if (_texture.size() && i <= _textureIndex.size())
         {
             texData = glm::vec2(this->_texture[this->_textureIndex[i]].x, this->_texture[this->_textureIndex[i]].y);
             this->_texCoord.push_back(texData);
-
-        }if (_normals.size() && _faceIndex[i])
+        }
+        std::cout << "i = " << i << " normalIndex.size() " << _normalsIndex.size() << " _normals.size() " << _normals.size() << std::endl;
+        if (_normals.size() && i <= _normalsIndex.size())
         {
-            normData = glm::vec3(this->_normals[this->_faceIndex[i]].x, this->_normals[this->_faceIndex[i]].y, this->_normals[this->_faceIndex[i]].z);
+            std::cout << "this->_normals[_normalsIndex[i]].x " << this->_normals[_normalsIndex[i]].x << std::endl;
+            std::cout << "this->_normals[_normalsIndex[i]].y " << this->_normals[_normalsIndex[i]].y << std::endl;
+            std::cout << "this->_normals[_normalsIndex[i]].z " << this->_normals[_normalsIndex[i]].z << std::endl;
+            normData = glm::vec3(this->_normals[this->_normalsIndex[i]].x, this->_normals[this->_normalsIndex[i]].y, this->_normals[this->_normalsIndex[i]].z);
             this->_normCoord.push_back(normData);
         }
         this->_meshVertices.push_back(meshData);

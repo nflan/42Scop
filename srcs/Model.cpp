@@ -215,11 +215,11 @@ void	ft_Model::Builder::loadModel(const std::string &filepath)
 	{
 		Vertex vertex{};
 
-		vertex.position = -mesh.getMeshVertices()[i];
+		vertex.position = mesh.getMeshVertices()[i];
         if (mesh.getNormCoord().size() > i)
             vertex.normal = mesh.getNormCoord()[i];
         else
-            vertex.normal = -mesh.getMeshVertices()[i];
+            vertex.normal = mesh.getMeshVertices()[i];
 		if (mesh.getTexCoord().size() > i)
 			vertex.uv = mesh.getTexCoord()[i];
 		else
