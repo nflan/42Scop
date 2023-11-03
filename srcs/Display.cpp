@@ -102,7 +102,6 @@ void	Display::run()
 	std::vector<VkDescriptorSet>	globalDescriptorSets(ft_SwapChain::MAX_FRAMES_IN_FLIGHT);
 	for (int i = 0; i < globalDescriptorSets.size(); i++)
 	{
-		std::cout << "i = " << i << std::endl;
 		auto bufferInfo = uboBuffers[i]->descriptorInfo();
 		DescriptorWriter(*globalSetLayout, *this->_globalPool)
 			.writeBuffer(0, &bufferInfo)
@@ -118,6 +117,7 @@ void	Display::run()
 		this->_device,
 		this->_renderer.getSwapChainRenderPass(),
 		globalSetLayout->getDescriptorSetLayout()};
+
 	ft_Camera camera{};
 
 	auto viewerObject = ft_GameObject::createGameObject();
@@ -184,8 +184,9 @@ void Display::loadGameObjects()
   	std::shared_ptr<ft_Model> Model = ft_Model::createModelFromFile(this->_device, this->_file);
 	auto gameObj = ft_GameObject::createGameObject();
 	gameObj.model = Model;
-	gameObj.transform.translation = {-.5f, .5f, 0.f};
-	gameObj.transform.scale = {3.f, 1.5f, 3.f};
+	gameObj.transform.translation = {0.f, 0.f, 2.f};
+	gameObj.transform.scale = {.5f, .5f, .5f};
+	gameObj.transform.rotation = {0.f, 1.f, 0.f};
 	this->_gameObjects.emplace(gameObj.getId(), std::move(gameObj));
 
 	// Model = ft_Model::createModelFromFile(this->_device, "models/smooth_vase.obj");
@@ -201,6 +202,27 @@ void Display::loadGameObjects()
 	// floor.transform.translation = {0.f, .5f, 0.f};
 	// floor.transform.scale = {3.f, 1.f, 3.f};
 	// this->_gameObjects.emplace(floor.getId(), std::move(floor));
+
+	std::vector<glm::vec3> lightColors{
+		{1.f, .1f, .1f},
+		{.1f, .1f, 1.f},
+		{.1f, 1.f, .1f},
+		{1.f, 1.f, .1f},
+		{.1f, 1.f, 1.f},
+		{1.f, 1.f, 1.f}
+  	};
+
+	for (int i = 0; i < lightColors.size(); i++)
+	{
+		auto pointLight = ft_GameObject::makePointLight(0.2f);
+		pointLight.color = lightColors[i];
+		auto rotateLight = glm::rotate(
+			glm::mat4(1.f),
+			(i * glm::two_pi<float>()) / lightColors.size(),
+			{0.f, -1.f, 0.f});
+		pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-1.f, -1.f, -1.f, 1.f));
+		this->_gameObjects.emplace(pointLight.getId(), std::move(pointLight));
+  	}
 }
 
 // static void	framebufferResizeCallback(GLFWwindow* window, int width, int height)

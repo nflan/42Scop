@@ -71,7 +71,6 @@ void Mesh::LoadObjModel(const std::string &filename)
             }
             while (faces.size() >= 3)
             {
-                std::cerr << "j'ajoute des f" << std::endl;
                 this->_faceIndex.push_back(faces[0]);
                 this->_faceIndex.push_back(faces[1]);
                 this->_faceIndex.push_back(faces[2]);
@@ -89,6 +88,7 @@ void Mesh::LoadObjModel(const std::string &filename)
     {
         glm::vec3   meshData;
         glm::vec2   texData;
+        glm::vec3   normData;
 
         meshData = glm::vec3(this->_vertices[this->_faceIndex[i]].x, this->_vertices[this->_faceIndex[i]].y, this->_vertices[this->_faceIndex[i]].z);
         if (_texture.size() && _textureIndex[i])
@@ -96,6 +96,10 @@ void Mesh::LoadObjModel(const std::string &filename)
             texData = glm::vec2(this->_texture[this->_textureIndex[i]].x, this->_texture[this->_textureIndex[i]].y);
             this->_texCoord.push_back(texData);
 
+        }if (_normals.size() && _faceIndex[i])
+        {
+            normData = glm::vec3(this->_normals[this->_faceIndex[i]].x, this->_normals[this->_faceIndex[i]].y, this->_normals[this->_faceIndex[i]].z);
+            this->_normCoord.push_back(normData);
         }
         this->_meshVertices.push_back(meshData);
     }
@@ -110,3 +114,4 @@ std::vector<glm::vec2>  Mesh::getTexture() { return this->_texture; }
 std::vector<uint32_t>   Mesh::getTextureIndex() { return this->_textureIndex; }
 std::vector<glm::vec2>  Mesh::getTexCoord() { return this->_texCoord; }
 std::vector<glm::vec3>  Mesh::getNormals() { return this->_normals; }
+std::vector<glm::vec3>  Mesh::getNormCoord() { return this->_normCoord; }
