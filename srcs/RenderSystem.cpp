@@ -62,7 +62,7 @@ void    RenderSystem::createPipeline(VkRenderPass renderPass)
     ft_Pipeline::pipelineConfigInfo(pipelineConfig, this->_device);
     pipelineConfig.renderPass = renderPass;
     pipelineConfig.pipelineLayout = this->_pipelineLayout;
-    this->_pipeline = std::make_unique<ft_Pipeline>(this->_device, "shaders/vert.spv", "shaders/frag.spv", pipelineConfig);
+    this->_pipeline = std::make_unique<ft_Pipeline>(this->_device, "shaders/shader.vert.spv", "shaders/shader.frag.spv", pipelineConfig);
 }
 
 void    RenderSystem::renderGameObjects(FrameInfo& frameInfo)

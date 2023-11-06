@@ -103,22 +103,24 @@ void Mesh::LoadObjModel(const std::string &filename)
                                 it++;
                             }
                             info++;
-                            std::cerr << std::endl;
+                            // std::cerr << std::endl;
                         }
                     }
-
+                    // std::cout << "vert = " << vert << std::endl;
                     this->_faceIndex.push_back(static_cast<uint32_t>(std::stoul(vert)) - 1);
                     if (uv.size())
                     {
-                        std::cerr << "push back dans texture -> " << static_cast<uint32_t>(std::stoul(uv)) - 1 << std::endl;
-                        this->_textureIndex.push_back(static_cast<uint32_t>(std::stoul(uv)) - 1);
-                        std::cerr << this->_textureIndex.size() << std::endl;
+                    //     std::cout << "uv = " << uv << std::endl;
+                    //     std::cout << "push back dans texture -> " << static_cast<uint32_t>(std::stoul(uv)) << std::endl;
+                        this->_textureIndex.push_back(static_cast<uint32_t>(std::stoul(uv)));
+                        // std::cerr << this->_textureIndex.size() << std::endl;
                     }
                     if (norm.size())
                     {
-                        std::cerr << "push back dans norm -> " << static_cast<uint32_t>(std::stoul(norm)) - 1 << std::endl;
-                        this->_normalsIndex.push_back(static_cast<uint32_t>(std::stoul(norm)) - 1);
-                        std::cerr << this->_normalsIndex.size() << std::endl;
+                        // std::cout << "norm = " << norm << std::endl;
+                        // std::cerr << "push back dans norm -> " << static_cast<uint32_t>(std::stoul(norm)) << std::endl;
+                        this->_normalsIndex.push_back(static_cast<uint32_t>(std::stoul(norm)));
+                        // std::cerr << this->_normalsIndex.size() << std::endl;
                     }
                 }
                 else
@@ -169,25 +171,30 @@ void Mesh::LoadObjModel(const std::string &filename)
         }
 
     }
+    // std::cout << "uvIndex.size() " << _textureIndex.size() << " _uv.size() " << _texture.size() << std::endl;
+    // std::cout << "normalIndex.size() " << _normalsIndex.size() << " _normals.size() " << _normals.size() << std::endl;
     //calculate all mesh vertices using face index
+    // std::cout << "textureIndex[0] = " << _textureIndex[0] <<std::endl;
     for(unsigned int i = 0; i < this->_faceIndex.size(); i++)
     {
+        std::cout << "i = " << i << std::endl;
         glm::vec3   meshData;
         glm::vec2   texData;
         glm::vec3   normData;
 
         meshData = glm::vec3(this->_vertices[this->_faceIndex[i]].x, this->_vertices[this->_faceIndex[i]].y, this->_vertices[this->_faceIndex[i]].z);
-        if (_texture.size() && i <= _textureIndex.size())
+        if (_texture.size() && _texture.size() >= i)
         {
+            // std::cout << "this->_texture[_textureIndex[i]].x " << this->_texture[_textureIndex[i]].x << std::endl;
+            // std::cout << "this->_texture[_textureIndex[i]].x " << this->_texture[_textureIndex[i]].x << std::endl;
             texData = glm::vec2(this->_texture[this->_textureIndex[i]].x, this->_texture[this->_textureIndex[i]].y);
             this->_texCoord.push_back(texData);
         }
-        std::cout << "i = " << i << " normalIndex.size() " << _normalsIndex.size() << " _normals.size() " << _normals.size() << std::endl;
-        if (_normals.size() && i <= _normalsIndex.size())
+        if (_normals.size() && _normals.size() >= i)
         {
-            std::cout << "this->_normals[_normalsIndex[i]].x " << this->_normals[_normalsIndex[i]].x << std::endl;
-            std::cout << "this->_normals[_normalsIndex[i]].y " << this->_normals[_normalsIndex[i]].y << std::endl;
-            std::cout << "this->_normals[_normalsIndex[i]].z " << this->_normals[_normalsIndex[i]].z << std::endl;
+            // std::cout << "this->_normals[_normalsIndex[i]].x " << this->_normals[_normalsIndex[i]].x << std::endl;
+            // std::cout << "this->_normals[_normalsIndex[i]].y " << this->_normals[_normalsIndex[i]].y << std::endl;
+            // std::cout << "this->_normals[_normalsIndex[i]].z " << this->_normals[_normalsIndex[i]].z << std::endl;
             normData = glm::vec3(this->_normals[this->_normalsIndex[i]].x, this->_normals[this->_normalsIndex[i]].y, this->_normals[this->_normalsIndex[i]].z);
             this->_normCoord.push_back(normData);
         }

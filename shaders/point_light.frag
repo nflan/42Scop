@@ -26,12 +26,17 @@ layout(push_constant) uniform Push {
 } push;
 
 void main() {
-  vec3 diffuseLight = ubo.ambientLightColor.xyz * ubo.ambientLightColor.w;
-  vec3 specularLight = vec3(0.0);
-  vec3 surfaceNormal = normalize(fragNormalWorld);
+  // Ambient lighting (independent of light sources)
+  vec3 ambientLight = ubo.ambientLightColor.xyz * ubo.ambientLightColor.w;
 
+  // Calculate normal and view direction as before
+  vec3 surfaceNormal = normalize(fragNormalWorld);
   vec3 cameraPosWorld = ubo.invView[3].xyz;
   vec3 viewDirection = normalize(cameraPosWorld - fragPosWorld);
+
+  // Initialize diffuse and specular lighting
+  vec3 diffuseLight = vec3(0.0);
+  vec3 specularLight = vec3(0.0);
 
   for (int i = 0; i < ubo.numLights; i++) {
     PointLight light = ubo.pointLights[i];
@@ -52,5 +57,8 @@ void main() {
     specularLight += intensity * blinnTerm;
   }
   
-  outColor = vec4(diffuseLight * fragColor + specularLight * fragColor, 1.0);
+  // Combine ambient, diffuse, and specular lighting
+  vec3 finalColor = ambientLight + diffuseLight + specularLight;
+
+  outColor = vec4(finalColor * fragColor, 1.0);
 }

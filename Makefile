@@ -19,13 +19,15 @@ OBJB_DIR =		obj_bonus
 SRC_DIR =		srcs
 SRCB_DIR =		srcs_bonus
 
-INC =			$(addsuffix .hpp, $(addprefix $(INC_DIR), scop PointLightSystem Device Window Camera Display Vertex Mesh tools))
+GLSLC =			/mnt/nfs/homes/nflan/sgoinfre/bin/glslc
+
+INC =			$(addsuffix .hpp, $(addprefix $(INC_DIR), scop PointLightSystem Device Window Camera Display Vertex Mesh tools GameObject))
 
 SRC =			$(SRC_FT:%=$(SRC_DIR)/%.cpp)
 SRCB =			$(SRCB_FT:%=$(SRCB_DIR)/%.cpp)
 
-OBJ =			$(SRC:$(SRC_DIR)%.c=$(OBJ_DIR)%.o)
-OBJB =			$(SRCB:$(SRCB_DIR)%.c=$(OBJB_DIR)%.o)
+OBJ =			$(SRC:$(SRC_DIR)%.cpp=$(OBJ_DIR)%.o)
+OBJB =			$(SRCB:$(SRCB_DIR)%.cpp=$(OBJB_DIR)%.o)
 
 CXX =	g++ $(CXXFLAGS)
 
@@ -40,7 +42,7 @@ LDFLAGS =	-lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi -I$(GLM_I
 # VulkanTest:	main.cpp
 # g++ $(CXXFLAGS) -o VulkanTest main.cpp $(LDFLAGS)
 
-.c.o:
+.cpp.o:
 	$(CXX) -c $< -o $(<:.cpp=.o)
 
 #HOW TO LIST .c 
@@ -66,6 +68,11 @@ SRC_FT =	Buffer \
 
 SRCB_FT =
 
+vertSources = ./shaders/shader.vert ./shaders/point_light.vert
+vertObjFiles = $(patsubst %.vert, %.vert.spv, $(vertSources))
+fragSources = ./shaders/shader.frag ./shaders/point_light.frag
+fragObjFiles = $(patsubst %.frag, %.frag.spv, $(fragSources))
+
 all: $(NAME)
 
 $(OBJ_DIR):
@@ -73,11 +80,16 @@ $(OBJ_DIR):
 
 $(OBJ) : $(INC) | $(OBJ_DIR)
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CXX) -c $< -o $@
+
+$(NAME): $(vertObjFiles) $(fragObjFiles)
 
 $(NAME): $(INC) $(OBJ_DIR) $(SRC) $(OBJ)
 	$(CXX) $(OBJ) $(LDFLAGS) -o $@
+
+%.spv: %
+	${GLSLC} $< -o $@
 
 bonus: $(NAMEB)
 

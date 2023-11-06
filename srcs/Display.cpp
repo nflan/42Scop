@@ -184,9 +184,9 @@ void Display::loadGameObjects()
   	std::shared_ptr<ft_Model> Model = ft_Model::createModelFromFile(this->_device, this->_file);
 	auto gameObj = ft_GameObject::createGameObject();
 	gameObj.model = Model;
-	gameObj.transform.translation = {0.f, 0.f, 0.f};
-	gameObj.transform.scale = {.5f, .5f, .5f};
-	gameObj.transform.rotation = {0.f, 1.f, 0.f};
+	gameObj.transform.translation = {0.f, 0.f, 1.f};
+	gameObj.transform.scale = {0.9f, 0.9f, 0.9f};
+	gameObj.transform.rotation = {0.f, 0.f, 0.f};
 	this->_gameObjects.emplace(gameObj.getId(), std::move(gameObj));
 
 	// Model = ft_Model::createModelFromFile(this->_device, "models/smooth_vase.obj");
@@ -214,7 +214,7 @@ void Display::loadGameObjects()
 
 	for (int i = 0; i < lightColors.size(); i++)
 	{
-		auto pointLight = ft_GameObject::makePointLight(0.2f);
+		auto pointLight = ft_GameObject::makePointLight(1.f);
 		pointLight.color = lightColors[i];
 		auto rotateLight = glm::rotate(
 			glm::mat4(1.f),

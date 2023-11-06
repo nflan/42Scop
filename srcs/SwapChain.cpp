@@ -481,7 +481,7 @@ VkSurfaceFormatKHR  ft_SwapChain::chooseSwapSurfaceFormat(const std::vector<VkSu
 	for (const auto& availableFormat : availableFormats)
 		if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
 			return availableFormat;
-	//si ca foire, on pourrait tester d'autres formats un peux moins bien mais dans un soucis de simplicite, on prend le premier venu
+	//si ca foire, on pourrait tester d'autres formats un peu moins bien mais dans un soucis de simplicite, on prend le premier venu
 	return availableFormats[0];
 }
 
