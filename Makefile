@@ -21,7 +21,7 @@ SRCB_DIR =		srcs_bonus
 
 GLSLC =			/mnt/nfs/homes/nflan/sgoinfre/bin/glslc
 
-INC =			$(addsuffix .hpp, $(addprefix $(INC_DIR), scop PointLightSystem Device Window Camera Display Vertex Mesh tools GameObject))
+INC =			$(addsuffix .hpp, $(addprefix $(INC_DIR), scop PointLightSystem Device Window Camera Display Vertex Mesh FrameInfo tools GameObject))
 
 SRC =			$(SRC_FT:%=$(SRC_DIR)/%.cpp)
 SRCB =			$(SRCB_FT:%=$(SRCB_DIR)/%.cpp)

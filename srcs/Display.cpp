@@ -122,7 +122,7 @@ void	Display::run()
 
 	auto viewerObject = ft_GameObject::createGameObject();
 
-	viewerObject.transform.translation.z = -2.5f;
+	viewerObject.transform.translation.z = -10.f;
 	KeyboardMovementController cameraController{};
 
 	auto currentTime = std::chrono::high_resolution_clock::now();
@@ -181,20 +181,22 @@ void	Display::run()
 
 void Display::loadGameObjects()
 {
+	float	center = 2;
   	std::shared_ptr<ft_Model> Model = ft_Model::createModelFromFile(this->_device, this->_file);
-	auto gameObj = ft_GameObject::createGameObject();
+	ft_GameObject	gameObj = ft_GameObject::createGameObject();
 	gameObj.model = Model;
-	gameObj.transform.translation = {0.f, 0.f, 1.f};
-	gameObj.transform.scale = {0.9f, 0.9f, 0.9f};
-	gameObj.transform.rotation = {0.f, 0.f, 0.f};
+	gameObj.transform.translation = {center, 0.f, 0.f};
+	gameObj.transform.scale = glm::vec3(center);
+	gameObj.transform.rotation = {0.f, 1.5f, 0.f};
 	this->_gameObjects.emplace(gameObj.getId(), std::move(gameObj));
 
-	// Model = ft_Model::createModelFromFile(this->_device, "models/smooth_vase.obj");
-	// auto smoothVase = ft_GameObject::createGameObject();
-	// smoothVase.model = Model;
-	// smoothVase.transform.translation = {.5f, .5f, 0.f};
-	// smoothVase.transform.scale = {3.f, 1.5f, 3.f};
-	// this->_gameObjects.emplace(smoothVase.getId(), std::move(smoothVase));
+	Model = ft_Model::createModelFromFile(this->_device, "resources/teapot.obj");
+	ft_GameObject smoothVase = ft_GameObject::createGameObject();
+	smoothVase.model = Model;
+	smoothVase.transform.translation = {0.f, 10.5f, 0.f};
+	smoothVase.transform.scale = glm::vec3(center);
+	smoothVase.transform.rotation = {0.f, 1.5f, 0.f};
+	this->_gameObjects.emplace(smoothVase.getId(), std::move(smoothVase));
 
 	// Model = ft_Model::createModelFromFile(this->_device, "models/quad.obj");
 	// auto floor = ft_GameObject::createGameObject();
