@@ -236,7 +236,7 @@ Tout autre mode que fill doit être activé lors de la mise en place du logical 
     configInfo.multisampleInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     configInfo.multisampleInfo.sampleShadingEnable = VK_FALSE;
     configInfo.multisampleInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-    configInfo.multisampleInfo.minSampleShading = 1.f;            // Optional
+    configInfo.multisampleInfo.minSampleShading = .2f;            // Optional
     configInfo.multisampleInfo.pSampleMask = nullptr;             // Optional
     configInfo.multisampleInfo.alphaToCoverageEnable = VK_FALSE;  // Optional
     configInfo.multisampleInfo.alphaToOneEnable = VK_FALSE;       // Optional

@@ -185,9 +185,9 @@ void Display::loadGameObjects()
   	std::shared_ptr<ft_Model> Model = ft_Model::createModelFromFile(this->_device, this->_file);
 	ft_GameObject	gameObj = ft_GameObject::createGameObject();
 	gameObj.model = Model;
-	gameObj.transform.translation = {center, 0.f, 0.f};
+	gameObj.transform.translation = {0.f, 0.f, 0.f};
 	gameObj.transform.scale = glm::vec3(center);
-	gameObj.transform.rotation = {0.f, 1.5f, 0.f};
+	gameObj.transform.rotation = {0.f, 0.f, 0.f};
 	this->_gameObjects.emplace(gameObj.getId(), std::move(gameObj));
 
 	// Model = ft_Model::createModelFromFile(this->_device, "resources/teapot.obj");
@@ -206,12 +206,7 @@ void Display::loadGameObjects()
 	// this->_gameObjects.emplace(floor.getId(), std::move(floor));
 
 	std::vector<glm::vec3> lightColors{
-		{1.f, .1f, .1f},
-		{.1f, .1f, 1.f},
-		{.1f, 1.f, .1f},
-		{1.f, 1.f, .1f},
-		{.1f, 1.f, 1.f},
-		{1.f, 1.f, 1.f}
+		{1.f, 1.f, 1.f},
   	};
 
 	for (int i = 0; i < lightColors.size(); i++)
@@ -219,7 +214,7 @@ void Display::loadGameObjects()
 		auto pointLight = ft_GameObject::makePointLight(0.2f);
 		pointLight.color = lightColors[i];
 		auto rotateLight = glm::rotate(
-			glm::mat4(1.f),
+			glm::mat4(1.5f),
 			(i * glm::two_pi<float>()) / lightColors.size(),
 			{0.f, -1.f, 0.f});
 		pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-1.f, -1.f, -1.f, 1.f));
