@@ -1,9 +1,6 @@
 #version 450
 
-layout (location = 0) in vec3 fragColor;
-layout (location = 1) in vec3 fragPosWorld;
-layout (location = 2) in vec3 fragNormalWorld;
-
+layout (location = 0) in vec2 fragOffset;
 layout (location = 0) out vec4 outColor;
 
 struct PointLight {
@@ -21,44 +18,19 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
 } ubo;
 
 layout(push_constant) uniform Push {
-  mat4 modelMatrix;
-  mat4 normalMatrix;
+  vec4 position;
+  vec4 color;
+  float radius;
 } push;
 
+const float M_PI = 3.1415926538;
+
 void main() {
-  // Ambient lighting (independent of light sources)
-  vec3 ambientLight = ubo.ambientLightColor.xyz * ubo.ambientLightColor.w;
-
-  // Calculate normal and view direction as before
-  vec3 surfaceNormal = normalize(fragNormalWorld);
-  vec3 cameraPosWorld = ubo.invView[3].xyz;
-  vec3 viewDirection = normalize(cameraPosWorld - fragPosWorld);
-
-  // Initialize diffuse and specular lighting
-  vec3 diffuseLight = vec3(0.0);
-  vec3 specularLight = vec3(0.0);
-
-  for (int i = 0; i < ubo.numLights; i++) {
-    PointLight light = ubo.pointLights[i];
-    vec3 directionToLight = light.position.xyz - fragPosWorld;
-    float attenuation = 1.0 / dot(directionToLight, directionToLight); // distance squared
-    directionToLight = normalize(directionToLight);
-
-    float cosAngIncidence = max(dot(surfaceNormal, directionToLight), 0);
-    vec3 intensity = light.color.xyz * light.color.w * attenuation;
-
-    diffuseLight += intensity * cosAngIncidence;
-
-    // specular lighting
-    vec3 halfAngle = normalize(directionToLight + viewDirection);
-    float blinnTerm = dot(surfaceNormal, halfAngle);
-    blinnTerm = clamp(blinnTerm, 0, 1);
-    blinnTerm = pow(blinnTerm, 512.0); // higher values -> sharper highlight
-    specularLight += intensity * blinnTerm;
+  float dis = sqrt(dot(fragOffset, fragOffset));
+  if (dis >= 1.0) {
+    discard;
   }
-  
-  // Combine ambient, diffuse, and specular lighting
-  vec3 finalColor = ambientLight + diffuseLight + specularLight;
 
-  outColor = vec4(finalColor * fragColor, 1.0);
+  float cosDis = 0.5 * (cos(dis * M_PI) + 1.0); // ranges from 1 -> 0
+  outColor = vec4(push.color.xyz + 0.5 * cosDis, cosDis);
 }

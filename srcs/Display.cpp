@@ -17,15 +17,15 @@
 bool		QUIT = false;
 const int	MAX_FRAMES_IN_FLIGHT = 2;
 
-namespace std {
-    template<> struct hash<Vertex> {
-        size_t operator()(Vertex const& vertex) const {
-            return ((hash<glm::vec3>()(vertex.pos) ^
-                   (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
-                   (hash<glm::vec2>()(vertex.texCoord) << 1);
-        }
-    };
-}
+// namespace std {
+//     template<> struct hash<ft_Model::Vertex> {
+//         size_t operator()(ft_Model::Vertex const& vertex) const {
+//             return ((hash<glm::vec3>()(vertex.pos) ^
+//                    (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
+//                    (hash<glm::vec2>()(vertex.texCoord) << 1);
+//         }
+//     };
+// }
 
 static	std::vector<char> readFile(const std::string& filename) {
 	std::ifstream	file(filename, std::ios::ate | std::ios::binary); //ate pour commencer a la fin / binary pour dire que c'est un binaire et pas recompiler
@@ -122,8 +122,8 @@ void	Display::run()
 
 	auto viewerObject = ft_GameObject::createGameObject();
 
-	viewerObject.transform.translation.z = -10.f;
-	KeyboardMovementController cameraController{};
+	viewerObject.transform.translation.z = -5.f;
+	KeyboardMovementController cameraController(glm::vec3(0,0,-5));
 
 	auto currentTime = std::chrono::high_resolution_clock::now();
 	while (!this->_window.shouldClose() && !QUIT)
@@ -181,7 +181,7 @@ void	Display::run()
 
 void Display::loadGameObjects()
 {
-	float	center = 2;
+	float	center = 0.5;
   	std::shared_ptr<ft_Model> Model = ft_Model::createModelFromFile(this->_device, this->_file);
 	ft_GameObject	gameObj = ft_GameObject::createGameObject();
 	gameObj.model = Model;
@@ -190,15 +190,15 @@ void Display::loadGameObjects()
 	gameObj.transform.rotation = {0.f, 1.5f, 0.f};
 	this->_gameObjects.emplace(gameObj.getId(), std::move(gameObj));
 
-	Model = ft_Model::createModelFromFile(this->_device, "resources/teapot.obj");
-	ft_GameObject smoothVase = ft_GameObject::createGameObject();
-	smoothVase.model = Model;
-	smoothVase.transform.translation = {0.f, 10.5f, 0.f};
-	smoothVase.transform.scale = glm::vec3(center);
-	smoothVase.transform.rotation = {0.f, 1.5f, 0.f};
-	this->_gameObjects.emplace(smoothVase.getId(), std::move(smoothVase));
+	// Model = ft_Model::createModelFromFile(this->_device, "resources/teapot.obj");
+	// ft_GameObject smoothVase = ft_GameObject::createGameObject();
+	// smoothVase.model = Model;
+	// smoothVase.transform.translation = {0.f, 10.5f, 0.f};
+	// smoothVase.transform.scale = glm::vec3(center);
+	// smoothVase.transform.rotation = {0.f, 1.5f, 0.f};
+	// this->_gameObjects.emplace(smoothVase.getId(), std::move(smoothVase));
 
-	// Model = ft_Model::createModelFromFile(this->_device, "models/quad.obj");
+	// std::shared_ptr<ft_Model> Model = ft_Model::createModelFromFile(this->_device, "resources/quad.obj");
 	// auto floor = ft_GameObject::createGameObject();
 	// floor.model = Model;
 	// floor.transform.translation = {0.f, .5f, 0.f};
@@ -216,7 +216,7 @@ void Display::loadGameObjects()
 
 	for (int i = 0; i < lightColors.size(); i++)
 	{
-		auto pointLight = ft_GameObject::makePointLight(1.f);
+		auto pointLight = ft_GameObject::makePointLight(0.2f);
 		pointLight.color = lightColors[i];
 		auto rotateLight = glm::rotate(
 			glm::mat4(1.f),

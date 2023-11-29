@@ -29,7 +29,7 @@ class Mesh
         std::vector<glm::vec3>  getMeshVertices();//return the vertices of mesh data
         std::vector<glm::vec3>  getVertices();
         std::vector<uint32_t>   getFaceIndex();
-        std::vector<glm::vec2>  getTexture();
+        std::vector<glm::vec2>  getTextures();
         std::vector<uint32_t>   getTextureIndex();
         std::vector<glm::vec2>  getTexCoord();
         std::vector<glm::vec3>  getNormals();
@@ -42,7 +42,7 @@ class Mesh
         std::vector<glm::vec3>  _normals;
         std::vector<uint32_t>   _normalsIndex;
         std::vector<glm::vec3>  _normCoord;
-        std::vector<glm::vec2>  _texture;
+        std::vector<glm::vec2>  _textures;
         std::vector<uint32_t>   _textureIndex;
         std::vector<glm::vec2>  _texCoord;
 };

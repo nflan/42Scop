@@ -56,8 +56,8 @@ void ft_Pipeline::createGraphicsPipeline(const std::string& vertFilepath, const 
     auto vertShaderCode = readFile(vertFilepath);
     auto fragShaderCode = readFile(fragFilepath);
 
-    this->_vertShaderModule = createShaderModule(vertShaderCode);//creation du pipeline -> compile et mis sur la carte. on peut donc detruire une fois que la pipeline est finie
-    this->_fragShaderModule = createShaderModule(fragShaderCode);
+    createShaderModule(vertShaderCode, &this->_vertShaderModule);
+    createShaderModule(fragShaderCode, &this->_fragShaderModule);//creation du pipeline -> compile et mis sur la carte. on peut donc detruire une fois que la pipeline est finie
 
     VkPipelineShaderStageCreateInfo shaderStages[2];
     shaderStages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -76,8 +76,8 @@ void ft_Pipeline::createGraphicsPipeline(const std::string& vertFilepath, const 
     shaderStages[1].pNext = nullptr;
     shaderStages[1].pSpecializationInfo = nullptr;
 
-    auto    bindingDescriptions = ft_Model::Vertex::getBindingDescriptions();
-    auto    attributeDescriptions = ft_Model::Vertex::getAttributeDescriptions();
+    auto& bindingDescriptions = configInfo.bindingDescriptions;
+    auto& attributeDescriptions = configInfo.attributeDescriptions;
 
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -110,18 +110,15 @@ void ft_Pipeline::createGraphicsPipeline(const std::string& vertFilepath, const 
         throw std::runtime_error("failed to create graphics pipeline");
 }
 
-VkShaderModule ft_Pipeline::createShaderModule(const std::vector<char>& code)
+void ft_Pipeline::createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule)
 {
-	VkShaderModuleCreateInfo createInfo{};
-	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-	createInfo.codeSize = code.size();
-	createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+    VkShaderModuleCreateInfo createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    createInfo.codeSize = code.size();
+    createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
-	VkShaderModule  shaderModule;
-	if (vkCreateShaderModule(this->_device.device(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
-		throw std::runtime_error("échec de la création d'un module shader!");
-
-	return shaderModule;
+	if (vkCreateShaderModule(this->_device.device(), &createInfo, nullptr, shaderModule) != VK_SUCCESS)
+        throw std::runtime_error("failed to create shader module");
 }
 
 void    ft_Pipeline::bind(VkCommandBuffer commandBuffer)
@@ -138,12 +135,12 @@ void ft_Pipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo)
 
     configInfo.viewportInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
     configInfo.viewportInfo.viewportCount = 1;
-    configInfo.viewportInfo.pViewports = nullptr;// ?
+    configInfo.viewportInfo.pViewports = nullptr;
     configInfo.viewportInfo.scissorCount = 1;
-    configInfo.viewportInfo.pScissors = nullptr;// ?
+    configInfo.viewportInfo.pScissors = nullptr;
 
 	//RASTERIZER
-    configInfo.rasterizationInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+   configInfo.rasterizationInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     configInfo.rasterizationInfo.depthClampEnable = VK_FALSE;
     configInfo.rasterizationInfo.rasterizerDiscardEnable = VK_FALSE;
     configInfo.rasterizationInfo.polygonMode = VK_POLYGON_MODE_FILL;
@@ -201,6 +198,9 @@ void ft_Pipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo)
     configInfo.dynamicStateInfo.dynamicStateCount =
         static_cast<uint32_t>(configInfo.dynamicStateEnables.size());
     configInfo.dynamicStateInfo.flags = 0;
+
+    configInfo.bindingDescriptions = ft_Model::Vertex::getBindingDescriptions();
+    configInfo.attributeDescriptions = ft_Model::Vertex::getAttributeDescriptions();
 }
 
 void ft_Pipeline::pipelineConfigInfo(PipelineConfigInfo& configInfo, ft_Device& device)
@@ -235,8 +235,8 @@ Tout autre mode que fill doit être activé lors de la mise en place du logical 
 
     configInfo.multisampleInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     configInfo.multisampleInfo.sampleShadingEnable = VK_FALSE;
-    configInfo.multisampleInfo.rasterizationSamples = device.getMsaaSamples();
-    configInfo.multisampleInfo.minSampleShading = 1.0f;           // Optional
+    configInfo.multisampleInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+    configInfo.multisampleInfo.minSampleShading = 1.f;            // Optional
     configInfo.multisampleInfo.pSampleMask = nullptr;             // Optional
     configInfo.multisampleInfo.alphaToCoverageEnable = VK_FALSE;  // Optional
     configInfo.multisampleInfo.alphaToOneEnable = VK_FALSE;       // Optional
@@ -279,6 +279,9 @@ Tout autre mode que fill doit être activé lors de la mise en place du logical 
     configInfo.dynamicStateInfo.dynamicStateCount =
         static_cast<uint32_t>(configInfo.dynamicStateEnables.size());
     configInfo.dynamicStateInfo.flags = 0;
+
+    configInfo.bindingDescriptions = ft_Model::Vertex::getBindingDescriptions();
+    configInfo.attributeDescriptions = ft_Model::Vertex::getAttributeDescriptions();
 }
 
 void    ft_Pipeline::enableAlphaBlending(PipelineConfigInfo& configInfo)

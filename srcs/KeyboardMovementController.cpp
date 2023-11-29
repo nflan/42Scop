@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   KeyboardMovementController.cpp                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/11/29 13:02:23 by nflan             #+#    #+#             */
+/*   Updated: 2023/11/29 13:02:24 by nflan            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../incs/KeyboardMovementController.hpp"
 
 #include <limits>
@@ -32,7 +44,7 @@ void KeyboardMovementController::moveInPlaneXZ(GLFWwindow* window, float dt, ft_
     if (glfwGetKey(window, this->_keys.moveDown) == GLFW_PRESS) moveDir -= upDir;
     if (glfwGetKey(window, this->_keys.reset) == GLFW_PRESS)
     {
-        gameObject.transform.translation = {0, 0, 0};//+ glm::normalize(moveDir);
+        gameObject.transform.translation = _resetPos;//+ glm::normalize(moveDir);
     }
 
     if (glm::dot(moveDir, moveDir) > std::numeric_limits<float>::epsilon())

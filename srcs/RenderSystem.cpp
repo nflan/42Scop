@@ -59,10 +59,15 @@ void    RenderSystem::createPipeline(VkRenderPass renderPass)
     assert(this->_pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
     PipelineConfigInfo pipelineConfig{};
-    ft_Pipeline::pipelineConfigInfo(pipelineConfig, this->_device);
+    ft_Pipeline::defaultPipelineConfigInfo(pipelineConfig);
+    // TODOft_Pipeline::pipelineConfigInfo(pipelineConfig, this->_device);
     pipelineConfig.renderPass = renderPass;
     pipelineConfig.pipelineLayout = this->_pipelineLayout;
-    this->_pipeline = std::make_unique<ft_Pipeline>(this->_device, "shaders/shader.vert.spv", "shaders/shader.frag.spv", pipelineConfig);
+    this->_pipeline = std::make_unique<ft_Pipeline>(
+        this->_device,
+        "shaders/shader.vert.spv",
+        "shaders/shader.frag.spv",
+        pipelineConfig);
 }
 
 void    RenderSystem::renderGameObjects(FrameInfo& frameInfo)

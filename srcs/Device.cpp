@@ -98,16 +98,16 @@ ft_Device::ft_Device(ft_Window &window): _window{window}
     createCommandPool();
 }
 
-ft_Device::~ft_Device() {
-  vkDestroyCommandPool(this->_device_, this->_commandPool, nullptr);
-  vkDestroyDevice(this->_device_, nullptr);
+ft_Device::~ft_Device()
+{
+	vkDestroyCommandPool(this->_device_, this->_commandPool, nullptr);
+	vkDestroyDevice(this->_device_, nullptr);
 
-  if (enableValidationLayers) {
-    DestroyDebugUtilsMessengerEXT(this->_instance, this->_debugMessenger, nullptr);
-  }
+	if (enableValidationLayers)
+		DestroyDebugUtilsMessengerEXT(this->_instance, this->_debugMessenger, nullptr);
 
-  vkDestroySurfaceKHR(this->_instance, this->_surface_, nullptr);
-  vkDestroyInstance(this->_instance, nullptr);
+	vkDestroySurfaceKHR(this->_instance, this->_surface_, nullptr);
+	vkDestroyInstance(this->_instance, nullptr);
 }
 
 void ft_Device::createInstance()
@@ -168,7 +168,7 @@ void ft_Device::pickPhysicalDevice()
 	for (const auto& device : devices) {
 		if (isDeviceSuitable(device)) {
 			this->_physicalDevice = device;
-			this->_msaaSamples = getMaxUsableSampleCount(VK_SAMPLE_COUNT_8_BIT);
+			// TODOthis->_msaaSamples = getMaxUsableSampleCount(VK_SAMPLE_COUNT_8_BIT);
 			break;
 		}
 	}
@@ -271,7 +271,7 @@ void ft_Device::createLogicalDevice()
 
 	VkPhysicalDeviceFeatures deviceFeatures{};
 	deviceFeatures.samplerAnisotropy = VK_TRUE;
-	deviceFeatures.sampleRateShading = VK_TRUE; // Activation du sample shading pour le device
+	// TODOdeviceFeatures.sampleRateShading = VK_TRUE; // Activation du sample shading pour le device
 
 	VkDeviceCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;

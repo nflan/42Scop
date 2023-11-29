@@ -15,9 +15,9 @@
 
 #include "GameObject.hpp"
 #include "Window.hpp"
+#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
 
 class   KeyboardMovementController {
-
     public:
         struct KeyMappings {
             int moveLeft = GLFW_KEY_A;
@@ -34,11 +34,14 @@ class   KeyboardMovementController {
 
         };
 
+        KeyboardMovementController(glm::vec3 o): _resetPos(o) {};
+
         void    moveInPlaneXZ(GLFWwindow* window, float dt, ft_GameObject& gameObject);
 
         KeyMappings _keys{};
         float       _moveSpeed{5.f};
         float       _lookSpeed{2.f};
+        glm::vec3   _resetPos;
 };
 
 #endif

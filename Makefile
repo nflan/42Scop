@@ -68,9 +68,9 @@ SRC_FT =	Buffer \
 
 SRCB_FT =
 
-vertSources = ./shaders/shader.vert ./shaders/point_light.vert
+vertSources = $(shell find shaders -type f -name "*.vert")
 vertObjFiles = $(patsubst %.vert, %.vert.spv, $(vertSources))
-fragSources = ./shaders/shader.frag ./shaders/point_light.frag
+fragSources = $(shell find shaders -type f -name "*.frag")
 fragObjFiles = $(patsubst %.frag, %.frag.spv, $(fragSources))
 
 all: $(NAME)
@@ -88,7 +88,10 @@ $(NAME): $(vertObjFiles) $(fragObjFiles)
 $(NAME): $(INC) $(OBJ_DIR) $(SRC) $(OBJ)
 	$(CXX) $(OBJ) $(LDFLAGS) -o $@
 
-%.spv: %
+%.vert.spv: %.vert
+	${GLSLC} $< -o $@
+
+%.frag.spv: %.frag
 	${GLSLC} $< -o $@
 
 bonus: $(NAMEB)
