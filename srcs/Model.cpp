@@ -246,8 +246,11 @@ void	ft_Model::Builder::loadModel(const std::string &filepath)
 			vertex.uv = mesh.getTexCoord()[i];
 		else
 			vertex.uv = {0.0f, 0.0f};
-        // vertex.color = {0.5f, 0.5f, 0.5f};
-		vertex.color = {static_cast <float> (rand()) / static_cast <float> (RAND_MAX), static_cast <float> (rand()) / static_cast <float> (RAND_MAX), static_cast <float> (rand()) / static_cast <float> (RAND_MAX)};
+        float y = i%6 * 2;
+        y /= 10;
+        std::cout << "y = " << y << " et i = " << i << std::endl;
+        vertex.color = {y, y, y};
+		// vertex.color = {static_cast <float> (rand()) / static_cast <float> (RAND_MAX), static_cast <float> (rand()) / static_cast <float> (RAND_MAX), static_cast <float> (rand()) / static_cast <float> (RAND_MAX)};
 
 		if (uniqueVertices.count(vertex) == 0)
 		{
