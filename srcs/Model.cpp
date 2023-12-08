@@ -54,6 +54,13 @@ std::unique_ptr<ft_Model> ft_Model::createModelFromFile(
 
 void    ft_Model::createVertexBuffers(const std::vector<Vertex> &vertices)
 {
+    _centerOfObj = glm::vec3(0.0f);
+
+    for (const Vertex& vertex : vertices)
+        _centerOfObj += vertex.position;
+
+    _centerOfObj /= static_cast<float>(vertices.size());
+    std::cerr << "center = " << _centerOfObj.x << "," << _centerOfObj.y << "," << _centerOfObj.z << " et v size() = " << vertices.size() << std::endl;
     this->_vertexCount = static_cast<uint32_t>(vertices.size());
     assert(this->_vertexCount >= 3 && "Vertex count must be at least 3");
     VkDeviceSize    bufferSize = sizeof(vertices[0]) * this->_vertexCount;
@@ -232,12 +239,14 @@ void	ft_Model::Builder::loadModel(const std::string &filepath)
 	this->_vertices.clear();
     this->_indices.clear();
 	std::unordered_map<Vertex, uint32_t> uniqueVertices;
+    float y = 0;
 
 	for (uint32_t i = 0; i < mesh.getFaceIndex().size(); i++)
 	{
-		Vertex vertex{};
+		Vertex  vertex{};
+        glm::vec3   vertices = mesh.getMeshVertices()[i];
 
-		vertex.position = -mesh.getMeshVertices()[i];
+		vertex.position = -vertices; // on peut inverser l'axe dans le viewport mais ca inverse tous les autres calculs et ca trigger les validations layers
         if (mesh.getNormCoord().size() > i)
             vertex.normal = mesh.getNormCoord()[i];
         else
@@ -246,10 +255,12 @@ void	ft_Model::Builder::loadModel(const std::string &filepath)
 			vertex.uv = mesh.getTexCoord()[i];
 		else
 			vertex.uv = {0.0f, 0.0f};
-        float y = i%6 * 2;
-        y /= 10;
-        std::cout << "y = " << y << " et i = " << i << std::endl;
-        vertex.color = {y, y, y};
+        if (i % 3 == 0)
+            y += 0.1;
+        if (y >= .6)
+            y = 0;
+        // std::cout << "y = " << y << " et i = " << i << std::endl;
+        vertex.color = glm::vec3(y);
 		// vertex.color = {static_cast <float> (rand()) / static_cast <float> (RAND_MAX), static_cast <float> (rand()) / static_cast <float> (RAND_MAX), static_cast <float> (rand()) / static_cast <float> (RAND_MAX)};
 
 		if (uniqueVertices.count(vertex) == 0)

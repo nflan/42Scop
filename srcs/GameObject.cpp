@@ -40,6 +40,24 @@ glm::mat4 TransformComponent::mat4()
 			scale.z * (c1 * c2),
 			0.0f,
 		},
+		// 		{
+		// 	scale.x * (c1 * c3 - s1 * c2 * s3),
+		// 	scale.x * (s1 * c3 + c1 * c2 *s3),
+		// 	scale.x * (s2 * s3),
+		// 	0.0f,
+		// },
+		// {
+		// 	scale.y * ((-c1) * s3 - s1 * c2 * c3),
+		// 	scale.y * ((-s1) * s3 + c1 *c2 *c3),
+		// 	scale.y * (s2 * c3),
+		// 	0.0f,
+		// },
+		// {
+		// 	scale.z * (s1 * s2),
+		// 	scale.z * ((-c1) * s2),
+		// 	scale.z * (c2),
+		// 	0.0f,
+		// },
 		{translation.x, translation.y, translation.z, 1.0f}};
 }
 
@@ -70,6 +88,21 @@ glm::mat3 TransformComponent::normalMatrix() {
 				invScale.z * (c1 * c2),
 			},
 	};
+}
+
+void	TransformComponent::updateModelMatrix()
+{
+	modelMatrix = glm::mat4(1.0f);
+    modelMatrix = glm::translate(modelMatrix, translation);
+    modelMatrix = glm::rotate(modelMatrix, rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+    modelMatrix = glm::rotate(modelMatrix, rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+    modelMatrix = glm::rotate(modelMatrix, rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+    modelMatrix = glm::scale(modelMatrix, scale);
+}
+
+void	TransformComponent::updateNormalMatrix()
+{
+	normalMat = glm::mat3(glm::transpose(glm::inverse(modelMatrix)));
 }
 
 ft_GameObject   ft_GameObject::makePointLight(float intensity, float radius, glm::vec3 color)

@@ -168,7 +168,7 @@ void ft_Device::pickPhysicalDevice()
 	for (const auto& device : devices) {
 		if (isDeviceSuitable(device)) {
 			this->_physicalDevice = device;
-			// TODOthis->_msaaSamples = getMaxUsableSampleCount(VK_SAMPLE_COUNT_8_BIT);
+			this->_msaaSamples = getMaxUsableSampleCount(VK_SAMPLE_COUNT_8_BIT);
 			break;
 		}
 	}

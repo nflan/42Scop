@@ -16,9 +16,12 @@
 #include "Camera.hpp"
 #include "Device.hpp"
 #include "FrameInfo.hpp"
+#include "tools.hpp"
 #include "GameObject.hpp"
 #include "Pipeline.hpp"
 
+#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/gtc/quaternion.hpp>
+#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/gtx/transform.hpp>
 #include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
 
 

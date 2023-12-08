@@ -74,6 +74,7 @@ void    RenderSystem::renderGameObjects(FrameInfo& frameInfo)
 {
     this->_pipeline->bind(frameInfo.commandBuffer);
 
+    std::cerr << WAY << std::endl;
     vkCmdBindDescriptorSets(
         frameInfo.commandBuffer,
         VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -84,12 +85,30 @@ void    RenderSystem::renderGameObjects(FrameInfo& frameInfo)
         0,
         nullptr);
 
-    for (auto& kv : frameInfo.gameObjects) {
-        auto& obj = kv.second;
-        if (obj.model == nullptr) continue;
+    for (std::pair<const ft_GameObject::id_t, ft_GameObject>& kv : frameInfo.gameObjects)
+    {
+        ft_GameObject& obj = kv.second;
+        if (obj.model == nullptr)
+            continue;
+
+        glm::vec3	center = obj.model->getCenterOfObj();
+
+        obj.transform.translation = -center; // put obj to the center
+        obj.transform.rotation.y += ROT * WAY; // rotate on itself
+        glm::quat rotationQuat = glm::quat(obj.transform.rotation); // quaternions est plus interessant que euler pour ce calcul. Eulers > humanoid / camera
+
+        // Translation to the origin, rotation, and then translation back
+        obj.transform.modelMatrix = glm::translate(glm::mat4(1.0f), -obj.transform.translation) *
+                            glm::mat4_cast(rotationQuat) *
+                            glm::translate(glm::mat4(1.0f), obj.transform.translation) *
+                            glm::scale(glm::mat4(1.0f), obj.transform.scale);
+
         SimplePushConstantData push{};
-        push.modelMatrix = obj.transform.mat4();
-        push.normalMatrix = obj.transform.normalMatrix();
+        push.modelMatrix = obj.transform.modelMatrix;
+        obj.transform.updateNormalMatrix();
+        push.normalMatrix = obj.transform.normalMat;
+        // obj.transform.rotation = glm::mod(obj.transform.rotation + 0.0005f, glm::two_pi<float>());
+        // obj.transform.translation.x += 1.0f;
 
         vkCmdPushConstants(
             frameInfo.commandBuffer,

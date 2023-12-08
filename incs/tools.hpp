@@ -10,13 +10,17 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef TRIANGLE_HPP
-#define TRIANGLE_HPP
+#ifndef TOOLS_HPP
+#define TOOLS_HPP
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-extern bool	QUIT;
+#define ROTATION 0.0005f
+
+extern bool QUIT;
+extern short	WAY;
+extern float    ROT;
 
 namespace std {
 

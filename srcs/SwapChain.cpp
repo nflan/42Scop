@@ -188,7 +188,7 @@ void    ft_SwapChain::createSwapChain()
 		createInfo.pQueueFamilyIndices = nullptr; // Optionnel
 	}
 
-	createInfo.preTransform = swapChainSupport.capabilities.currentTransform; // si on veut transform genre rotate ou symetrie verticale
+	createInfo.preTransform = swapChainSupport.capabilities.currentTransform; // si on veut transform genre rotate ou symetrie verticale TODO
 	createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR; //si on veut que la fenetre influe sur les couleurs de l'image (generalement non, comme ici)
 	createInfo.presentMode = presentMode; // meilleures performances avec clipped = vk_true
 	createInfo.clipped = VK_TRUE; //pas afficher pixels derrieres

@@ -15,6 +15,8 @@
 #include "/mnt/nfs/homes/nflan/sgoinfre/bin/stb/stb_image.h"
 
 bool		QUIT = false;
+short		WAY = 1;
+float		ROT = ROTATION; //change in tools.hpp
 const int	MAX_FRAMES_IN_FLIGHT = 2;
 
 // namespace std {
@@ -50,6 +52,15 @@ void	key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	static_cast<void> (mods);
 	if ((key == GLFW_KEY_ESCAPE) && action == GLFW_PRESS)
 		QUIT = true;
+	if ((key == GLFW_KEY_F) && action == GLFW_PRESS)
+		WAY *= -1;
+	if ((key == GLFW_KEY_P) && action == GLFW_PRESS)
+	{
+		if (ROT != 0)
+			ROT = 0;
+		else
+			ROT = ROTATION;
+	}
 }
 
 Display::Display() {
@@ -122,16 +133,16 @@ void	Display::run()
 
 	auto viewerObject = ft_GameObject::createGameObject();
 
-	viewerObject.transform.translation.z = -5.f;
-	KeyboardMovementController cameraController(glm::vec3(0,0,-5));
+	viewerObject.transform.translation.z = -10.f;
+	KeyboardMovementController cameraController(glm::vec3(0,0,-10));
 
-	auto currentTime = std::chrono::high_resolution_clock::now();
+	std::chrono::_V2::system_clock::time_point currentTime = std::chrono::high_resolution_clock::now();
 	while (!this->_window.shouldClose() && !QUIT)
 	{
 		glfwSetKeyCallback(this->_window.getWindow(), key_callback);
 		glfwPollEvents();
 
-		auto newTime = std::chrono::high_resolution_clock::now();
+		std::chrono::_V2::system_clock::time_point newTime = std::chrono::high_resolution_clock::now();
 		float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
 		currentTime = newTime;
 
@@ -181,22 +192,25 @@ void	Display::run()
 
 void Display::loadGameObjects()
 {
-	float	center = 0.5;
   	std::shared_ptr<ft_Model> Model = ft_Model::createModelFromFile(this->_device, this->_file);
 	ft_GameObject	gameObj = ft_GameObject::createGameObject();
 	gameObj.model = Model;
-	gameObj.transform.translation = {0.f, 0.f, 0.f};
-	gameObj.transform.scale = glm::vec3(center);
-	gameObj.transform.rotation = {0.f, 0.f, 0.f};
+	// gameObj.transform.translation = (glm::mat4(1.0f), -center);
+	// gameObj.transform.scale = glm::vec3(0.5f);
+	// gameObj.transform.rotation = glm::vec3(0.f, 1.5f, 0.f);
+
+	// gameObj.transform.updateModelMatrix();
+	// gameObj.transform.updateNormalMatrix();
+	
 	this->_gameObjects.emplace(gameObj.getId(), std::move(gameObj));
 
-	// Model = ft_Model::createModelFromFile(this->_device, "resources/teapot.obj");
-	// ft_GameObject smoothVase = ft_GameObject::createGameObject();
-	// smoothVase.model = Model;
-	// smoothVase.transform.translation = {0.f, 10.5f, 0.f};
-	// smoothVase.transform.scale = glm::vec3(center);
-	// smoothVase.transform.rotation = {0.f, 1.5f, 0.f};
-	// this->_gameObjects.emplace(smoothVase.getId(), std::move(smoothVase));
+	// Model = ft_Model::createModelFromFile(this->_device, "resources/42.obj");
+	// ft_GameObject gameObjS = ft_GameObject::createGameObject();
+	// gameObjS.model = Model;
+	// gameObjS.transform.translation = -center;
+	// gameObjS.transform.scale = glm::vec3(0.5f);
+	// gameObjS.transform.rotation = glm::vec3(0.f, 1.5f, 0.f);
+	// this->_gameObjects.emplace(gameObjS.getId(), std::move(gameObjS));
 
 	// std::shared_ptr<ft_Model> Model = ft_Model::createModelFromFile(this->_device, "resources/quad.obj");
 	// auto floor = ft_GameObject::createGameObject();
@@ -211,9 +225,11 @@ void Display::loadGameObjects()
 
 	for (int i = 0; i < lightColors.size(); i++)
 	{
-		auto pointLight = ft_GameObject::makePointLight(0.2f);
+		std::cerr << "i = " << i << std::endl;
+		ft_GameObject pointLight = ft_GameObject::makePointLight(0.2f);
 		pointLight.color = lightColors[i];
-		auto rotateLight = glm::rotate(
+		
+		glm::mat4 rotateLight = glm::rotate(
 			glm::mat4(1.5f),
 			(i * glm::two_pi<float>()) / lightColors.size(),
 			{0.f, -1.f, 0.f});

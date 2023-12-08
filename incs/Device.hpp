@@ -61,6 +61,7 @@ class ft_Device {
         VkQueue                         getPresentQueue() { return _presentQueue_; }
         VkQueue*                        getpPresentQueue() { return &_presentQueue_; }
         VkSurfaceKHR                    getSurface() { return _surface_; }
+        ft_Window&                      getWindow() { return _window; }
         const std::vector<const char *> getValidationLayers() { return _validationLayers; }
         const std::vector<const char *> getDeviceExtensions() { return _deviceExtensions; }
 

@@ -146,9 +146,9 @@ void    ft_Renderer::beginSwapChainRenderPass(VkCommandBuffer commandBuffer)
 
     VkViewport viewport{};
     viewport.x = 0.0f;
-    viewport.y = 0.0f;
+    viewport.y = 0.0f;// pour inverse viewport, mettre la height (a faire au debut du projet ptete)
     viewport.width = static_cast<float>(this->_swapChain->getSwapChainExtent().width);
-    viewport.height = static_cast<float>(this->_swapChain->getSwapChainExtent().height);
+    viewport.height = static_cast<float>(this->_swapChain->getSwapChainExtent().height); // on peut inverser l'axe dans le viewport mais ca inverse tous les autres calculs et ca trigger les validations layers
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
     VkRect2D scissor{{0, 0}, this->_swapChain->getSwapChainExtent()};

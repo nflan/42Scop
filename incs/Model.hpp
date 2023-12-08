@@ -57,6 +57,7 @@ class ft_Model {
         ft_Model &operator=(const ft_Model &) = delete;
 
         static std::unique_ptr<ft_Model> createModelFromFile(ft_Device &device, const std::string &filepath);
+        glm::vec3   getCenterOfObj( void ) { return _centerOfObj; };
 
         void    bind(VkCommandBuffer commandBuffer);
         void    draw(VkCommandBuffer commandBuffer);
@@ -73,6 +74,7 @@ class ft_Model {
         bool                        _hasIndexBuffer = false;
         std::unique_ptr<ft_Buffer>  _indexBuffer;
         uint32_t                    _indexCount;
+        glm::vec3                   _centerOfObj;
 };
 
 #endif

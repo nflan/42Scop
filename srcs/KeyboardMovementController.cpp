@@ -21,7 +21,6 @@ void KeyboardMovementController::moveInPlaneXZ(GLFWwindow* window, float dt, ft_
     if (glfwGetKey(window, this->_keys.lookLeft) == GLFW_PRESS) rotate.y -= 1.f;
     if (glfwGetKey(window, this->_keys.lookUp) == GLFW_PRESS) rotate.x += 1.f;
     if (glfwGetKey(window, this->_keys.lookDown) == GLFW_PRESS) rotate.x -= 1.f;
-
     if (glm::dot(rotate, rotate) > std::numeric_limits<float>::epsilon()) {
         gameObject.transform.rotation += this->_lookSpeed * dt * glm::normalize(rotate);
     }
