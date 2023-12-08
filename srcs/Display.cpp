@@ -15,8 +15,11 @@
 #include "/mnt/nfs/homes/nflan/sgoinfre/bin/stb/stb_image.h"
 
 bool		QUIT = false;
+bool		ROBJ = false;
 short		WAY = 1;
-float		ROT = ROTATION; //change in tools.hpp
+float		ROTX = 0;
+float		ROTY = ROTATION; //change in tools.hpp
+float		ROTZ = 0;
 const int	MAX_FRAMES_IN_FLIGHT = 2;
 
 // namespace std {
@@ -52,15 +55,29 @@ void	key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	static_cast<void> (mods);
 	if ((key == GLFW_KEY_ESCAPE) && action == GLFW_PRESS)
 		QUIT = true;
-	if ((key == GLFW_KEY_F) && action == GLFW_PRESS)
+	else if ((key == GLFW_KEY_F) && action == GLFW_PRESS)
 		WAY *= -1;
-	if ((key == GLFW_KEY_P) && action == GLFW_PRESS)
+	else if ((key == GLFW_KEY_P) && action == GLFW_PRESS)
 	{
-		if (ROT != 0)
-			ROT = 0;
-		else
-			ROT = ROTATION;
+		ROTY = ROTX = ROTZ = .0f;
 	}
+	else if ((key == GLFW_KEY_1) && action == GLFW_PRESS)
+	{
+		ROTY == .0f ? ROTY = ROTATION : ROTY = .0f;
+	}
+	else if ((key == GLFW_KEY_2) && action == GLFW_PRESS)
+	{
+		ROTX == .0f ? ROTX = ROTATION : ROTX = .0f;
+	}
+	else if ((key == GLFW_KEY_3) && action == GLFW_PRESS)
+	{
+		ROTZ == .0f ? ROTZ = ROTATION : ROTZ = .0f;
+	}
+	else if ((key == GLFW_KEY_4) && action == GLFW_PRESS)
+	{
+		ROBJ = true;
+	}
+	
 }
 
 Display::Display() {
@@ -91,6 +108,7 @@ void	Display::setFile(const char* file) { this->_file = file; }
 
 void	Display::run()
 {
+	loadTextures();
 	loadGameObjects();
 
 	std::vector<std::unique_ptr<ft_Buffer>> uboBuffers(ft_SwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -197,10 +215,7 @@ void Display::loadGameObjects()
 	gameObj.model = Model;
 	// gameObj.transform.translation = (glm::mat4(1.0f), -center);
 	// gameObj.transform.scale = glm::vec3(0.5f);
-	// gameObj.transform.rotation = glm::vec3(0.f, 1.5f, 0.f);
 
-	// gameObj.transform.updateModelMatrix();
-	// gameObj.transform.updateNormalMatrix();
 	
 	this->_gameObjects.emplace(gameObj.getId(), std::move(gameObj));
 
@@ -225,7 +240,6 @@ void Display::loadGameObjects()
 
 	for (int i = 0; i < lightColors.size(); i++)
 	{
-		std::cerr << "i = " << i << std::endl;
 		ft_GameObject pointLight = ft_GameObject::makePointLight(0.2f);
 		pointLight.color = lightColors[i];
 		
@@ -236,6 +250,16 @@ void Display::loadGameObjects()
 		pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-1.f, -1.f, -1.f, 1.f));
 		this->_gameObjects.emplace(pointLight.getId(), std::move(pointLight));
   	}
+}
+
+void	Display::loadTextures()
+{
+	createTexture("textures/viking_room.png");
+}
+
+void	Display::createTexture(char* file)
+{
+
 }
 
 // static void	framebufferResizeCallback(GLFWwindow* window, int width, int height)

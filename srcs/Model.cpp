@@ -60,7 +60,6 @@ void    ft_Model::createVertexBuffers(const std::vector<Vertex> &vertices)
         _centerOfObj += vertex.position;
 
     _centerOfObj /= static_cast<float>(vertices.size());
-    std::cerr << "center = " << _centerOfObj.x << "," << _centerOfObj.y << "," << _centerOfObj.z << " et v size() = " << vertices.size() << std::endl;
     this->_vertexCount = static_cast<uint32_t>(vertices.size());
     assert(this->_vertexCount >= 3 && "Vertex count must be at least 3");
     VkDeviceSize    bufferSize = sizeof(vertices[0]) * this->_vertexCount;

@@ -19,8 +19,11 @@
 #define ROTATION 0.0005f
 
 extern bool QUIT;
+extern bool ROBJ;
 extern short	WAY;
-extern float    ROT;
+extern float    ROTX;
+extern float    ROTY;
+extern float    ROTZ;
 
 namespace std {
 
