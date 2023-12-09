@@ -34,6 +34,7 @@ class   ft_Renderer {
         bool            isFrameInProgress() const { return _isFrameStarted; }
         ft_Window&      getWindow() { return _window; }
         ft_Device&      getDevice() { return _device; }
+        ft_SwapChain&   getSwapChain() { return *_swapChain; }
         
         VkCommandBuffer getCurrentCommandBuffer() const
         {

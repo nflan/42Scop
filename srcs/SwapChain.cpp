@@ -12,6 +12,9 @@
 
 #include "../incs/SwapChain.hpp"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "/mnt/nfs/homes/nflan/sgoinfre/bin/stb/stb_image.h"
+
 // std
 #include <array>
 #include <cstdlib>
@@ -40,12 +43,15 @@ void ft_SwapChain::init()
     createColorResources();
     createDepthResources();
     createFramebuffers();
+    this->createTextureImage();
+	this->createTextureImageView();
+	// this->createTextureSampler();
     createSyncObjects();
 }
 
 ft_SwapChain::~ft_SwapChain()
 {
-    for (auto imageView : this->_swapChainImageViews) {
+    for (VkImageView_T * imageView : this->_swapChainImageViews) {
         vkDestroyImageView(this->_device.device(), imageView, nullptr);
     }
     this->_swapChainImageViews.clear();
@@ -68,7 +74,15 @@ ft_SwapChain::~ft_SwapChain()
         vkFreeMemory(this->_device.device(), this->_colorImageMemorys[i], nullptr);
     }
 
-    for (auto framebuffer : this->_swapChainFramebuffers) {
+    for (Texture text : this->_textures)
+    {
+        std::cerr << "je destroy" << std::endl;
+    	vkDestroyImageView(this->_device.device(), text._textureImageView, nullptr);
+        vkDestroyImage(this->_device.device(), text._textureImage, nullptr);
+        vkFreeMemory(this->_device.device(), text._textureImageMemory, nullptr);
+    }
+
+    for (VkFramebuffer_T * framebuffer : this->_swapChainFramebuffers) {
         vkDestroyFramebuffer(this->_device.device(), framebuffer, nullptr);
     }
 
@@ -174,7 +188,6 @@ void    ft_SwapChain::createSwapChain()
 	*/
     QueueFamilyIndices  indices = this->_device.findPhysicalQueueFamilies();
     uint32_t queueFamilyIndices[] = {indices.graphicsFamily, indices.presentFamily};
-
 	if (indices.graphicsFamily != indices.presentFamily)
 	{
 		createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT; // pouvoir travailler a plusieurs queues (presentation et graphique) sur la meme image (moins performant)
@@ -225,7 +238,7 @@ VkImageView ft_SwapChain::createImageView(VkImage image, VkFormat format, VkImag
 
     VkImageView	imageView;
     if (vkCreateImageView(this->_device.device(), &viewInfo, nullptr, &imageView) != VK_SUCCESS)
-        throw std::runtime_error("échec de la creation de la vue sur une image!");
+        throw std::runtime_error("failed to create texture image view!");
 
     return imageView;
 }
@@ -235,7 +248,9 @@ void    ft_SwapChain::createImageViews()
     this->_swapChainImageViews.resize(this->_swapChainImages.size());
 
     for (uint32_t i = 0; i < this->_swapChainImages.size(); i++)
+    {
         this->_swapChainImageViews[i] = this->createImageView(this->_swapChainImages[i], this->_swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
+    }
 }
 
 void    ft_SwapChain::createRenderPass()
@@ -324,9 +339,9 @@ void    ft_SwapChain::createFramebuffers()
     this->_swapChainFramebuffers.resize(imageCount());
     for (size_t i = 0; i < imageCount(); i++) {
 		std::array<VkImageView, 2> attachments = {
-			// this->_colorImageViews[i],
     		this->_swapChainImageViews[i],
-    		this->_depthImageViews[i]
+    		this->_depthImageViews[i],
+			// this->_colorImageViews[0],
 		};
 
         VkExtent2D swapChainExtent = getSwapChainExtent();
@@ -412,7 +427,7 @@ void    ft_SwapChain::createDepthResources()
         imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
         imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;// TODOthis->_device.getMsaaSamples();
+        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;//TODO this->_device.getMsaaSamples();
         imageInfo.flags = 0; // Optionnel
 
         this->_device.createImageWithInfo(imageInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, this->_depthImages[i], this->_depthImageMemorys[i]);
@@ -452,6 +467,277 @@ void	ft_SwapChain::createColorResources()
 
 	    this->_colorImageViews[i] = this->createImageView(this->_colorImages[i], colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
     }
+}
+
+void	ft_SwapChain::createTextureImage()
+{
+    Texture texture;
+	int	texWidth, texHeight, texChannels;
+    stbi_uc	*pixels = stbi_load("./textures/viking_room.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+    VkDeviceSize	imageSize = texWidth * texHeight * 4;
+
+	texture._mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;//+1 pour rajouter l'image originale
+
+    if (!pixels)
+	{
+        throw std::runtime_error("Fail to load texture");
+    }
+
+    texture._mipLevels = 1;
+
+	//Buffer intermediaire image
+	VkBuffer		stagingBuffer;
+	VkDeviceMemory	stagingBufferMemory;
+	_device.createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+	void	*data;
+	vkMapMemory(this->_device.device(), stagingBufferMemory, 0, imageSize, 0, &data);
+    memcpy(data, pixels, static_cast<size_t>(imageSize));
+	vkUnmapMemory(this->_device.device(), stagingBufferMemory);
+
+	stbi_image_free(pixels);
+    // this->createImage(texWidth, texHeight, texture._mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, texture._textureImage, texture._textureImageMemory);
+    VkExtent2D  swapChainExtent = getSwapChainExtent();
+    VkImageCreateInfo	imageInfo{};
+    imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    imageInfo.imageType = VK_IMAGE_TYPE_2D;
+    imageInfo.extent.width = swapChainExtent.width;
+    imageInfo.extent.height = swapChainExtent.height;
+    imageInfo.extent.depth = 1;
+    imageInfo.mipLevels = texture._mipLevels;
+    imageInfo.arrayLayers = 1;
+    imageInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+    imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;//VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    imageInfo.samples = this->_device.getMsaaSamples();
+    imageInfo.flags = 0;
+    
+    this->_device.createImageWithInfo(imageInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, texture._textureImage, texture._textureImageMemory);
+    
+    texture._textureImageView = this->createImageView(texture._textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, 1);
+    std::cerr << " je me balade " << std::endl;
+	// this->transitionImageLayout(texture._textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, texture._mipLevels);
+	// this->copyBufferToImage(stagingBuffer, texture._textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+	// this->transitionImageLayout(this->_textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, this->_mipLevels);
+
+	vkDestroyBuffer(this->_device.device(), stagingBuffer, nullptr);
+    vkFreeMemory(this->_device.device(), stagingBufferMemory, nullptr);
+
+	// generateMipmaps(texture._textureImage, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, texture._mipLevels);
+    this->_textures.push_back(texture);
+}
+
+void	ft_SwapChain::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels)
+{
+    VkCommandBuffer	commandBuffer = this->_device.beginSingleTimeCommands();
+
+	VkImageMemoryBarrier	barrier{};
+	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	barrier.oldLayout = oldLayout;
+	barrier.newLayout = newLayout;
+	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.image = image;
+	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	barrier.subresourceRange.baseMipLevel = 0;
+	barrier.subresourceRange.levelCount = mipLevels;
+	barrier.subresourceRange.baseArrayLayer = 0;
+	barrier.subresourceRange.layerCount = 1;
+
+	VkPipelineStageFlags sourceStage;
+	VkPipelineStageFlags destinationStage;
+
+	if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+	{
+		barrier.srcAccessMask = 0;
+		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+	}
+	else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+	{
+		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+		sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	}
+	else
+		throw std::invalid_argument("transition d'orgisation non supportée!");
+
+	vkCmdPipelineBarrier(
+		commandBuffer,
+		sourceStage, destinationStage,
+		0,
+		0, nullptr,
+		0, nullptr,
+		1, &barrier
+	);
+    this->_device.endSingleTimeCommands(commandBuffer);
+}
+
+void	ft_SwapChain::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
+{
+    VkCommandBuffer commandBuffer = this->_device.beginSingleTimeCommands();
+
+	VkBufferImageCopy region{};
+	region.bufferOffset = 0;
+	region.bufferRowLength = 0;
+	region.bufferImageHeight = 0;
+
+	region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	region.imageSubresource.mipLevel = 0;
+	region.imageSubresource.baseArrayLayer = 0;
+	region.imageSubresource.layerCount = 1;
+
+	region.imageOffset = {0, 0, 0};
+	region.imageExtent = {
+		width,
+		height,
+		1
+	};
+
+	vkCmdCopyBufferToImage(
+		commandBuffer,
+		buffer,
+		image,
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+		1,
+		&region
+	);
+
+	this->_device.endSingleTimeCommands(commandBuffer);
+}
+
+void	ft_SwapChain::createTextureImageView()
+{
+    this->_textures[0]._textureImageView = this->createImageView(this->_textures[0]._textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, this->_textures[0]._mipLevels);
+}
+
+void	ft_SwapChain::createTextureSampler()
+{
+	VkSamplerCreateInfo	samplerInfo{}; //permet d'indiquer les filtres et les transformations à appliquer.
+	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+	samplerInfo.magFilter = VK_FILTER_LINEAR; //interpoler texels magnifies
+	samplerInfo.minFilter = VK_FILTER_LINEAR; //interpoler texels minifies
+
+	samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	/*
+	VK_SAMPLER_ADDRESS_MODE_REPEAT : répète le texture
+	VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT : répète en inversant les coordonnées pour réaliser un effet miroir
+	VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE : prend la couleur du pixel de bordure le plus proche
+	VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE : prend la couleur de l'opposé du plus proche côté de l'image
+	VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER : utilise une couleur fixée
+	*/
+	samplerInfo.anisotropyEnable = VK_TRUE; ///on pourrait le desactiver si le mec n'a pas une cg qui peut le faire
+	samplerInfo.maxAnisotropy = 16.0f; // et passer ca a 1.0f si le mec n'a pas une cg pour le faire
+	samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK; //si l'image est plus petite que la fenetre, couleur du reste mais que black white or transparent
+	samplerInfo.unnormalizedCoordinates = VK_FALSE;
+	//Le champ unnomalizedCoordinates indique le système de coordonnées que vous voulez utiliser pour accéder aux texels de l'image. Avec VK_TRUE, vous pouvez utiliser des coordonnées dans [0, texWidth) et [0, texHeight). Sinon, les valeurs sont accédées avec des coordonnées dans [0, 1). Dans la plupart des cas les coordonnées sont utilisées normalisées car cela permet d'utiliser un même shader pour des textures de résolution différentes.
+	samplerInfo.compareEnable = VK_FALSE;
+	samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+	samplerInfo.mipLodBias = 0.0f;//Lod -> Level of Details
+	samplerInfo.minLod = 0.0f; //static_cast<float>(this->_mipLevels / 2);//minimum de details
+    samplerInfo.maxLod = static_cast<float>(this->_textures[0]._mipLevels);//maximum de details
+
+	// if (vkCreateSampler(this->_device.device(), &samplerInfo, nullptr, &this->_textures[0]._textureSampler) != VK_SUCCESS)
+    //     throw std::runtime_error("Fail to create sampler!");
+	// le sampler n'est pas lie a une image ! Il est independant et peut du coup etre efficace tout le long du programme. par contre si on veut changer la facon d'afficher, faut ptete le detruire et le refaire ?
+}
+
+void	ft_SwapChain::generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels)
+{
+	//Verifier si l'image supporte le filtrage lineaire
+	VkFormatProperties	formatProperties;
+    vkGetPhysicalDeviceFormatProperties(this->_device.getPhysicalDevice(), imageFormat, &formatProperties);
+
+	if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
+    	throw std::runtime_error("le format de l'image texture ne supporte pas le filtrage lineaire!");
+
+	VkCommandBuffer	commandBuffer = this->_device.beginSingleTimeCommands();
+
+    VkImageMemoryBarrier barrier{};
+    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    barrier.image = image;
+    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    barrier.subresourceRange.baseArrayLayer = 0;
+    barrier.subresourceRange.layerCount = 1;
+    barrier.subresourceRange.levelCount = 1;
+
+	int32_t mipWidth = texWidth;
+	int32_t mipHeight = texHeight;
+
+	for (uint32_t i = 1; i < mipLevels; i++)
+	{
+		barrier.subresourceRange.baseMipLevel = i - 1;
+		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+		vkCmdPipelineBarrier(commandBuffer,
+			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+			0, nullptr,
+			0, nullptr,
+			1, &barrier);
+		
+		VkImageBlit blit{};
+		blit.srcOffsets[0] = { 0, 0, 0 };
+		blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
+		blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		blit.srcSubresource.mipLevel = i - 1;
+		blit.srcSubresource.baseArrayLayer = 0;
+		blit.srcSubresource.layerCount = 1;
+		blit.dstOffsets[0] = { 0, 0, 0 };
+		blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
+		blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		blit.dstSubresource.mipLevel = i;
+		blit.dstSubresource.baseArrayLayer = 0;
+		blit.dstSubresource.layerCount = 1;
+		
+		vkCmdBlitImage(commandBuffer,
+			image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,//queue graphique obligatoire
+			1, &blit,
+			VK_FILTER_LINEAR);
+
+		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+		barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+		vkCmdPipelineBarrier(commandBuffer,
+			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+			0, nullptr,
+			0, nullptr,
+			1, &barrier);
+
+		if (mipWidth > 1)
+			mipWidth /= 2;
+		if (mipHeight > 1)
+			mipHeight /= 2;
+	}
+	barrier.subresourceRange.baseMipLevel = mipLevels - 1;
+	barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+	vkCmdPipelineBarrier(commandBuffer,
+		VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+		0, nullptr,
+		0, nullptr,
+		1, &barrier);
+
+    this->_device.endSingleTimeCommands(commandBuffer);
 }
 
 void    ft_SwapChain::createSyncObjects()

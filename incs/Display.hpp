@@ -51,11 +51,6 @@ const uint32_t	HEIGHT = 600;
 const std::string	MODEL_PATH = "models/viking_room.obj";
 const std::string	TEXTURE_PATH = "textures/viking_room.png";
 
-struct Texture {
-	VkImage	_image;
-	VkImageView	_imageView;
-};
-
 class Display
 {
 	public:
@@ -66,20 +61,24 @@ class Display
 
 		void	setFile(const char* file);
 		void	run( void );
+		void 	createDescriptorSets();
+		
 		// bool	framebufferResized = false;
 	private:
   		void	loadGameObjects();
-		void	loadTextures();
-		void	createTexture(char *);
 		// Mesh						_mesh;
 		const char*					_file;
 
 		ft_Window					_window{WIDTH, HEIGHT, "FT_SCOP"};
 		ft_Device					_device{_window};
 		ft_Renderer					_renderer{_window, _device};
-		std::unique_ptr<ft_DescriptorPool>	_globalPool{};
+		std::unique_ptr<VkDescriptorPool>	_globalPool{};
 		ft_GameObject::Map			_gameObjects;
 		std::vector<Texture>		_loadedTextures;
+		VkDescriptorSetLayout		_descriptor;
+		VkDescriptorPool			_descriptorPool;
+		std::vector<VkDescriptorSet>	_descriptorSets;
+		std::vector<std::unique_ptr<ft_Buffer> > _uboBuffers;
 
 };
 

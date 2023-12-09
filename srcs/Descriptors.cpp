@@ -156,7 +156,7 @@ DescriptorWriter    &DescriptorWriter::writeImage(uint32_t binding, VkDescriptor
 
     VkWriteDescriptorSet    write{};
     write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    write.descriptorType = bindingDescription.descriptorType;
+    write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;//bindingDescription.descriptorType;
     write.dstBinding = binding;
     write.pImageInfo = imageInfo;
     write.descriptorCount = 1;

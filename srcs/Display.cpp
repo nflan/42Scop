@@ -11,8 +11,6 @@
 /* ************************************************************************** */
 
 #include "../incs/Display.hpp"
-#define STB_IMAGE_IMPLEMENTATION
-#include "/mnt/nfs/homes/nflan/sgoinfre/bin/stb/stb_image.h"
 
 bool		QUIT = false;
 bool		ROBJ = false;
@@ -81,14 +79,15 @@ void	key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 }
 
 Display::Display() {
-	_globalPool =
-		ft_DescriptorPool::Builder(_device)
-		.setMaxSets(ft_SwapChain::MAX_FRAMES_IN_FLIGHT)
-		.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ft_SwapChain::MAX_FRAMES_IN_FLIGHT)
-		.build();
+	// _globalPool =
+	// 	ft_DescriptorPool::Builder(_device)
+	// 	.setMaxSets(ft_SwapChain::MAX_FRAMES_IN_FLIGHT)
+	// 	.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ft_SwapChain::MAX_FRAMES_IN_FLIGHT)
+	// 	.build();
 }
 
-Display::Display( const Display & o) {
+Display::Display( const Display & o)
+{
 	if (this != &o)
 		*this = o;
 	return ;
@@ -108,44 +107,62 @@ void	Display::setFile(const char* file) { this->_file = file; }
 
 void	Display::run()
 {
-	loadTextures();
 	loadGameObjects();
 
-	std::vector<std::unique_ptr<ft_Buffer>> uboBuffers(ft_SwapChain::MAX_FRAMES_IN_FLIGHT);
-	for (int i = 0; i < uboBuffers.size(); i++)
-	{
-		uboBuffers[i] = std::make_unique<ft_Buffer>(
-			this->_device,
-			sizeof(GlobalUbo),
-			1,
-			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-		uboBuffers[i]->map();
-	}
+	// std::vector<std::unique_ptr<ft_Buffer>> uboBuffers(ft_SwapChain::MAX_FRAMES_IN_FLIGHT);
+	// for (int i = 0; i < uboBuffers.size(); i++)
+	// {
+	// 	uboBuffers[i] = std::make_unique<ft_Buffer>(
+	// 		this->_device,
+	// 		sizeof(GlobalUbo),
+	// 		1,
+	// 		VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+	// 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+	// 	uboBuffers[i]->map();
+	// }
 
-	auto globalSetLayout =
-		ft_DescriptorSetLayout::Builder(this->_device)
-			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
-			.build();
+	// std::unique_ptr<ft_DescriptorSetLayout> globalSetLayout =
+	// 	ft_DescriptorSetLayout::Builder(this->_device)
+	// 		.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+	// 		.build();
+	// // std::unique_ptr<ft_DescriptorSetLayout> textureSetLayout =
+	// // 	ft_DescriptorSetLayout::Builder(this->_device)
+	// // 		.addBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+	// // 		.build();
 
-	std::vector<VkDescriptorSet>	globalDescriptorSets(ft_SwapChain::MAX_FRAMES_IN_FLIGHT);
-	for (int i = 0; i < globalDescriptorSets.size(); i++)
-	{
-		auto bufferInfo = uboBuffers[i]->descriptorInfo();
-		DescriptorWriter(*globalSetLayout, *this->_globalPool)
-			.writeBuffer(0, &bufferInfo)
-			.build(globalDescriptorSets[i]);
-	}
+	// std::vector<VkDescriptorSet>	globalDescriptorSets(ft_SwapChain::MAX_FRAMES_IN_FLIGHT);
+	// for (int i = 0; i < globalDescriptorSets.size(); i++)
+	// {
+	// 	// if (i == 0)
+	// 	// {
+	// 		VkDescriptorBufferInfo bufferInfo = uboBuffers[i]->descriptorInfo();
+	// 		DescriptorWriter(*globalSetLayout, *this->_globalPool)
+	// 			.writeBuffer(0, &bufferInfo)
+	// 			.build(globalDescriptorSets[i]);
+	// 	// }
+	// 	// else if (i == 1)
+	// 	// {
+	// 	// 	VkDescriptorImageInfo imageInfo{};
+	// 	// 	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	// 	// 	imageInfo.imageView = this->_renderer.getSwapChain().getTextures()[0]._textureImageView;
+	// 	// 	imageInfo.sampler = this->_renderer.getSwapChain().getTextures()[0]._textureSampler;
+
+	// 	// 	DescriptorWriter(*textureSetLayout, *this->_globalPool)
+	// 	// 		.writeImage(1, &imageInfo)
+	// 	// 		.build(globalDescriptorSets[i]);
+	// 	// }
+	// }
+	this->createDescriptorSets();
 
 	RenderSystem renderSystem{
 		this->_device,
 		this->_renderer.getSwapChainRenderPass(),
-		globalSetLayout->getDescriptorSetLayout()};
+		this->_descriptor};
 
 	PointLightSystem pointLightSystem{
 		this->_device,
 		this->_renderer.getSwapChainRenderPass(),
-		globalSetLayout->getDescriptorSetLayout()};
+		this->_descriptor};
 
 	ft_Camera camera{};
 
@@ -178,7 +195,7 @@ void	Display::run()
 				frameTime,
 				commandBuffer,
 				camera,
-				globalDescriptorSets[frameIndex],
+				this->_descriptorSets[frameIndex],
 				this->_gameObjects};
 
 			// update
@@ -187,8 +204,8 @@ void	Display::run()
 			ubo.view = camera.getView();
 			ubo.inverseView = camera.getInverseView();
 			pointLightSystem.update(frameInfo, ubo);
-			uboBuffers[frameIndex]->writeToBuffer(&ubo);
-			uboBuffers[frameIndex]->flush();
+			_uboBuffers[frameIndex]->writeToBuffer(&ubo);
+			_uboBuffers[frameIndex]->flush();
 
 			// render
 			this->_renderer.beginSwapChainRenderPass(commandBuffer);
@@ -206,6 +223,66 @@ void	Display::run()
 	// this->initVulkan();
 	// this->mainLoop();
 	// this->cleanup();
+}
+
+void 	Display::createDescriptorSets()
+{
+	
+	std::vector<VkDescriptorSetLayout> layouts(this->_renderer.getSwapChain().getSwapChainImages().size(), this->_descriptor);
+
+	VkDescriptorSetAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	allocInfo.descriptorPool = this->_descriptorPool;
+	allocInfo.descriptorSetCount = static_cast<uint32_t>(this->_renderer.getSwapChain().getSwapChainImages().size());
+	allocInfo.pSetLayouts = layouts.data();
+
+	this->_descriptorSets.resize(this->_renderer.getSwapChain().getSwapChainImages().size());
+
+	if (vkAllocateDescriptorSets(this->_device.device(), &allocInfo, this->_descriptorSets.data()) != VK_SUCCESS)
+    	throw std::runtime_error("Fail to allocate a set of descriptor!");
+
+	_uboBuffers.resize(ft_SwapChain::MAX_FRAMES_IN_FLIGHT);
+	for (int i = 0; i < _uboBuffers.size(); i++)
+	{
+		_uboBuffers[i] = std::make_unique<ft_Buffer>(
+			this->_device,
+			sizeof(GlobalUbo),
+			1,
+			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+		_uboBuffers[i]->map();
+	}
+
+	for (size_t i = 0; i < this->_renderer.getSwapChain().getSwapChainImages().size(); i++)
+	{
+
+		VkDescriptorBufferInfo bufferInfo = _uboBuffers[i]->descriptorInfo();
+
+		VkDescriptorImageInfo imageInfo{};
+		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		imageInfo.imageView = this->_renderer.getSwapChain().getTextures()[0]._textureImageView;
+		imageInfo.sampler = this->_renderer.getSwapChain().getTextures()[0]._textureSampler;
+
+		std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+
+		descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		descriptorWrites[0].dstSet = this->_descriptorSets[i];
+		descriptorWrites[0].dstBinding = 0;
+		descriptorWrites[0].dstArrayElement = 0;
+		descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		descriptorWrites[0].descriptorCount = 1;
+		descriptorWrites[0].pBufferInfo = &bufferInfo;
+
+		descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		descriptorWrites[1].dstSet = this->_descriptorSets[i];
+		descriptorWrites[1].dstBinding = 1;
+		descriptorWrites[1].dstArrayElement = 0;
+		descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		descriptorWrites[1].descriptorCount = 1;
+		descriptorWrites[1].pImageInfo = &imageInfo;
+
+		vkUpdateDescriptorSets(this->_device.device(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+	}
 }
 
 void Display::loadGameObjects()
@@ -250,16 +327,6 @@ void Display::loadGameObjects()
 		pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-1.f, -1.f, -1.f, 1.f));
 		this->_gameObjects.emplace(pointLight.getId(), std::move(pointLight));
   	}
-}
-
-void	Display::loadTextures()
-{
-	createTexture("textures/viking_room.png");
-}
-
-void	Display::createTexture(char* file)
-{
-
 }
 
 // static void	framebufferResizeCallback(GLFWwindow* window, int width, int height)

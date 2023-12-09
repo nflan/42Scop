@@ -25,6 +25,16 @@ extern float    ROTX;
 extern float    ROTY;
 extern float    ROTZ;
 
+struct Texture {
+	//textures d'image (pixels -> texels)
+	uint32_t					_mipLevels;
+	VkImage						_textureImage;
+	VkDeviceMemory				_textureImageMemory;
+	//reference a la vue pour la texture
+	VkImageView					_textureImageView;
+	VkSampler					_textureSampler;
+};
+
 namespace std {
 
 // from: https://stackoverflow.com/a/57595105
