@@ -16,8 +16,6 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/gtx/hash.hpp>
-
 #define ROTATION 0.0005f
 
 extern bool QUIT;
@@ -26,16 +24,6 @@ extern short	WAY;
 extern float    ROTX;
 extern float    ROTY;
 extern float    ROTZ;
-
-struct Texture {
-	//textures d'image (pixels -> texels)
-	uint32_t					_mipLevels;
-	VkImage						_textureImage;
-	VkDeviceMemory				_textureImageMemory;
-	//reference a la vue pour la texture
-	VkImageView					_textureImageView;
-	VkSampler					_textureSampler;
-};
 
 namespace std {
 

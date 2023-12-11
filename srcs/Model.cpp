@@ -18,7 +18,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 // #include <tiny_obj_loader.h>
 #define GLM_ENABLE_EXPERIMENTAL
-// #include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/gtx/hash.hpp>
+#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/gtx/hash.hpp>
 
 // std
 #include <cassert>

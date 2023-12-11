@@ -2,11 +2,11 @@
 #define DESCRIPTORS_HPP
 
 #include "Device.hpp"
-#include "tools.hpp"
 
 // std
 #include <memory>
 #include <unordered_map>
+#include <vector>
 
 class ft_DescriptorSetLayout {
     public:
@@ -67,7 +67,6 @@ class ft_DescriptorPool {
     void    resetPool();
 
     ft_Device&  getDevice() { return _device; }
-    VkDescriptorPool    getDescriptorPool() { return _descriptorPool; }
 
     private:
         ft_Device&          _device;
@@ -85,8 +84,6 @@ class DescriptorWriter {
 
         bool build(VkDescriptorSet &set);
         void overwrite(VkDescriptorSet &set);
-
-        std::vector<VkWriteDescriptorSet>   getWrites() { return _writes; }
 
     private:
         ft_DescriptorSetLayout&           _setLayout;

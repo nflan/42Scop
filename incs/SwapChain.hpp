@@ -14,7 +14,6 @@
 #define SWAPCHAIN_HPP
 
 #include "Device.hpp"
-#include "tools.hpp"
 
 // vulkan headers
 #include <vulkan/vulkan.h>
@@ -45,17 +44,12 @@ class ft_SwapChain {
         uint32_t        getWidth() { return _swapChainExtent.width; }
         uint32_t        getHeight() { return _swapChainExtent.height; }
         ft_Device&      getDevice() { return _device; }
-        std::vector<VkImage>    getSwapChainImages() { return _swapChainImages; }
-        std::vector<Texture>    getTextures() { return _textures; }
 
         float           extentAspectRatio()
         {
             return static_cast<float>(_swapChainExtent.width) / static_cast<float>(_swapChainExtent.height);
         }
         VkFormat        findDepthFormat();
-
-        void	        transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
-        void	        copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 
         VkResult        acquireNextImage(uint32_t *imageIndex);
         VkResult        submitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex);
@@ -73,12 +67,6 @@ class ft_SwapChain {
         VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels);
         void    createDepthResources();
         void	createColorResources();
-
-		void	createTextureImage();
-        void	generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
-        void	createTextureImageView();
-        void	createTextureSampler();
-
         void    createRenderPass();
         void    createFramebuffers();
         void    createSyncObjects();
@@ -103,8 +91,6 @@ class ft_SwapChain {
         std::vector<VkImageView>    _depthImageViews;
         std::vector<VkImage>        _swapChainImages;
         std::vector<VkImageView>    _swapChainImageViews;
-
-        std::vector<Texture>        _textures;
 
         ft_Device&                  _device;
         VkExtent2D                  _windowExtent;

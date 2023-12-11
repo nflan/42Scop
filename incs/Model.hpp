@@ -58,7 +58,6 @@ class ft_Model {
 
         static std::unique_ptr<ft_Model> createModelFromFile(ft_Device &device, const std::string &filepath);
         glm::vec3   getCenterOfObj( void ) { return _centerOfObj; };
-        std::unique_ptr<ft_Buffer>&  getVertexBuffer() { return _vertexBuffer; }
 
         void    bind(VkCommandBuffer commandBuffer);
         void    draw(VkCommandBuffer commandBuffer);
