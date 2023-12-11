@@ -45,7 +45,7 @@ void ft_SwapChain::init()
     createFramebuffers();
     this->createTextureImage();
 	this->createTextureImageView();
-	// this->createTextureSampler();
+	this->createTextureSampler();
     createSyncObjects();
 }
 
@@ -77,6 +77,7 @@ ft_SwapChain::~ft_SwapChain()
     for (Texture text : this->_textures)
     {
         std::cerr << "je destroy" << std::endl;
+        vkDestroySampler(this->_device.device(), text._textureSampler, nullptr);
     	vkDestroyImageView(this->_device.device(), text._textureImageView, nullptr);
         vkDestroyImage(this->_device.device(), text._textureImage, nullptr);
         vkFreeMemory(this->_device.device(), text._textureImageMemory, nullptr);
@@ -518,9 +519,9 @@ void	ft_SwapChain::createTextureImage()
     
     texture._textureImageView = this->createImageView(texture._textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, 1);
     std::cerr << " je me balade " << std::endl;
-	// this->transitionImageLayout(texture._textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, texture._mipLevels);
-	// this->copyBufferToImage(stagingBuffer, texture._textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
-	// this->transitionImageLayout(this->_textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, this->_mipLevels);
+	this->transitionImageLayout(texture._textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, texture._mipLevels);
+	this->copyBufferToImage(stagingBuffer, texture._textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+	this->transitionImageLayout(texture._textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, texture._mipLevels);
 
 	vkDestroyBuffer(this->_device.device(), stagingBuffer, nullptr);
     vkFreeMemory(this->_device.device(), stagingBufferMemory, nullptr);
@@ -646,8 +647,8 @@ void	ft_SwapChain::createTextureSampler()
 	samplerInfo.minLod = 0.0f; //static_cast<float>(this->_mipLevels / 2);//minimum de details
     samplerInfo.maxLod = static_cast<float>(this->_textures[0]._mipLevels);//maximum de details
 
-	// if (vkCreateSampler(this->_device.device(), &samplerInfo, nullptr, &this->_textures[0]._textureSampler) != VK_SUCCESS)
-    //     throw std::runtime_error("Fail to create sampler!");
+	if (vkCreateSampler(this->_device.device(), &samplerInfo, nullptr, &this->_textures[0]._textureSampler) != VK_SUCCESS)
+        throw std::runtime_error("Fail to create sampler!");
 	// le sampler n'est pas lie a une image ! Il est independant et peut du coup etre efficace tout le long du programme. par contre si on veut changer la facon d'afficher, faut ptete le detruire et le refaire ?
 }
 

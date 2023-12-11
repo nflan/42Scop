@@ -14,6 +14,7 @@
 #define DEVICE_HPP
 
 #include "Window.hpp"
+
 #include <vector>
 #include <string>
 

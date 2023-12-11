@@ -2,11 +2,11 @@
 #define DESCRIPTORS_HPP
 
 #include "Device.hpp"
+#include "tools.hpp"
 
 // std
 #include <memory>
 #include <unordered_map>
-#include <vector>
 
 class ft_DescriptorSetLayout {
     public:

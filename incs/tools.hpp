@@ -16,6 +16,8 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/gtx/hash.hpp>
+
 #define ROTATION 0.0005f
 
 extern bool QUIT;

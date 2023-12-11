@@ -14,11 +14,8 @@
 #define DISPLAY_HPP
 
 #define GLFW_INCLUDE_VULKAN
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define GLM_ENABLE_EXPERIMENTAL
-#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/gtx/hash.hpp>
 #include <GLFW/glfw3.h>
-#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
 #include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/gtc/matrix_transform.hpp>
 
 #include <chrono>
@@ -62,6 +59,8 @@ class Display
 		void	setFile(const char* file);
 		void	run( void );
 		void 	createDescriptorSets();
+		void	createDescriptorSetLayout();
+		void	createDescriptorPool();
 		
 		// bool	framebufferResized = false;
 	private:
@@ -79,6 +78,7 @@ class Display
 		VkDescriptorPool			_descriptorPool;
 		std::vector<VkDescriptorSet>	_descriptorSets;
 		std::vector<std::unique_ptr<ft_Buffer> > _uboBuffers;
+		std::vector<std::shared_ptr<ft_Model> >		_models;
 
 };
 

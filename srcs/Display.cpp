@@ -152,6 +152,8 @@ void	Display::run()
 	// 	// 		.build(globalDescriptorSets[i]);
 	// 	// }
 	// }
+	this->createDescriptorSetLayout();
+	this->createDescriptorPool();
 	this->createDescriptorSets();
 
 	RenderSystem renderSystem{
@@ -225,6 +227,52 @@ void	Display::run()
 	// this->cleanup();
 }
 
+void	Display::createDescriptorSetLayout()
+{
+	VkDescriptorSetLayoutBinding uboLayoutBinding{};
+    uboLayoutBinding.binding = 0;
+    uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    uboLayoutBinding.descriptorCount = 1;
+	uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	uboLayoutBinding.pImmutableSamplers = nullptr; // Optionnel
+
+	VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+	samplerLayoutBinding.binding = 1;
+	samplerLayoutBinding.descriptorCount = 1;
+	samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	samplerLayoutBinding.pImmutableSamplers = nullptr;
+	samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	std::array<VkDescriptorSetLayoutBinding, 2> bindings = {uboLayoutBinding, samplerLayoutBinding};
+
+	VkDescriptorSetLayoutCreateInfo layoutInfo{};
+	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+	layoutInfo.pBindings = bindings.data();
+
+	if (vkCreateDescriptorSetLayout(this->_device.device(), &layoutInfo, nullptr, &this->_descriptor) != VK_SUCCESS) {
+    	throw std::runtime_error("echec de la creation d'un set de descripteurs!");
+	}
+}
+
+void 	Display::createDescriptorPool()
+{
+	std::array<VkDescriptorPoolSize, 2> poolSizes{};
+	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	poolSizes[0].descriptorCount = static_cast<uint32_t>(this->_renderer.getSwapChain().getSwapChainImages().size());
+	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	poolSizes[1].descriptorCount = static_cast<uint32_t>(this->_renderer.getSwapChain().getSwapChainImages().size());
+	
+	VkDescriptorPoolCreateInfo poolInfo{};
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+	poolInfo.pPoolSizes = poolSizes.data();
+	poolInfo.maxSets = static_cast<uint32_t>(this->_renderer.getSwapChain().getSwapChainImages().size());
+
+	if (vkCreateDescriptorPool(this->_device.device(), &poolInfo, nullptr, &this->_descriptorPool) != VK_SUCCESS)
+    	throw std::runtime_error("echec de la creation de la pool de descripteurs!");
+}
+
 void 	Display::createDescriptorSets()
 {
 	
@@ -241,22 +289,25 @@ void 	Display::createDescriptorSets()
 	if (vkAllocateDescriptorSets(this->_device.device(), &allocInfo, this->_descriptorSets.data()) != VK_SUCCESS)
     	throw std::runtime_error("Fail to allocate a set of descriptor!");
 
-	_uboBuffers.resize(ft_SwapChain::MAX_FRAMES_IN_FLIGHT);
-	for (int i = 0; i < _uboBuffers.size(); i++)
-	{
-		_uboBuffers[i] = std::make_unique<ft_Buffer>(
-			this->_device,
-			sizeof(GlobalUbo),
-			1,
-			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-		_uboBuffers[i]->map();
-	}
+	// _uboBuffers.resize(ft_SwapChain::MAX_FRAMES_IN_FLIGHT);
+	// for (int i = 0; i < _uboBuffers.size(); i++)
+	// {
+	// 	_uboBuffers[i] = std::make_unique<ft_Buffer>(
+	// 		this->_device,
+	// 		sizeof(GlobalUbo),
+	// 		1,
+	// 		VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+	// 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+	// 	_uboBuffers[i]->map();
+	// }
 
 	for (size_t i = 0; i < this->_renderer.getSwapChain().getSwapChainImages().size(); i++)
 	{
-
-		VkDescriptorBufferInfo bufferInfo = _uboBuffers[i]->descriptorInfo();
+		this->_models[i]->bind(this->_renderer.getCurrentCommandBuffer());
+		VkDescriptorBufferInfo	bufferInfo{};
+    	bufferInfo.buffer = this->_models[i]->getVertexBuffer()->getBuffer();
+    	bufferInfo.offset = 0;
+    	bufferInfo.range = sizeof(UniformBufferObject);
 
 		VkDescriptorImageInfo imageInfo{};
 		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -289,6 +340,7 @@ void Display::loadGameObjects()
 {
   	std::shared_ptr<ft_Model> Model = ft_Model::createModelFromFile(this->_device, this->_file);
 	ft_GameObject	gameObj = ft_GameObject::createGameObject();
+	this->_models.push_back(Model);
 	gameObj.model = Model;
 	// gameObj.transform.translation = (glm::mat4(1.0f), -center);
 	// gameObj.transform.scale = glm::vec3(0.5f);
