@@ -60,6 +60,7 @@ class ft_SwapChain {
                 swapChain._swapChainImageFormat == _swapChainImageFormat;
         }
 
+        void                createImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
     private:
         void    init();
         void    createSwapChain();
@@ -75,7 +76,6 @@ class ft_SwapChain {
         VkSurfaceFormatKHR  chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
         VkPresentModeKHR    chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
         VkExtent2D          chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
-        void                createImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 
         VkSwapchainKHR              _swapChain;
         std::shared_ptr<ft_SwapChain>   _oldSwapChain;

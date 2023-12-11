@@ -102,13 +102,20 @@ Display &	Display::operator=( const Display& o )
 	return (*this);
 }
 
-Display::~Display() {}
+Display::~Display()
+{
+	for (Texture text : this->_loadedTextures)
+	{
+		vkDestroyImage(this->_device.device(), text._image, nullptr);
+		vkFreeMemory(this->_device.device(), text._imageMemory, nullptr);
+	}
+}
 
 void	Display::setFile(const char* file) { this->_file = file; }
 
 void	Display::run()
 {
-	loadTextures();
+    createTextureImage();
 	loadGameObjects();
 
 	std::vector<std::unique_ptr<ft_Buffer>> uboBuffers(ft_SwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -213,26 +220,10 @@ void Display::loadGameObjects()
   	std::shared_ptr<ft_Model> Model = ft_Model::createModelFromFile(this->_device, this->_file);
 	ft_GameObject	gameObj = ft_GameObject::createGameObject();
 	gameObj.model = Model;
-	// gameObj.transform.translation = (glm::mat4(1.0f), -center);
 	// gameObj.transform.scale = glm::vec3(0.5f);
 
 	
 	this->_gameObjects.emplace(gameObj.getId(), std::move(gameObj));
-
-	// Model = ft_Model::createModelFromFile(this->_device, "resources/42.obj");
-	// ft_GameObject gameObjS = ft_GameObject::createGameObject();
-	// gameObjS.model = Model;
-	// gameObjS.transform.translation = -center;
-	// gameObjS.transform.scale = glm::vec3(0.5f);
-	// gameObjS.transform.rotation = glm::vec3(0.f, 1.5f, 0.f);
-	// this->_gameObjects.emplace(gameObjS.getId(), std::move(gameObjS));
-
-	// std::shared_ptr<ft_Model> Model = ft_Model::createModelFromFile(this->_device, "resources/quad.obj");
-	// auto floor = ft_GameObject::createGameObject();
-	// floor.model = Model;
-	// floor.transform.translation = {0.f, .5f, 0.f};
-	// floor.transform.scale = {3.f, 1.f, 3.f};
-	// this->_gameObjects.emplace(floor.getId(), std::move(floor));
 
 	std::vector<glm::vec3> lightColors{
 		{1.f, 1.f, 1.f},
@@ -257,9 +248,98 @@ void	Display::loadTextures()
 	createTexture("textures/viking_room.png");
 }
 
+void	Display::createTextureImage()
+{
+	Texture	text;
+	int	texWidth, texHeight, texChannels;
+    stbi_uc	*pixels = stbi_load(TEXTURE_PATH.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+    VkDeviceSize	imageSize = texWidth * texHeight * 4;
+
+	// this->_mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;//+1 pour rajouter l'image originale
+
+    if (!pixels)
+	{
+        throw std::runtime_error("échec du chargement d'une image!");
+    }
+
+	//Buffer intermediaire image
+	VkBuffer		stagingBuffer;
+	VkDeviceMemory	stagingBufferMemory;
+	this->_device.createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+	void	*data;
+	vkMapMemory(this->_device.device(), stagingBufferMemory, 0, imageSize, 0, &data);
+    memcpy(data, pixels, static_cast<size_t>(imageSize));
+	vkUnmapMemory(this->_device.device(), stagingBufferMemory);
+
+	stbi_image_free(pixels);
+
+    this->_renderer.getSwapChain()->createImage(static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, text._image, text._imageMemory);
+
+	this->transitionImageLayout(text._image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1); //this->_mipLevels
+	this->_device.copyBufferToImage(stagingBuffer, text._image, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), 1);
+	this->transitionImageLayout(text._image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1);//this->_mipLevels
+
+	vkDestroyBuffer(this->_device.device(), stagingBuffer, nullptr);
+    vkFreeMemory(this->_device.device(), stagingBufferMemory, nullptr);
+
+	this->_loadedTextures.push_back(text);
+	// generateMipmaps(text._image, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, 1); //this->_mipLevels
+}
+
 void	Display::createTexture(char* file)
 {
 
+}
+
+void	Display::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels)
+{
+    VkCommandBuffer	commandBuffer = this->_device.beginSingleTimeCommands();
+
+	VkImageMemoryBarrier	barrier{};
+	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	barrier.oldLayout = oldLayout;
+	barrier.newLayout = newLayout;
+	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.image = image;
+	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	barrier.subresourceRange.baseMipLevel = 0;
+	barrier.subresourceRange.levelCount = mipLevels;
+	barrier.subresourceRange.baseArrayLayer = 0;
+	barrier.subresourceRange.layerCount = 1;
+
+	VkPipelineStageFlags sourceStage;
+	VkPipelineStageFlags destinationStage;
+
+	if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+	{
+		barrier.srcAccessMask = 0;
+		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+	}
+	else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+	{
+		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+		sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	}
+	else
+		throw std::invalid_argument("transition d'orgisation non supportée!");
+
+	vkCmdPipelineBarrier(
+		commandBuffer,
+		sourceStage, destinationStage,
+		0,
+		0, nullptr,
+		0, nullptr,
+		1, &barrier
+	);
+    this->_device.endSingleTimeCommands(commandBuffer);
 }
 
 // static void	framebufferResizeCallback(GLFWwindow* window, int width, int height)

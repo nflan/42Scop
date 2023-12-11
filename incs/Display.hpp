@@ -52,8 +52,9 @@ const std::string	MODEL_PATH = "models/viking_room.obj";
 const std::string	TEXTURE_PATH = "textures/viking_room.png";
 
 struct Texture {
-	VkImage	_image;
-	VkImageView	_imageView;
+	VkImage			_image;
+	VkImageView		_imageView;
+	VkDeviceMemory	_imageMemory;
 };
 
 class Display
@@ -71,6 +72,9 @@ class Display
   		void	loadGameObjects();
 		void	loadTextures();
 		void	createTexture(char *);
+		void	createTextureImage();
+		void	transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
+
 		// Mesh						_mesh;
 		const char*					_file;
 
