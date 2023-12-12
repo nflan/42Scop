@@ -2,11 +2,13 @@
 #define DESCRIPTORS_HPP
 
 #include "Device.hpp"
+#include "SwapChain.hpp"
 
 // std
 #include <memory>
 #include <unordered_map>
 #include <vector>
+#include <array>
 
 class ft_DescriptorSetLayout {
     public:
@@ -34,28 +36,30 @@ class ft_DescriptorSetLayout {
         VkDescriptorSetLayout                                       _descriptorSetLayout;
         std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding>  _bindings;
 
-        friend class DescriptorWriter;
+        friend class ft_DescriptorWriter;
 };
 
 class ft_DescriptorPool {
     public:
         class Builder {
             public:
-                Builder(ft_Device &Device) : _device{Device} {}
+                Builder(ft_Device &Device, ft_SwapChain &SwapChain) : _device{Device}, _swapChain(SwapChain) {};
 
-                Builder &addPoolSize(VkDescriptorType descriptorType, uint32_t count);
+                Builder &addPool(std::array<VkDescriptorPoolSize, 2>);
+                Builder &addPoolSize(VkDescriptorType, uint32_t);
                 Builder &setPoolFlags(VkDescriptorPoolCreateFlags flags);
                 Builder &setMaxSets(uint32_t count);
-                std::unique_ptr<ft_DescriptorPool>  build() const;
+                std::unique_ptr<ft_DescriptorPool>  build();
 
         private:
             ft_Device&                          _device;
             std::vector<VkDescriptorPoolSize>   _poolSizes{};
             uint32_t                            _maxSets = 1000;
             VkDescriptorPoolCreateFlags         _poolFlags = 0;
+            ft_SwapChain&                       _swapChain;
         };
 
-    ft_DescriptorPool(ft_Device &Device,uint32_t maxSets,VkDescriptorPoolCreateFlags poolFlags,const std::vector<VkDescriptorPoolSize> &poolSizes);
+    ft_DescriptorPool(ft_Device &Device,uint32_t maxSets,VkDescriptorPoolCreateFlags poolFlags, std::vector<VkDescriptorPoolSize> &poolSizes, ft_SwapChain &);
     ~ft_DescriptorPool();
     ft_DescriptorPool(const ft_DescriptorPool &) = delete;
     ft_DescriptorPool &operator=(const ft_DescriptorPool &) = delete;
@@ -71,24 +75,27 @@ class ft_DescriptorPool {
     private:
         ft_Device&          _device;
         VkDescriptorPool    _descriptorPool;
+        ft_SwapChain&       _swapChain;
 
         friend class ft_DescriptorWriter;
 };
 
-class DescriptorWriter {
+class ft_DescriptorWriter {
     public:
-        DescriptorWriter(ft_DescriptorSetLayout &setLayout, ft_DescriptorPool &pool);
+        ft_DescriptorWriter(ft_DescriptorSetLayout &setLayout, ft_DescriptorPool &pool);
 
-        DescriptorWriter &writeBuffer(uint32_t binding, VkDescriptorBufferInfo *bufferInfo);
-        DescriptorWriter &writeImage(uint32_t binding, VkDescriptorImageInfo *imageInfo);
+        ft_DescriptorWriter    &writeBuffer(uint32_t binding, VkDescriptorBufferInfo *bufferInfo);
+        ft_DescriptorWriter    &writeImage(uint32_t binding, VkDescriptorImageInfo *imageInfo);
+        // ft_DescriptorWriter    &writeImageBuffer(VkDescriptorBufferInfo *bufferInfo, VkDescriptorImageInfo *imageInfo, VkDescriptorSet descriptorSet);
 
         bool build(VkDescriptorSet &set);
         void overwrite(VkDescriptorSet &set);
 
     private:
-        ft_DescriptorSetLayout&           _setLayout;
-        ft_DescriptorPool&                _pool;
-        std::vector<VkWriteDescriptorSet> _writes;
+        // ft_Device&                          _device;
+        ft_DescriptorSetLayout&             _setLayout;
+        ft_DescriptorPool&                  _pool;
+        std::vector<VkWriteDescriptorSet>   _writes;
 };
 
 #endif

@@ -31,7 +31,7 @@ class   ft_Renderer {
 
         VkRenderPass    getSwapChainRenderPass() const { return _swapChain->getRenderPass(); }
         float           getAspectRatio() const { return _swapChain->extentAspectRatio(); }
-        std::unique_ptr<ft_SwapChain>&   getSwapChain() { return _swapChain; }
+        ft_SwapChain&   getSwapChain() const { return *_swapChain; }
         bool            isFrameInProgress() const { return _isFrameStarted; }
         ft_Window&      getWindow() { return _window; }
         ft_Device&      getDevice() { return _device; }

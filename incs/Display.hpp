@@ -55,6 +55,7 @@ struct Texture {
 	VkImage			_image;
 	VkImageView		_imageView;
 	VkDeviceMemory	_imageMemory;
+	VkSampler		_sampler;
 };
 
 class Display
@@ -70,9 +71,14 @@ class Display
 		// bool	framebufferResized = false;
 	private:
   		void	loadGameObjects();
-		void	loadTextures();
-		void	createTexture(char *);
+		// void	loadTextures();
+		// void	createTexture(char *);
 		void	createTextureImage();
+		void	createTextureImageView();
+		void	createTextureSampler();
+		void    createDescriptorSetLayout();
+		void    createDescriptorPool();
+		void	createDescriptorSets();
 		void	transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
 
 		// Mesh						_mesh;
@@ -84,6 +90,17 @@ class Display
 		std::unique_ptr<ft_DescriptorPool>	_globalPool{};
 		ft_GameObject::Map			_gameObjects;
 		std::vector<Texture>		_loadedTextures;
+
+		// std::vector<VkBuffer>		_uniformBuffers;
+		std::vector<std::unique_ptr<ft_Buffer>>		_buffers;
+
+		//DESCRIPTORS
+		VkDescriptorSetLayout			_descriptorSetLayoutWithTexture;
+		VkDescriptorSetLayout			_descriptorSetLayoutWithoutTexture;
+		VkDescriptorPool				_descriptorPoolWithTexture;
+		VkDescriptorPool				_descriptorPoolWithoutTexture;
+    	std::vector<VkDescriptorSet>	_descriptorSetsWithTexture;
+		std::vector<VkDescriptorSet>	_descriptorSetsWithoutTexture;
 
 };
 

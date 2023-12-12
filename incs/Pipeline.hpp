@@ -54,7 +54,7 @@ class ft_Pipeline
         void        bind(VkCommandBuffer commandBuffer);
 
         static void defaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
-        static void pipelineConfigInfo(PipelineConfigInfo& configInfo, ft_Device& device);
+        static void pipelineConfigInfo(PipelineConfigInfo& configInfo);
         static void enableAlphaBlending(PipelineConfigInfo& configInfo);
         ft_Device&  getDevice() { return _device; }
     private:

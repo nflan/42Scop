@@ -78,7 +78,7 @@ VkCommandBuffer ft_Renderer::beginFrame()
 {
     assert(!this->_isFrameStarted && "Can't call beginFrame while already in progress");
 
-    auto result = this->_swapChain->acquireNextImage(&this->_currentImageIndex);
+    VkResult    result = this->_swapChain->acquireNextImage(&this->_currentImageIndex);
     if (result == VK_ERROR_OUT_OF_DATE_KHR)
     {
         recreateSwapChain();
@@ -90,7 +90,7 @@ VkCommandBuffer ft_Renderer::beginFrame()
 
     this->_isFrameStarted = true;
 
-    auto    commandBuffer = this->getCurrentCommandBuffer();
+    VkCommandBuffer_T*    commandBuffer = this->getCurrentCommandBuffer();
     VkCommandBufferBeginInfo    beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 

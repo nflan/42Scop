@@ -140,7 +140,7 @@ void ft_Pipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo)
     configInfo.viewportInfo.pScissors = nullptr;
 
 	//RASTERIZER
-   configInfo.rasterizationInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+    configInfo.rasterizationInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     configInfo.rasterizationInfo.depthClampEnable = VK_FALSE;
     configInfo.rasterizationInfo.rasterizerDiscardEnable = VK_FALSE;
     configInfo.rasterizationInfo.polygonMode = VK_POLYGON_MODE_FILL;
@@ -203,7 +203,7 @@ void ft_Pipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo)
     configInfo.attributeDescriptions = ft_Model::Vertex::getAttributeDescriptions();
 }
 
-void ft_Pipeline::pipelineConfigInfo(PipelineConfigInfo& configInfo, ft_Device& device)
+void ft_Pipeline::pipelineConfigInfo(PipelineConfigInfo& configInfo)
 {
     //interessant pour points / lignes / triangles / contigus ou non : https://vulkan-tutorial.com/fr/Dessiner_un_triangle/Pipeline_graphique_basique/Fonctions_fixees
     configInfo.inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -241,16 +241,14 @@ Tout autre mode que fill doit être activé lors de la mise en place du logical 
     configInfo.multisampleInfo.alphaToCoverageEnable = VK_FALSE;  // Optional
     configInfo.multisampleInfo.alphaToOneEnable = VK_FALSE;       // Optional
 
-    configInfo.colorBlendAttachment.colorWriteMask =
-        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
-        VK_COLOR_COMPONENT_A_BIT;
+    configInfo.colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     configInfo.colorBlendAttachment.blendEnable = VK_FALSE;
-    configInfo.colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;   // Optional
-    configInfo.colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;  // Optional
-    configInfo.colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;              // Optional
-    configInfo.colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;   // Optional
-    configInfo.colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;  // Optional
-    configInfo.colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;              // Optional
+    // configInfo.colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;   // Optional
+    // configInfo.colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;  // Optional
+    // configInfo.colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;              // Optional
+    // configInfo.colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;   // Optional
+    // configInfo.colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;  // Optional
+    // configInfo.colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;              // Optional
 
     configInfo.colorBlendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     configInfo.colorBlendInfo.logicOpEnable = VK_FALSE;
@@ -275,9 +273,8 @@ Tout autre mode que fill doit être activé lors de la mise en place du logical 
 
     configInfo.dynamicStateEnables = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
     configInfo.dynamicStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+    configInfo.dynamicStateInfo.dynamicStateCount = static_cast<uint32_t>(configInfo.dynamicStateEnables.size());
     configInfo.dynamicStateInfo.pDynamicStates = configInfo.dynamicStateEnables.data();
-    configInfo.dynamicStateInfo.dynamicStateCount =
-        static_cast<uint32_t>(configInfo.dynamicStateEnables.size());
     configInfo.dynamicStateInfo.flags = 0;
 
     configInfo.bindingDescriptions = ft_Model::Vertex::getBindingDescriptions();

@@ -49,8 +49,8 @@ void    RenderSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout
     pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
     pipelineLayoutInfo.pushConstantRangeCount = 1;
     pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-    if (vkCreatePipelineLayout(this->_device.device(), &pipelineLayoutInfo, nullptr, &this->_pipelineLayout) !=
-        VK_SUCCESS)
+
+    if (vkCreatePipelineLayout(this->_device.device(), &pipelineLayoutInfo, nullptr, &this->_pipelineLayout) != VK_SUCCESS)
         throw std::runtime_error("failed to create pipeline layout!");
 }
 

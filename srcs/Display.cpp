@@ -20,7 +20,6 @@ short		WAY = 1;
 float		ROTX = 0;
 float		ROTY = ROTATION; //change in tools.hpp
 float		ROTZ = 0;
-const int	MAX_FRAMES_IN_FLIGHT = 2;
 
 // namespace std {
 //     template<> struct hash<ft_Model::Vertex> {
@@ -81,10 +80,15 @@ void	key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 }
 
 Display::Display() {
+	// std::array<VkDescriptorPoolSize, 2> poolSizes{};
+	// poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	// poolSizes[0].descriptorCount = static_cast<uint32_t>(this->_renderer.getSwapChain().imageCount());
+	// poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	// poolSizes[1].descriptorCount = static_cast<uint32_t>(this->_renderer.getSwapChain().imageCount());
 	_globalPool =
-		ft_DescriptorPool::Builder(_device)
+		ft_DescriptorPool::Builder(_device, _renderer.getSwapChain())
 		.setMaxSets(ft_SwapChain::MAX_FRAMES_IN_FLIGHT)
-		.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ft_SwapChain::MAX_FRAMES_IN_FLIGHT)
+        .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ft_SwapChain::MAX_FRAMES_IN_FLIGHT)
 		.build();
 }
 
@@ -104,42 +108,53 @@ Display &	Display::operator=( const Display& o )
 
 Display::~Display()
 {
-	for (Texture text : this->_loadedTextures)
-	{
-		vkDestroyImage(this->_device.device(), text._image, nullptr);
-		vkFreeMemory(this->_device.device(), text._imageMemory, nullptr);
-	}
+	// vkDestroyDescriptorPool(_device.device(), _descriptorPoolWithoutTexture, nullptr);
+	// vkDestroyDescriptorPool(_device.device(), _descriptorPoolWithTexture, nullptr);
+
+	// for (Texture text : this->_loadedTextures)
+	// {
+	// 	vkDestroySampler(this->_device.device(), text._sampler, nullptr);
+	// 	vkDestroyImageView(this->_device.device(), text._imageView, nullptr);
+	// 	vkDestroyImage(this->_device.device(), text._image, nullptr);
+	// 	vkFreeMemory(this->_device.device(), text._imageMemory, nullptr);
+	// }
+	
+	// vkDestroyDescriptorSetLayout(_device.device(), _descriptorSetLayoutWithoutTexture, nullptr);
+	// vkDestroyDescriptorSetLayout(_device.device(), _descriptorSetLayoutWithTexture, nullptr);
 }
 
 void	Display::setFile(const char* file) { this->_file = file; }
 
 void	Display::run()
 {
-    createTextureImage();
 	loadGameObjects();
+	// createDescriptorSetLayout();
+    // createTextureImage();
+	// createTextureImageView();
+	// createTextureSampler();
 
-	std::vector<std::unique_ptr<ft_Buffer>> uboBuffers(ft_SwapChain::MAX_FRAMES_IN_FLIGHT);
-	for (int i = 0; i < uboBuffers.size(); i++)
+	
+	this->_buffers.resize(ft_SwapChain::MAX_FRAMES_IN_FLIGHT);
+	for (int i = 0; i < ft_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
 	{
-		uboBuffers[i] = std::make_unique<ft_Buffer>(
+		this->_buffers[i] = std::make_unique<ft_Buffer>(
 			this->_device,
 			sizeof(GlobalUbo),
 			1,
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-		uboBuffers[i]->map();
+		this->_buffers[i]->map();
 	}
 
-	auto globalSetLayout =
+	std::unique_ptr<ft_DescriptorSetLayout> globalSetLayout =
 		ft_DescriptorSetLayout::Builder(this->_device)
 			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
 			.build();
 
-	std::vector<VkDescriptorSet>	globalDescriptorSets(ft_SwapChain::MAX_FRAMES_IN_FLIGHT);
-	for (int i = 0; i < globalDescriptorSets.size(); i++)
-	{
-		auto bufferInfo = uboBuffers[i]->descriptorInfo();
-		DescriptorWriter(*globalSetLayout, *this->_globalPool)
+	std::vector<VkDescriptorSet> globalDescriptorSets(ft_SwapChain::MAX_FRAMES_IN_FLIGHT);
+	for (int i = 0; i < globalDescriptorSets.size(); i++) {
+		auto bufferInfo = this->_buffers[i]->descriptorInfo();
+		ft_DescriptorWriter(*globalSetLayout, *this->_globalPool)
 			.writeBuffer(0, &bufferInfo)
 			.build(globalDescriptorSets[i]);
 	}
@@ -149,10 +164,33 @@ void	Display::run()
 		this->_renderer.getSwapChainRenderPass(),
 		globalSetLayout->getDescriptorSetLayout()};
 
-	PointLightSystem pointLightSystem{
-		this->_device,
-		this->_renderer.getSwapChainRenderPass(),
-		globalSetLayout->getDescriptorSetLayout()};
+	// PointLightSystem pointLightSystem{
+	// 	this->_device,
+	// 	this->_renderer.getSwapChainRenderPass(),
+	// 	globalSetLayout->getDescriptorSetLayout()};
+	// createDescriptorPool();
+	// createDescriptorSets();
+
+
+	// std::unique_ptr<ft_DescriptorSetLayout> globalSetLayout =
+	// 	ft_DescriptorSetLayout::Builder(this->_device)
+	// 		.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+	// 		.build();
+
+
+
+	// std::vector<VkDescriptorSet>	globalDescriptorSets(ft_SwapChain::MAX_FRAMES_IN_FLIGHT);
+	// for (int i = 0; i < ft_SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
+	// {
+	// 	VkDescriptorImageInfo imageInfo{};
+	// 	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	// 	imageInfo.imageView = this->_loadedTextures[i]._imageView;
+	// 	imageInfo.sampler = this->_loadedTextures[i]._sampler;
+
+	// 	VkDescriptorBufferInfo bufferInfo = uboBuffers[i]->descriptorInfo();
+	// 	// DescriptorWriter(*globalSetLayout, &this->_descriptorPool, this->_device)
+	// 		.writeImageBuffer(&bufferInfo, &imageInfo, globalDescriptorSets[i]);
+	// }
 
 	ft_Camera camera{};
 
@@ -177,31 +215,37 @@ void	Display::run()
 		float aspect = this->_renderer.getAspectRatio();
 		camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 100.f);
 
-		if (auto commandBuffer = this->_renderer.beginFrame())
+		if (VkCommandBuffer_T *commandBuffer = this->_renderer.beginFrame())
 		{
 			int frameIndex = this->_renderer.getFrameIndex();
-			FrameInfo frameInfo{
+			FrameInfo frameInfoWithTexture{
 				frameIndex,
 				frameTime,
 				commandBuffer,
 				camera,
 				globalDescriptorSets[frameIndex],
 				this->_gameObjects};
-
+			// FrameInfo frameInfoWithoutTexture{
+			// 	frameIndex,
+			// 	frameTime,
+			// 	commandBuffer,
+			// 	camera,
+			// 	this->_descriptorSetsWithoutTexture[frameIndex],
+			// 	this->_gameObjects};
 			// update
 			GlobalUbo	ubo{};
 			ubo.projection = camera.getProjection();
 			ubo.view = camera.getView();
 			ubo.inverseView = camera.getInverseView();
-			pointLightSystem.update(frameInfo, ubo);
-			uboBuffers[frameIndex]->writeToBuffer(&ubo);
-			uboBuffers[frameIndex]->flush();
+			// pointLightSystem.update(frameInfoWithTexture, ubo);
+			this->_buffers[frameIndex]->writeToBuffer(&ubo);
+			this->_buffers[frameIndex]->flush();
 
 			// render
 			this->_renderer.beginSwapChainRenderPass(commandBuffer);
 			
-			renderSystem.renderGameObjects(frameInfo);
-			pointLightSystem.render(frameInfo);
+			renderSystem.renderGameObjects(frameInfoWithTexture);
+			// pointLightSystem.render(frameInfoWithTexture);
 
 			this->_renderer.endSwapChainRenderPass(commandBuffer);
 			this->_renderer.endFrame();
@@ -225,28 +269,28 @@ void Display::loadGameObjects()
 	
 	this->_gameObjects.emplace(gameObj.getId(), std::move(gameObj));
 
-	std::vector<glm::vec3> lightColors{
-		{1.f, 1.f, 1.f},
-  	};
+	// std::vector<glm::vec3> lightColors{
+	// 	{1.f, 1.f, 1.f},
+  	// };
 
-	for (int i = 0; i < lightColors.size(); i++)
-	{
-		ft_GameObject pointLight = ft_GameObject::makePointLight(0.2f);
-		pointLight.color = lightColors[i];
+	// for (int i = 0; i < lightColors.size(); i++)
+	// {
+	// 	ft_GameObject pointLight = ft_GameObject::makePointLight(0.2f);
+	// 	pointLight.color = lightColors[i];
 		
-		glm::mat4 rotateLight = glm::rotate(
-			glm::mat4(1.5f),
-			(i * glm::two_pi<float>()) / lightColors.size(),
-			{0.f, -1.f, 0.f});
-		pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-1.f, -1.f, -1.f, 1.f));
-		this->_gameObjects.emplace(pointLight.getId(), std::move(pointLight));
-  	}
+	// 	glm::mat4 rotateLight = glm::rotate(
+	// 		glm::mat4(1.5f),
+	// 		(i * glm::two_pi<float>()) / lightColors.size(),
+	// 		{0.f, -1.f, 0.f});
+	// 	pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-1.f, -1.f, -1.f, 1.f));
+	// 	this->_gameObjects.emplace(pointLight.getId(), std::move(pointLight));
+  	// }
 }
 
-void	Display::loadTextures()
-{
-	createTexture("textures/viking_room.png");
-}
+// void	Display::loadTextures()
+// {
+// 	createTexture("textures/viking_room.png");
+// }
 
 void	Display::createTextureImage()
 {
@@ -274,7 +318,7 @@ void	Display::createTextureImage()
 
 	stbi_image_free(pixels);
 
-    this->_renderer.getSwapChain()->createImage(static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, text._image, text._imageMemory);
+    this->_renderer.getSwapChain().createImage(static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, text._image, text._imageMemory);
 
 	this->transitionImageLayout(text._image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1); //this->_mipLevels
 	this->_device.copyBufferToImage(stagingBuffer, text._image, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), 1);
@@ -287,9 +331,9 @@ void	Display::createTextureImage()
 	// generateMipmaps(text._image, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, 1); //this->_mipLevels
 }
 
-void	Display::createTexture(char* file)
+void	Display::createTextureImageView()
 {
-
+    this->_loadedTextures[0]._imageView = this->_renderer.getSwapChain().createImageView(this->_loadedTextures[0]._image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, 1); // this->mipLevels;
 }
 
 void	Display::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels)
@@ -341,6 +385,232 @@ void	Display::transitionImageLayout(VkImage image, VkFormat format, VkImageLayou
 	);
     this->_device.endSingleTimeCommands(commandBuffer);
 }
+
+void	Display::createTextureSampler()
+{
+	VkSamplerCreateInfo	samplerInfo{}; //permet d'indiquer les filtres et les transformations à appliquer.
+	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+	samplerInfo.magFilter = VK_FILTER_LINEAR; //interpoler texels magnifies
+	samplerInfo.minFilter = VK_FILTER_LINEAR; //interpoler texels minifies
+
+	samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	/*
+	VK_SAMPLER_ADDRESS_MODE_REPEAT : répète le texture
+	VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT : répète en inversant les coordonnées pour réaliser un effet miroir
+	VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE : prend la couleur du pixel de bordure le plus proche
+	VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE : prend la couleur de l'opposé du plus proche côté de l'image
+	VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER : utilise une couleur fixée
+	*/
+	samplerInfo.anisotropyEnable = VK_TRUE; ///on pourrait le desactiver si le mec n'a pas une cg qui peut le faire
+	samplerInfo.maxAnisotropy = 16.0f; // et passer ca a 1.0f si le mec n'a pas une cg pour le faire
+	samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK; //si l'image est plus petite que la fenetre, couleur du reste mais que black white or transparent
+	samplerInfo.unnormalizedCoordinates = VK_FALSE;
+	// Le champ unnomalizedCoordinates indique le système de coordonnées que vous voulez utiliser pour accéder aux texels de l'image. Avec VK_TRUE, vous pouvez utiliser des coordonnées dans [0, texWidth) et [0, texHeight). Sinon, les valeurs sont accédées avec des coordonnées dans [0, 1). Dans la plupart des cas les coordonnées sont utilisées normalisées car cela permet d'utiliser un même shader pour des textures de résolution différentes.
+	samplerInfo.compareEnable = VK_FALSE;
+	samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+	samplerInfo.mipLodBias = 0.0f;//Lod -> Level of Details
+	samplerInfo.minLod = 0.0f; //static_cast<float>(this->_mipLevels / 2);//minimum de details
+    samplerInfo.maxLod = 0.0f; //static_cast<float>(this->_mipLevels);//maximum de details
+
+	if (vkCreateSampler(this->_device.device(), &samplerInfo, nullptr, &this->_loadedTextures[0]._sampler) != VK_SUCCESS)
+        throw std::runtime_error("échec de la creation d'un sampler!");
+	// le sampler n'est pas lie a une image ! Il est independant et peut du coup etre efficace tout le long du programme. par contre si on veut changer la facon d'afficher, faut ptete le detruire et le refaire ?
+}
+
+void	Display::createDescriptorSetLayout() {
+	VkDescriptorSetLayoutBinding uboLayoutBinding{};
+	uboLayoutBinding.binding = 0;
+	uboLayoutBinding.descriptorCount = 1;
+	uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	uboLayoutBinding.pImmutableSamplers = nullptr;
+	uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+	VkDescriptorSetLayoutCreateInfo layoutInfo{};
+	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	layoutInfo.bindingCount = 1;
+	layoutInfo.pBindings = &uboLayoutBinding;
+
+	if (vkCreateDescriptorSetLayout(this->_device.device(), &layoutInfo, nullptr, &this->_descriptorSetLayoutWithTexture) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create descriptor set layout!");
+	}
+}
+
+// void	Display::createDescriptorSetLayout()
+// {
+// 	VkDescriptorSetLayoutBinding uboLayoutBinding{};
+// 	uboLayoutBinding.binding = 0;
+// 	uboLayoutBinding.descriptorCount = 1;
+// 	uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+// 	uboLayoutBinding.pImmutableSamplers = nullptr;
+// 	uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+//     VkDescriptorSetLayoutBinding textureLayoutBinding{};
+//     textureLayoutBinding.binding = 1;
+//     textureLayoutBinding.descriptorCount = 1;
+//     textureLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+//     textureLayoutBinding.pImmutableSamplers = nullptr;
+//     textureLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+//     std::array<VkDescriptorSetLayoutBinding, 2> bindings{uboLayoutBinding, textureLayoutBinding};
+
+// 	VkDescriptorSetLayoutCreateInfo layoutInfoTexture{};
+// 	layoutInfoTexture.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+//     layoutInfoTexture.bindingCount = bindings.size();
+// 	layoutInfoTexture.pBindings = bindings.data();
+
+//     std::array<VkDescriptorSetLayoutBinding, 1> bindings2{uboLayoutBinding};
+
+// 	VkDescriptorSetLayoutCreateInfo layoutInfoNoTexture{};
+// 	layoutInfoNoTexture.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+//     layoutInfoNoTexture.bindingCount = bindings2.size();
+// 	layoutInfoNoTexture.pBindings = bindings2.data();
+
+// 	if (vkCreateDescriptorSetLayout(this->_device.device(), &layoutInfoTexture, nullptr, &this->_descriptorSetLayoutWithTexture) != VK_SUCCESS) {
+// 		throw std::runtime_error("failed to create descriptor set layout!");
+// 	}
+// 	if (vkCreateDescriptorSetLayout(this->_device.device(), &layoutInfoNoTexture, nullptr, &this->_descriptorSetLayoutWithoutTexture) != VK_SUCCESS) {
+// 		throw std::runtime_error("failed to create descriptor set layout!");
+// 	}
+// }
+
+void	Display::createDescriptorPool()
+{
+	VkDescriptorPoolSize poolSize{};
+	poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	poolSize.descriptorCount = static_cast<uint32_t>(ft_SwapChain::MAX_FRAMES_IN_FLIGHT);
+
+	VkDescriptorPoolCreateInfo poolInfo{};
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.poolSizeCount = 1;
+	poolInfo.pPoolSizes = &poolSize;
+	poolInfo.maxSets = static_cast<uint32_t>(ft_SwapChain::MAX_FRAMES_IN_FLIGHT);
+
+	if (vkCreateDescriptorPool(this->_device.device(), &poolInfo, nullptr, &this->_descriptorPoolWithTexture) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create descriptor pool!");
+	}
+}
+
+// void	Display::createDescriptorPool()
+// {
+// 	std::array<VkDescriptorPoolSize, 2> poolSizes{};
+// 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+// 	poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+// 	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+// 	poolSizes[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+
+// 	VkDescriptorPoolCreateInfo poolInfo{};
+// 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+// 	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+// 	poolInfo.pPoolSizes = poolSizes.data();
+// 	poolInfo.maxSets = static_cast<uint32_t>(2);
+	
+// 	if (vkCreateDescriptorPool(this->_device.device(), &poolInfo, nullptr, &this->_descriptorPoolWithTexture) != VK_SUCCESS) {
+// 		throw std::runtime_error("failed to create descriptor pool!");
+// 	}
+
+// 	std::array<VkDescriptorPoolSize, 1> poolSizesWithoutTexture{};
+// 	poolSizesWithoutTexture[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+// 	poolSizesWithoutTexture[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+
+// 	VkDescriptorPoolCreateInfo poolInfoWithoutTexture{};
+// 	poolInfoWithoutTexture.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+// 	poolInfoWithoutTexture.poolSizeCount = static_cast<uint32_t>(poolSizesWithoutTexture.size());
+// 	poolInfoWithoutTexture.pPoolSizes = poolSizesWithoutTexture.data();
+// 	poolInfoWithoutTexture.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+	
+// 	if (vkCreateDescriptorPool(this->_device.device(), &poolInfoWithoutTexture, nullptr, &this->_descriptorPoolWithoutTexture) != VK_SUCCESS) {
+// 		throw std::runtime_error("failed to create descriptor pool!");
+// 	}
+// }
+
+void	Display::createDescriptorSets()
+{
+	std::vector<VkDescriptorSetLayout> layouts(ft_SwapChain::MAX_FRAMES_IN_FLIGHT, this->_descriptorSetLayoutWithTexture);
+	VkDescriptorSetAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	allocInfo.descriptorPool = this->_descriptorPoolWithTexture;
+	allocInfo.descriptorSetCount = static_cast<uint32_t>(ft_SwapChain::MAX_FRAMES_IN_FLIGHT);
+	allocInfo.pSetLayouts = layouts.data();
+
+	this->_descriptorSetsWithTexture.resize(ft_SwapChain::MAX_FRAMES_IN_FLIGHT);
+	if (vkAllocateDescriptorSets(this->_device.device(), &allocInfo, this->_descriptorSetsWithTexture.data()) != VK_SUCCESS) {
+		throw std::runtime_error("failed to allocate descriptor sets!");
+	}
+
+	for (size_t i = 0; i < ft_SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
+		VkDescriptorBufferInfo bufferInfo{};
+		bufferInfo.buffer = this->_buffers[i]->getBuffer();
+		bufferInfo.offset = 0;
+		bufferInfo.range = sizeof(UniformBufferObject);
+
+		VkWriteDescriptorSet descriptorWrite{};
+		descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		descriptorWrite.dstSet = this->_descriptorSetsWithTexture[i];
+		descriptorWrite.dstBinding = 0;
+		descriptorWrite.dstArrayElement = 0;
+		descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		descriptorWrite.descriptorCount = 1;
+		descriptorWrite.pBufferInfo = &bufferInfo;
+
+		vkUpdateDescriptorSets(this->_device.device(), 1, &descriptorWrite, 0, nullptr);
+	}
+}
+
+// void	Display::createDescriptorSets()
+// {
+// 	std::vector<VkDescriptorSetLayout> layouts(2, this->_descriptorSetLayoutWithTexture);
+
+// 	VkDescriptorSetAllocateInfo allocInfoWithTexture{};
+// 	allocInfoWithTexture.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+// 	allocInfoWithTexture.descriptorPool = this->_descriptorPoolWithTexture;
+// 	allocInfoWithTexture.descriptorSetCount = static_cast<uint32_t>(layouts.size());
+// 	allocInfoWithTexture.pSetLayouts = layouts.data();
+
+// 	this->_descriptorSetsWithTexture.resize(MAX_FRAMES_IN_FLIGHT);
+// 	if (vkAllocateDescriptorSets(this->_device.device(), &allocInfoWithTexture, this->_descriptorSetsWithTexture.data()) != VK_SUCCESS) {
+// 		throw std::runtime_error("failed to allocate descriptor sets!");
+// 	}
+
+// 	// std::vector<VkDescriptorSetLayout> layouts2(1, this->_descriptorSetLayoutWithoutTexture);
+
+// 	// VkDescriptorSetAllocateInfo allocInfoWithoutTexture{};
+// 	// allocInfoWithoutTexture.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+// 	// allocInfoWithoutTexture.descriptorPool = this->_descriptorPoolWithoutTexture;
+// 	// allocInfoWithoutTexture.descriptorSetCount = static_cast<uint32_t>(layouts2.size());
+// 	// allocInfoWithoutTexture.pSetLayouts = layouts2.data();
+
+// 	// this->_descriptorSetsWithoutTexture.resize(1);
+// 	// if (vkAllocateDescriptorSets(this->_device.device(), &allocInfoWithoutTexture, this->_descriptorSetsWithoutTexture.data()) != VK_SUCCESS) {
+// 	// 	throw std::runtime_error("failed to allocate descriptor sets!");
+// 	// }
+
+// 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+// 		VkDescriptorBufferInfo bufferInfo{};
+// 		bufferInfo.buffer = this->_buffers[i]->getBuffer();
+// 		bufferInfo.offset = 0;
+// 		bufferInfo.range = sizeof(UniformBufferObject);
+
+// 		VkWriteDescriptorSet descriptorWriteTexture{};
+// 		descriptorWriteTexture.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+// 		// if (i < 2)
+// 			descriptorWriteTexture.dstSet = this->_descriptorSetsWithTexture[i];
+// 		// else
+// 		// 	descriptorWriteTexture.dstSet = this->_descriptorSetsWithoutTexture[0];
+// 		descriptorWriteTexture.dstBinding = 0;
+// 		descriptorWriteTexture.dstArrayElement = 0;
+// 		descriptorWriteTexture.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+// 		descriptorWriteTexture.descriptorCount = 1;
+// 		descriptorWriteTexture.pBufferInfo = &bufferInfo;
+// 		if (descriptorWriteTexture.dstSet == VK_NULL_HANDLE) {
+// 			std::cerr << i << std::endl;
+// 			throw std::runtime_error("Invalid descriptor set in vkUpdateDescriptorSets!");
+// 		}
+// 		vkUpdateDescriptorSets(this->_device.device(), 1, &descriptorWriteTexture, 0, nullptr);
+// 	}
+// }
 
 // static void	framebufferResizeCallback(GLFWwindow* window, int width, int height)
 // {
