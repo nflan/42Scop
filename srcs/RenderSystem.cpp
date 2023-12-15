@@ -42,6 +42,7 @@ void    RenderSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout
     pushConstantRange.size = sizeof(SimplePushConstantData);
 
     std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalSetLayout};
+	std::cerr << "size = " << descriptorSetLayouts.size() << std::endl;
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -62,6 +63,8 @@ void    RenderSystem::createPipeline(VkRenderPass renderPass)
     ft_Pipeline::defaultPipelineConfigInfo(pipelineConfig);
     // TODOft_Pipeline::pipelineConfigInfo(pipelineConfig, this->_device);
     pipelineConfig.renderPass = renderPass;
+    std::cout << "msaa = " << this->_device.getMsaaSamples();
+    pipelineConfig.multisampleInfo.rasterizationSamples = this->_device.getMsaaSamples();
     pipelineConfig.pipelineLayout = this->_pipelineLayout;
     this->_pipeline = std::make_unique<ft_Pipeline>(
         this->_device,

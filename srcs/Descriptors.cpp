@@ -32,28 +32,15 @@ std::unique_ptr<ft_DescriptorSetLayout> ft_DescriptorSetLayout::Builder::build()
 ft_DescriptorSetLayout::ft_DescriptorSetLayout(ft_Device &device, std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings): _device{device}, _bindings{bindings}
 {
     std::vector<VkDescriptorSetLayoutBinding>   setLayoutBindings{};
-    std::vector<VkDescriptorSetLayoutBinding>   samplerLayoutBindings{};
-    
-    VkDescriptorSetLayoutBinding   samplerLayoutBinding{};
-    samplerLayoutBinding.binding = 0;
-    samplerLayoutBinding.descriptorCount = 1;
-    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    samplerLayoutBinding.pImmutableSamplers = nullptr;
-    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
     
     for (auto kv : bindings)
-    {
         setLayoutBindings.push_back(kv.second);
-        samplerLayoutBindings.push_back(samplerLayoutBinding);
-    }
 
-
-    std::array<VkDescriptorSetLayoutBinding, 2> bindingus = {setLayoutBindings[0], samplerLayoutBindings[0]};
-
+    std::cout << "setlayoutbindings size = " << setLayoutBindings.size() << std::endl;
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layoutInfo.bindingCount = 1;
-    layoutInfo.pBindings = bindingus.data();
+    layoutInfo.bindingCount = static_cast<uint32_t>(setLayoutBindings.size());
+    layoutInfo.pBindings = setLayoutBindings.data();
 
     if (vkCreateDescriptorSetLayout(this->_device.device(), &layoutInfo, nullptr, &this->_descriptorSetLayout) != VK_SUCCESS)
         throw std::runtime_error("failed to create descriptor set layout!");
@@ -99,13 +86,19 @@ std::unique_ptr<ft_DescriptorPool> ft_DescriptorPool::Builder::build()
 
 // *************** Descriptor Pool *********************
 
-ft_DescriptorPool::ft_DescriptorPool(ft_Device &Device, uint32_t maxSets, VkDescriptorPoolCreateFlags poolFlags, std::vector<VkDescriptorPoolSize> &poolSizes, ft_SwapChain &swapChain): _device(Device), _swapChain(swapChain)
+ft_DescriptorPool::ft_DescriptorPool(ft_Device &Device, uint32_t maxSets, VkDescriptorPoolCreateFlags poolFlags, std::vector<VkDescriptorPoolSize> &poolSizess, ft_SwapChain &swapChain): _device(Device), _swapChain(swapChain)
 {
+    std::array<VkDescriptorPoolSize, 2> poolSizes{};
+	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	poolSizes[0].descriptorCount = static_cast<uint32_t>(swapChain.imageCount());
+	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	poolSizes[1].descriptorCount = static_cast<uint32_t>(swapChain.imageCount());
+	
     VkDescriptorPoolCreateInfo descriptorPoolInfo{};
     descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    descriptorPoolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+    descriptorPoolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());;
     descriptorPoolInfo.pPoolSizes = poolSizes.data();
-    descriptorPoolInfo.maxSets = maxSets;
+	descriptorPoolInfo.maxSets = static_cast<uint32_t>(swapChain.imageCount());
     descriptorPoolInfo.flags = poolFlags;
 
     if (vkCreateDescriptorPool(this->_device.device(), &descriptorPoolInfo, nullptr, &this->_descriptorPool) != VK_SUCCESS)
@@ -117,20 +110,26 @@ ft_DescriptorPool::~ft_DescriptorPool()
     vkDestroyDescriptorPool(this->_device.device(), this->_descriptorPool, nullptr);
 }
 
-bool ft_DescriptorPool::allocateDescriptor(const VkDescriptorSetLayout descriptorSetLayout, VkDescriptorSet &descriptor) const
+bool ft_DescriptorPool::allocateDescriptor(const VkDescriptorSetLayout descriptorSetLayout, std::vector<VkDescriptorSet> &set)
 {
     SwapChainSupportDetails	swapChainSupport = this->_device.querySwapChainSupport(this->_device.getPhysicalDevice());
+	std::vector<VkDescriptorSetLayout> layouts(this->_swapChain.imageCount(), descriptorSetLayout);
 
     // std::cout << swapChainSupport.capabilities.minImageCount + 1 << std::endl;
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = this->_descriptorPool;
-    allocInfo.pSetLayouts = &descriptorSetLayout;
-    allocInfo.descriptorSetCount = 1;//static_cast<uint32_t>(this->_swapChain.imageCount());//static_cast<uint32_t>(this->_swapChainImages.size());
+    allocInfo.descriptorSetCount = this->_swapChain.imageCount();//static_cast<uint32_t>(ft_SwapChain::MAX_FRAMES_IN_FLIGHT);//static_cast<uint32_t>(this->_swapChainImages.size());
+    allocInfo.pSetLayouts = layouts.data();
     // Might want to create a "DescriptorPoolManager" class that handles this case, and builds
     // a new pool w henever an old pool fills up. But this is beyond our current scope
-    if (vkAllocateDescriptorSets(this->_device.device(), &allocInfo, &descriptor) != VK_SUCCESS)
+    std::cerr << set.size() << std::endl;
+    set.resize(this->_swapChain.imageCount());
+    std::cerr << set.size() << std::endl;
+    if (vkAllocateDescriptorSets(this->_device.device(), &allocInfo, set.data()) != VK_SUCCESS)
         return false;
+    std::cerr << set.size() << std::endl;
+
     return true;
 }
 
@@ -146,7 +145,7 @@ void ft_DescriptorPool::resetPool()
 
 // *************** Descriptor Writer *********************
 
-ft_DescriptorWriter::ft_DescriptorWriter(ft_DescriptorSetLayout &setLayout, ft_DescriptorPool &pool): _setLayout(setLayout), _pool(pool) {}
+ft_DescriptorWriter::ft_DescriptorWriter(ft_DescriptorSetLayout &setLayout, ft_DescriptorPool &pool, ft_Device &device): _setLayout(setLayout), _pool(pool), _device(device) {}
 
 ft_DescriptorWriter    &ft_DescriptorWriter::writeBuffer(uint32_t binding, VkDescriptorBufferInfo *bufferInfo)
 {
@@ -186,46 +185,48 @@ ft_DescriptorWriter    &ft_DescriptorWriter::writeImage(uint32_t binding, VkDesc
     return *this;
 }
 
-// ft_DescriptorWriter    &ft_DescriptorWriter::writeImageBuffer(VkDescriptorBufferInfo *bufferInfo, VkDescriptorImageInfo *imageInfo, VkDescriptorSet descriptorSet)
-// {
-//     std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
-//     descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-//     descriptorWrites[0].dstSet = descriptorSet;
-//     descriptorWrites[0].dstBinding = 0;
-//     descriptorWrites[0].dstArrayElement = 0;
-//     descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-//     descriptorWrites[0].descriptorCount = 1;
-//     descriptorWrites[0].pBufferInfo = bufferInfo;
-
-//     descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-//     descriptorWrites[1].dstSet = descriptorSet;
-//     descriptorWrites[1].dstBinding = 1;
-//     descriptorWrites[1].dstArrayElement = 0;
-//     descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-//     descriptorWrites[1].descriptorCount = 1;
-//     descriptorWrites[1].pImageInfo = imageInfo;
-
-//     vkUpdateDescriptorSets(this->_device.device(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-
-//     this->_writes.push_back(descriptorWrites[0]);
-//     this->_writes.push_back(descriptorWrites[1]);
-//     return *this;
-// }
-
-bool    ft_DescriptorWriter::build(VkDescriptorSet &set)
+ft_DescriptorWriter    &ft_DescriptorWriter::writeImageBuffer(VkDescriptorBufferInfo *bufferInfo, VkDescriptorImageInfo *imageInfo, std::vector<VkDescriptorSet> descriptorSet)
 {
-    bool success = this->_pool.allocateDescriptor(this->_setLayout.getDescriptorSetLayout(), set);
+    _descriptorSets = descriptorSet;
+    this->build();
+    descriptorSet = _descriptorSets;
+    std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+    descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptorWrites[0].dstSet = descriptorSet[0];
+    descriptorWrites[0].dstBinding = 0;
+    descriptorWrites[0].dstArrayElement = 0;
+    descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptorWrites[0].descriptorCount = 1;
+    descriptorWrites[0].pBufferInfo = bufferInfo;
+
+    descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptorWrites[1].dstSet = descriptorSet[1];
+    descriptorWrites[1].dstBinding = 1;
+    descriptorWrites[1].dstArrayElement = 0;
+    descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+    descriptorWrites[1].descriptorCount = 1;
+    descriptorWrites[1].pImageInfo = imageInfo;
+
+    vkUpdateDescriptorSets(this->_device.device(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+
+    this->_writes.push_back(descriptorWrites[0]);
+    this->_writes.push_back(descriptorWrites[1]);
+    return *this;
+}
+
+bool    ft_DescriptorWriter::build()
+{
+    bool success = this->_pool.allocateDescriptor(this->_setLayout.getDescriptorSetLayout(), this->_descriptorSets);
     if (!success)
         return false;
 
-    overwrite(set);
+    // overwrite(this->_descriptorSets);
     return true;
 }
 
-void    ft_DescriptorWriter::overwrite(VkDescriptorSet &set)
+void    ft_DescriptorWriter::overwrite(std::vector<VkDescriptorSet> set)
 {
-    for (auto &write : this->_writes)
-        write.dstSet = set;
-
+    for (uint32_t i = 0; i < _writes.size(); i++)
+        _writes[i].dstSet = set[i];
     vkUpdateDescriptorSets(this->_pool.getDevice().device(), this->_writes.size(), this->_writes.data(), 0, nullptr);
 }

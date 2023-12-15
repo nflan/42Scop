@@ -64,8 +64,8 @@ class ft_DescriptorPool {
     ft_DescriptorPool(const ft_DescriptorPool &) = delete;
     ft_DescriptorPool &operator=(const ft_DescriptorPool &) = delete;
 
-    bool    allocateDescriptor(const VkDescriptorSetLayout descriptorSetLayout, VkDescriptorSet &descriptor) const;
-
+    bool    allocateDescriptor(const VkDescriptorSetLayout descriptorSetLayout, std::vector<VkDescriptorSet> &set);
+    VkDescriptorPool    getDescriptorPool() { return _descriptorPool; }
     void    freeDescriptors(std::vector<VkDescriptorSet> &descriptors) const;
 
     void    resetPool();
@@ -82,19 +82,20 @@ class ft_DescriptorPool {
 
 class ft_DescriptorWriter {
     public:
-        ft_DescriptorWriter(ft_DescriptorSetLayout &setLayout, ft_DescriptorPool &pool);
+        ft_DescriptorWriter(ft_DescriptorSetLayout &setLayout, ft_DescriptorPool &pool, ft_Device &device);
 
         ft_DescriptorWriter    &writeBuffer(uint32_t binding, VkDescriptorBufferInfo *bufferInfo);
         ft_DescriptorWriter    &writeImage(uint32_t binding, VkDescriptorImageInfo *imageInfo);
-        // ft_DescriptorWriter    &writeImageBuffer(VkDescriptorBufferInfo *bufferInfo, VkDescriptorImageInfo *imageInfo, VkDescriptorSet descriptorSet);
+        ft_DescriptorWriter    &writeImageBuffer(VkDescriptorBufferInfo *bufferInfo, VkDescriptorImageInfo *imageInfo, std::vector<VkDescriptorSet> descriptorSet);
 
-        bool build(VkDescriptorSet &set);
-        void overwrite(VkDescriptorSet &set);
+        bool build();
+        void overwrite(std::vector<VkDescriptorSet> set);
 
     private:
-        // ft_Device&                          _device;
+        ft_Device&                          _device;
         ft_DescriptorSetLayout&             _setLayout;
         ft_DescriptorPool&                  _pool;
+        std::vector<VkDescriptorSet>        _descriptorSets;
         std::vector<VkWriteDescriptorSet>   _writes;
 };
 

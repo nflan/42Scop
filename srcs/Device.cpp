@@ -90,6 +90,7 @@ void DestroyDebugUtilsMessengerEXT(
 // class member functions
 ft_Device::ft_Device(ft_Window &window): _window{window}
 {
+	_mipLevels = 1;
     createInstance();
     setupDebugMessenger();
     createSurface();
@@ -165,10 +166,13 @@ void ft_Device::pickPhysicalDevice()
 
 	//selection des cg
 
-	for (const auto& device : devices) {
-		if (isDeviceSuitable(device)) {
+	for (const auto& device : devices)
+	{
+		if (isDeviceSuitable(device))
+		{
 			this->_physicalDevice = device;
 			this->_msaaSamples = getMaxUsableSampleCount(VK_SAMPLE_COUNT_8_BIT);
+			std::cerr << "msaasamples = " << this->_msaaSamples << std::endl;
 			break;
 		}
 	}
@@ -475,7 +479,7 @@ QueueFamilyIndices  ft_Device::findQueueFamilies(VkPhysicalDevice device)
             indices.presentFamilyHasValue = true;
         }
         if (indices.isComplete()) {
-        break;
+        	break;
         }
         i++;
     }
@@ -662,9 +666,8 @@ void    ft_Device::createImageWithInfo(
     VkImage &image,
     VkDeviceMemory &imageMemory)
 {
-    if (vkCreateImage(this->_device_, &imageInfo, nullptr, &image) != VK_SUCCESS) {
+    if (vkCreateImage(this->device(), &imageInfo, nullptr, &image) != VK_SUCCESS)
         throw std::runtime_error("failed to create image!");
-    }
 
     VkMemoryRequirements memRequirements;
     vkGetImageMemoryRequirements(this->_device_, image, &memRequirements);
@@ -674,7 +677,7 @@ void    ft_Device::createImageWithInfo(
     allocInfo.allocationSize = memRequirements.size;
     allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
 
-    if (vkAllocateMemory(this->_device_, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS)
+    if (vkAllocateMemory(this->device(), &allocInfo, nullptr, &imageMemory) != VK_SUCCESS)
         throw std::runtime_error("failed to allocate image memory!");
 
     if (vkBindImageMemory(this->_device_, image, imageMemory, 0) != VK_SUCCESS)

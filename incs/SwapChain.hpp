@@ -25,7 +25,7 @@
 
 class ft_SwapChain {
     public:
-        static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
+        static constexpr int MAX_FRAMES_IN_FLIGHT = 5;
 
         ft_SwapChain(ft_Device &deviceRef, VkExtent2D windowExtent);
         ft_SwapChain(ft_Device &deviceRef, VkExtent2D windowExtent, std::shared_ptr<ft_SwapChain> previous);

@@ -58,6 +58,16 @@ struct Texture {
 	VkSampler		_sampler;
 };
 
+struct texture {
+	uint32_t	id;
+	uint32_t	width;
+	uint32_t	height;
+	uint8_t		channel_count;
+	bool		has_transparency;
+	uint32_t	generation;
+	void*		internal_data;
+};
+
 class Display
 {
 	public:
@@ -78,7 +88,8 @@ class Display
 		void	createTextureSampler();
 		void    createDescriptorSetLayout();
 		void    createDescriptorPool();
-		void	createDescriptorSets();
+		void	generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
+		void	createDescriptorSets(ft_DescriptorSetLayout& layout);
 		void	transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
 
 		// Mesh						_mesh;
@@ -99,6 +110,7 @@ class Display
 		VkDescriptorSetLayout			_descriptorSetLayoutWithoutTexture;
 		VkDescriptorPool				_descriptorPoolWithTexture;
 		VkDescriptorPool				_descriptorPoolWithoutTexture;
+		std::vector<VkDescriptorSet>	_descriptorSets;
     	std::vector<VkDescriptorSet>	_descriptorSetsWithTexture;
 		std::vector<VkDescriptorSet>	_descriptorSetsWithoutTexture;
 
