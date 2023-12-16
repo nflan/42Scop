@@ -96,6 +96,8 @@ void    RenderSystem::renderGameObjects(FrameInfo& frameInfo)
         glm::vec3	center = obj.model->getCenterOfObj();
 
         obj.transform.translation = -center; // put obj to the center
+        // std::cerr << "scale = " << obj.model->getScaleObj();
+        obj.transform.scale = glm::vec3(obj.model->getScaleObj());
         obj.transform.rotation += glm::vec3(ROTX * WAY, ROTY * WAY, ROTZ * WAY); // rotate on itself
         if (ROBJ)
         {

@@ -59,22 +59,25 @@ void ft_Pipeline::createGraphicsPipeline(const std::string& vertFilepath, const 
     createShaderModule(vertShaderCode, &this->_vertShaderModule);
     createShaderModule(fragShaderCode, &this->_fragShaderModule);//creation du pipeline -> compile et mis sur la carte. on peut donc detruire une fois que la pipeline est finie
 
-    VkPipelineShaderStageCreateInfo shaderStages[2];
-    shaderStages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    shaderStages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
-    shaderStages[0].module = this->_vertShaderModule;
-    shaderStages[0].pName = "main";
-    shaderStages[0].flags = 0;
-    shaderStages[0].pNext = nullptr;
-    shaderStages[0].pSpecializationInfo = nullptr;//-> pour optimiser, virer du code avant la compile si pas besoin
+    VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
+    vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+    vertShaderStageInfo.module = this->_vertShaderModule;
+    vertShaderStageInfo.pName = "main";
+    vertShaderStageInfo.flags = 0;
+    vertShaderStageInfo.pNext = nullptr;
+    vertShaderStageInfo.pSpecializationInfo = nullptr;//-> pour optimiser, virer du code avant la compile si pas besoin
 
-    shaderStages[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    shaderStages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-    shaderStages[1].module = this->_fragShaderModule;
-    shaderStages[1].pName = "main";
-    shaderStages[1].flags = 0;
-    shaderStages[1].pNext = nullptr;
-    shaderStages[1].pSpecializationInfo = nullptr;
+    VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
+    fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+    fragShaderStageInfo.module = this->_fragShaderModule;
+    fragShaderStageInfo.pName = "main";
+    fragShaderStageInfo.flags = 0;
+    fragShaderStageInfo.pNext = nullptr;
+    fragShaderStageInfo.pSpecializationInfo = nullptr;
+
+    VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
 
     auto& bindingDescriptions = configInfo.bindingDescriptions;
     auto& attributeDescriptions = configInfo.attributeDescriptions;

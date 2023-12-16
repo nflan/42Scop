@@ -55,12 +55,28 @@ std::unique_ptr<ft_Model> ft_Model::createModelFromFile(
 void    ft_Model::createVertexBuffers(const std::vector<Vertex> &vertices)
 {
     _centerOfObj = glm::vec3(0.0f);
+    glm::vec3   min(vertices[0].position), max(vertices[0].position);
 
     for (const Vertex& vertex : vertices)
+    {
+        min = glm::min(min, vertex.position);
+        max = glm::max(max, vertex.position);
         _centerOfObj += vertex.position;
+    }
+    std::cout << "min.x + min.y + min.z" << " " << min.x << " " << min.y << " " << min.z << std::endl;
+    std::cout << "max.x + max.y + max.z" << " " << max.x << " " << max.y << " " << max.z << std::endl;
+    std::cout << min.x + min.y + min.z << " " << max.x + max.y + max.z << std::endl;
+    std::cout << glm::distance(min, max) << std::endl;
+    std::cout << static_cast<float>(8 / glm::distance(min, max)) << std::endl;
 
+    _scaleObj = static_cast<float>(8 / glm::distance(min, max));
+    if (_scaleObj < 0)
+        _scaleObj *= -1;
+    std::cerr << "scale = " << _scaleObj << std::endl;
+    _centerOfObj = _scaleObj * _centerOfObj;
     _centerOfObj /= static_cast<float>(vertices.size());
     this->_vertexCount = static_cast<uint32_t>(vertices.size());
+
     assert(this->_vertexCount >= 3 && "Vertex count must be at least 3");
     VkDeviceSize    bufferSize = sizeof(vertices[0]) * this->_vertexCount;
     uint32_t    vertexSize = sizeof(vertices[0]);

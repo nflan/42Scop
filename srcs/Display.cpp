@@ -290,11 +290,6 @@ void Display::loadGameObjects()
   	// }
 }
 
-// void	Display::loadTextures()
-// {
-// 	createTexture("textures/viking_room.png");
-// }
-
 void	Display::createTextureImage()
 {
 	Texture	text;
