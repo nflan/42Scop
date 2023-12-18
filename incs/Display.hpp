@@ -49,7 +49,7 @@ const uint32_t	WIDTH = 800;
 const uint32_t	HEIGHT = 600;
 
 const std::string	MODEL_PATH = "models/viking_room.obj";
-const std::string	TEXTURE_PATH = "textures/viking_room.png";
+const std::string	TEXTURE_PATH = "textures/cute.png";
 
 struct Texture {
 	VkImage			_image;
@@ -104,6 +104,8 @@ class Display
 
 		// std::vector<VkBuffer>		_uniformBuffers;
 		std::vector<std::unique_ptr<ft_Buffer>>		_buffers;
+
+		std::vector<RenderSystem*>				_renderSystem;
 
 		//DESCRIPTORS
 		VkDescriptorSetLayout			_descriptorSetLayoutWithTexture;

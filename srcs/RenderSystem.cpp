@@ -23,7 +23,7 @@ struct SimplePushConstantData
     glm::mat4 normalMatrix{1.f};
 };
 
-RenderSystem::RenderSystem(ft_Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout): _device{device}
+RenderSystem::RenderSystem(ft_Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout, std::string shader): _device{device}, _shader{shader}
 {
     createPipelineLayout(globalSetLayout);
     createPipeline(renderPass);
@@ -68,8 +68,8 @@ void    RenderSystem::createPipeline(VkRenderPass renderPass)
     pipelineConfig.pipelineLayout = this->_pipelineLayout;
     this->_pipeline = std::make_unique<ft_Pipeline>(
         this->_device,
-        "shaders/shader.vert.spv",
-        "shaders/shader.frag.spv",
+        "shaders/" + _shader + ".vert.spv",
+        "shaders/" + _shader + ".frag.spv",
         pipelineConfig);
 }
 
@@ -97,7 +97,7 @@ void    RenderSystem::renderGameObjects(FrameInfo& frameInfo)
 
         obj.transform.translation = -center; // put obj to the center
         // std::cerr << "scale = " << obj.model->getScaleObj();
-        obj.transform.scale = glm::vec3(obj.model->getScaleObj());
+        // obj.transform.scale = glm::vec3(obj.model->getScaleObj());
         obj.transform.rotation += glm::vec3(ROTX * WAY, ROTY * WAY, ROTZ * WAY); // rotate on itself
         if (ROBJ)
         {

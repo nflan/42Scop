@@ -16,7 +16,7 @@
 
 // libs
 #define TINYOBJLOADER_IMPLEMENTATION
-// #include <tiny_obj_loader.h>
+#include </mnt/nfs/homes/nflan/sgoinfre/bin/tinyobjloader/tiny_obj_loader.h>
 #define GLM_ENABLE_EXPERIMENTAL
 #include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/gtx/hash.hpp>
 
@@ -73,7 +73,7 @@ void    ft_Model::createVertexBuffers(const std::vector<Vertex> &vertices)
     if (_scaleObj < 0)
         _scaleObj *= -1;
     std::cerr << "scale = " << _scaleObj << std::endl;
-    _centerOfObj = _scaleObj * _centerOfObj;
+    // _centerOfObj = _scaleObj * _centerOfObj;
     _centerOfObj /= static_cast<float>(vertices.size());
     this->_vertexCount = static_cast<uint32_t>(vertices.size());
 
@@ -239,6 +239,47 @@ std::vector<VkVertexInputAttributeDescription>   ft_Model::Vertex::getAttributeD
     }
 }*/
 
+// void	ft_Model::Builder::loadModel(const std::string &filepath)
+// {
+// 	tinyobj::attrib_t	attrib;
+//     std::vector<tinyobj::shape_t>	shapes;
+//     std::vector<tinyobj::material_t>	materials;
+//     std::string	warn, err;
+
+//     if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filepath.c_str()))
+//         throw std::runtime_error(warn + err);
+
+// 	std::unordered_map<Vertex, uint32_t> uniqueVertices{};
+
+// 	for (const auto& shape : shapes)
+// 	{
+// 		for (const auto& index : shape.mesh.indices)
+// 		{
+// 			Vertex vertex{};
+// 			vertex.position = {
+// 				attrib.vertices[3 * index.vertex_index + 0] * -1,
+// 				attrib.vertices[3 * index.vertex_index + 1] * -1,
+// 				attrib.vertices[3 * index.vertex_index + 2] * -1
+// 			};
+
+// 			vertex.uv = {
+// 				attrib.texcoords[2 * index.texcoord_index + 0],
+// 				1.0f - attrib.texcoords[2 * index.texcoord_index + 1]//textures a l'envers parce que OBJ part d'en bas a gauche et Vulkan en haut a gauche
+// 			};
+
+// 			vertex.color = {1.0f, 1.0f, 1.0f};
+
+// 			if (uniqueVertices.count(vertex) == 0)
+// 			{
+// 				uniqueVertices[vertex] = static_cast<uint32_t>(this->_vertices.size());
+// 				this->_vertices.push_back(vertex);
+// 			}
+
+// 			this->_indices.push_back(uniqueVertices[vertex]);
+// 		}
+// 	}
+// }
+
 void	ft_Model::Builder::loadModel(const std::string &filepath)
 {
     Mesh    mesh;
@@ -265,11 +306,14 @@ void	ft_Model::Builder::loadModel(const std::string &filepath)
         if (mesh.getNormCoord().size() > i)
             vertex.normal = mesh.getNormCoord()[i];
         else
-            vertex.normal = -mesh.getMeshVertices()[i];
+            vertex.normal = -vertices;
 		if (mesh.getTexCoord().size() > i)
 			vertex.uv = mesh.getTexCoord()[i];
 		else
-			vertex.uv = {0.0f, 0.0f};
+        {
+            std::cerr << "allo" << std::endl;
+			vertex.uv = -vertices;
+        }
         if (i % 3 == 0)
             y += 0.1;
         if (y >= .6)

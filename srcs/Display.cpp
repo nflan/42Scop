@@ -16,6 +16,7 @@
 
 bool		QUIT = false;
 bool		ROBJ = false;
+int			RENDER = 0;
 short		WAY = 1;
 float		ROTX = 0;
 float		ROTY = ROTATION; //change in tools.hpp
@@ -75,6 +76,10 @@ void	key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	else if ((key == GLFW_KEY_4) && action == GLFW_PRESS)
 	{
 		ROBJ = true;
+	}
+	else if ((key == GLFW_KEY_C) && action == GLFW_PRESS)
+	{
+		RENDER == 0 ? RENDER = 1 : RENDER = 0;
 	}
 	
 }
@@ -190,10 +195,17 @@ void	Display::run()
 	createDescriptorSets(*globalSetLayout);
 	std::cerr << "Size Set = " << _descriptorSets.size() << std::endl;
 
-	RenderSystem renderSystem{
-		this->_device,
-		this->_renderer.getSwapChainRenderPass(),
-		globalSetLayout->getDescriptorSetLayout()};
+	RenderSystem	colorSystem{
+	this->_device,
+	this->_renderer.getSwapChainRenderPass(),
+	globalSetLayout->getDescriptorSetLayout(), "color_shader"};
+	RenderSystem	textureSystem{
+	this->_device,
+	this->_renderer.getSwapChainRenderPass(),
+	globalSetLayout->getDescriptorSetLayout(), "texture_shader"};
+	
+	this->_renderSystem.push_back(&colorSystem);
+	this->_renderSystem.push_back(&textureSystem);
 
 	ft_Camera camera{};
 
@@ -247,7 +259,7 @@ void	Display::run()
 			// render
 			this->_renderer.beginSwapChainRenderPass(commandBuffer);
 			
-			renderSystem.renderGameObjects(frameInfoWithTexture);
+			this->_renderSystem[RENDER]->renderGameObjects(frameInfoWithTexture);
 			// pointLightSystem.render(frameInfoWithTexture);
 
 			this->_renderer.endSwapChainRenderPass(commandBuffer);

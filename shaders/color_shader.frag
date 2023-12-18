@@ -21,8 +21,6 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
     int numLights;
 } ubo;
 
-layout(binding = 1) uniform sampler2D texSampler;
-
 layout(push_constant) uniform Push {
     mat4 modelMatrix;
     mat4 normalMatrix;
@@ -54,7 +52,5 @@ void main() {
         blinnTerm = pow(blinnTerm, 512.0); // higher values -> sharper highlight
         specularLight += intensity * blinnTerm;
     }
-    
     outColor = vec4(diffuseLight * fragColor + specularLight * fragColor, 1.0);
-    outColor = texture(texSampler, fragTexCoord, 1.0);
 }

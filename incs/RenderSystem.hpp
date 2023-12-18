@@ -31,7 +31,7 @@
 
 class RenderSystem {
     public:
-        RenderSystem(ft_Device &device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
+        RenderSystem(ft_Device &device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout, std::string shader);
         ~RenderSystem();
 
         RenderSystem(const RenderSystem &) = delete;
@@ -44,6 +44,7 @@ class RenderSystem {
         void createPipeline(VkRenderPass renderPass);
 
         ft_Device&                      _device;
+        std::string                     _shader;
 
         std::unique_ptr<ft_Pipeline>    _pipeline;
         VkPipelineLayout                _pipelineLayout;
