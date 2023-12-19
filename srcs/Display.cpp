@@ -151,11 +151,19 @@ void	Display::run()
 		this->_buffers[i]->map();
 	}
 
-	std::unique_ptr<ft_DescriptorSetLayout> globalSetLayout =
+	std::unique_ptr<ft_DescriptorSetLayout> colorSetLayout =
+		ft_DescriptorSetLayout::Builder(this->_device)
+			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+			.build();
+	std::unique_ptr<ft_DescriptorSetLayout> textureSetLayout =
 		ft_DescriptorSetLayout::Builder(this->_device)
 			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 			.addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 			.build();
+
+	this->_globalDescriptorSetLayouts.clear();
+	this->_globalDescriptorSetLayouts.push_back(colorSetLayout.get());
+	this->_globalDescriptorSetLayouts.push_back(textureSetLayout.get());
 	// std::vector<VkDescriptorSet> globalDescriptorSets(ft_SwapChain::MAX_FRAMES_IN_FLIGHT);
 	// for (int i = 0; i < globalDescriptorSets.size(); i++) {
 	// VkDescriptorBufferInfo bufferInfo = this->_buffers[0]->descriptorInfo();
@@ -192,17 +200,19 @@ void	Display::run()
 	// }
 	std::cerr << "Size Set = " << _descriptorSets.size() << std::endl;
 
-	createDescriptorSets(*globalSetLayout);
+	createDescriptorSets(*this->_globalDescriptorSetLayouts[1]);
 	std::cerr << "Size Set = " << _descriptorSets.size() << std::endl;
 
 	RenderSystem	colorSystem{
-	this->_device,
-	this->_renderer.getSwapChainRenderPass(),
-	globalSetLayout->getDescriptorSetLayout(), "color_shader"};
+		this->_device,
+		this->_renderer.getSwapChainRenderPass(),
+		this->_globalDescriptorSetLayouts[1]->getDescriptorSetLayout(),
+		"color_shader"};
 	RenderSystem	textureSystem{
-	this->_device,
-	this->_renderer.getSwapChainRenderPass(),
-	globalSetLayout->getDescriptorSetLayout(), "texture_shader"};
+		this->_device,
+		this->_renderer.getSwapChainRenderPass(),
+		this->_globalDescriptorSetLayouts[1]->getDescriptorSetLayout(),
+		"texture_shader"};
 	
 	this->_renderSystem.push_back(&colorSystem);
 	this->_renderSystem.push_back(&textureSystem);
@@ -212,7 +222,7 @@ void	Display::run()
 	auto viewerObject = ft_GameObject::createGameObject();
 
 	viewerObject.transform.translation.z = -10.f;
-	KeyboardMovementController cameraController(glm::vec3(0,0,-10));
+	KeyboardMovementController cameraController(glm::vec3(0,0,-10.f));
 
 	std::chrono::_V2::system_clock::time_point currentTime = std::chrono::high_resolution_clock::now();
 	while (!this->_window.shouldClose() && !QUIT)
@@ -233,7 +243,7 @@ void	Display::run()
 		if (VkCommandBuffer_T *commandBuffer = this->_renderer.beginFrame())
 		{
 			int frameIndex = this->_renderer.getFrameIndex();
-			FrameInfo frameInfoWithTexture{
+			FrameInfo frameInfo{
 				frameIndex,
 				frameTime,
 				commandBuffer,
@@ -252,15 +262,15 @@ void	Display::run()
 			ubo.projection = camera.getProjection();
 			ubo.view = camera.getView();
 			ubo.inverseView = camera.getInverseView();
-			// pointLightSystem.update(frameInfoWithTexture, ubo);
+			// pointLightSystem.update(frameInfo, ubo);
 			this->_buffers[frameIndex]->writeToBuffer(&ubo);
 			this->_buffers[frameIndex]->flush();
 
 			// render
 			this->_renderer.beginSwapChainRenderPass(commandBuffer);
 			
-			this->_renderSystem[RENDER]->renderGameObjects(frameInfoWithTexture);
-			// pointLightSystem.render(frameInfoWithTexture);
+			this->_renderSystem[RENDER]->renderGameObjects(frameInfo);
+			// pointLightSystem.render(frameInfo);
 
 			this->_renderer.endSwapChainRenderPass(commandBuffer);
 			this->_renderer.endFrame();
@@ -504,7 +514,7 @@ void	Display::createDescriptorPool()
 	poolInfo.pPoolSizes = &poolSize;
 	poolInfo.maxSets = static_cast<uint32_t>(this->_renderer.getSwapChain().imageCount());
 
-	if (vkCreateDescriptorPool(this->_device.device(), &poolInfo, nullptr, &this->_descriptorPoolWithTexture) != VK_SUCCESS) {
+	if (vkCreateDescriptorPool(this->_device.device(), &poolInfo, nullptr, &this->_descriptorPool) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor pool!");
 	}
 }
@@ -584,6 +594,35 @@ void 	Display::createDescriptorSets(ft_DescriptorSetLayout& layout)
 		descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		descriptorWrites[1].descriptorCount = 1;
 		descriptorWrites[1].pImageInfo = &imageInfo;
+		// std::vector<VkWriteDescriptorSet>	descriptorWrites{};
+
+		// VkWriteDescriptorSet	unom{};
+		// unom.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		// unom.dstSet = this->_descriptorSets[i];
+		// unom.dstBinding = 0;
+		// unom.dstArrayElement = 0;
+		// unom.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		// unom.descriptorCount = 1;
+		// unom.pBufferInfo = &bufferInfo;
+		// descriptorWrites.push_back(unom);
+
+		// // if (RENDER)
+		// // {
+		// 	VkDescriptorImageInfo imageInfo{};
+		// 	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		// 	imageInfo.imageView = this->_loadedTextures[0]._imageView;
+		// 	imageInfo.sampler = this->_loadedTextures[0]._sampler;
+
+		// 	VkWriteDescriptorSet	text{};
+		// 	text.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		// 	text.dstSet = this->_descriptorSets[i];
+		// 	text.dstBinding = 1;
+		// 	text.dstArrayElement = 0;
+		// 	text.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		// 	text.descriptorCount = 1;
+		// 	text.pImageInfo = &imageInfo;
+		// 	descriptorWrites.push_back(text);
+		// // }
 
 		vkUpdateDescriptorSets(this->_device.device(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 	}

@@ -106,11 +106,12 @@ class Display
 		std::vector<std::unique_ptr<ft_Buffer>>		_buffers;
 
 		std::vector<RenderSystem*>				_renderSystem;
+		std::vector<ft_DescriptorSetLayout*>	_globalDescriptorSetLayouts;
 
 		//DESCRIPTORS
 		VkDescriptorSetLayout			_descriptorSetLayoutWithTexture;
 		VkDescriptorSetLayout			_descriptorSetLayoutWithoutTexture;
-		VkDescriptorPool				_descriptorPoolWithTexture;
+		VkDescriptorPool				_descriptorPool;
 		VkDescriptorPool				_descriptorPoolWithoutTexture;
 		std::vector<VkDescriptorSet>	_descriptorSets;
     	std::vector<VkDescriptorSet>	_descriptorSetsWithTexture;

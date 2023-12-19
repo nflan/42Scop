@@ -5,6 +5,8 @@
 #include <cassert>
 #include <stdexcept>
 
+extern int RENDER;
+
 // *************** Descriptor Set Layout Builder *********************
 
 ft_DescriptorSetLayout::Builder &ft_DescriptorSetLayout::Builder::addBinding(uint32_t binding, VkDescriptorType descriptorType, VkShaderStageFlags stageFlags, uint32_t count)
@@ -93,6 +95,21 @@ ft_DescriptorPool::ft_DescriptorPool(ft_Device &Device, uint32_t maxSets, VkDesc
 	poolSizes[0].descriptorCount = static_cast<uint32_t>(swapChain.imageCount());
 	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	poolSizes[1].descriptorCount = static_cast<uint32_t>(swapChain.imageCount());
+	
+    // std::vector<VkDescriptorPoolSize> poolSizes{};
+
+    // VkDescriptorPoolSize    unom{};
+	// unom.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	// unom.descriptorCount = static_cast<uint32_t>(swapChain.imageCount());
+    // poolSizes.push_back(unom);
+
+    // // if (RENDER)
+    // // {
+    //     VkDescriptorPoolSize    text{};
+    //     text.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    //     text.descriptorCount = static_cast<uint32_t>(swapChain.imageCount());
+    //     poolSizes.push_back(text);
+    // // }
 	
     VkDescriptorPoolCreateInfo descriptorPoolInfo{};
     descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;

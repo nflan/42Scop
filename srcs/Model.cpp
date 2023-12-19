@@ -311,7 +311,7 @@ void	ft_Model::Builder::loadModel(const std::string &filepath)
 			vertex.uv = mesh.getTexCoord()[i];
 		else
         {
-            std::cerr << "allo" << std::endl;
+            // std::cerr << "allo" << std::endl;
 			vertex.uv = -vertices;
         }
         if (i % 3 == 0)
