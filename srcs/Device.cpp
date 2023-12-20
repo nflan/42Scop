@@ -18,6 +18,7 @@
 #include <set>
 #include <unordered_set>
 #include <map>
+#include <cmath>
 
 // local callback functions
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback( // les prototypes permettent de compiler sur tous les os

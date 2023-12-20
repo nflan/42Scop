@@ -253,7 +253,6 @@ void    ft_SwapChain::createRenderPass()
 	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;//stencil? on n'utilise pas
 	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    // colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
     //Depth Attachment
     VkAttachmentDescription depthAttachment{};
@@ -402,34 +401,6 @@ void    ft_SwapChain::createDepthResources()
 
     createImage(swapChainExtent.width, swapChainExtent.height, 1, this->_device.getMsaaSamples(), depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, _depthImages[0], _depthImageMemorys[0]);
     _depthImageViews[0] = createImageView(_depthImages[0], depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1);
-
-
-    // this->_depthImages.resize(imageCount());
-    // this->_depthImageMemorys.resize(imageCount());
-    // this->_depthImageViews.resize(imageCount());
-
-    // for (int i = 0; i < this->_depthImages.size(); i++)
-    // {
-    //     VkImageCreateInfo	imageInfo{};
-    //     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    //     imageInfo.imageType = VK_IMAGE_TYPE_2D;
-    //     imageInfo.extent.width = swapChainExtent.width;
-    //     imageInfo.extent.height = swapChainExtent.height;
-    //     imageInfo.extent.depth = 1;
-    //     imageInfo.mipLevels = 1;
-    //     imageInfo.arrayLayers = 1;
-    //     imageInfo.format = depthFormat;
-    //     imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-    //     imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    //     imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-    //     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    //     imageInfo.samples = this->_device.getMsaaSamples();
-    //     imageInfo.flags = 0; // Optionnel
-
-    //     this->_device.createImageWithInfo(imageInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, this->_depthImages[i], this->_depthImageMemorys[i]);
-
-	//     this->_depthImageViews[i] = this->createImageView(this->_depthImages[i], depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, this->_device.getMipLevels());
-    // }
 }
 
 void	ft_SwapChain::createColorResources()

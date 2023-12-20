@@ -12,6 +12,15 @@ struct PointLight {
     vec4 color; // w is intensity
 };
 
+layout(set = 0, binding = 0) uniform GlobalUbo {
+    mat4 projection;
+    mat4 view;
+    mat4 invView;
+    vec4 ambientLightColor; // w is intensity
+    PointLight pointLights[1];
+    int numLights;
+} ubo;
+
 layout(binding = 1) uniform sampler2D texSampler;
 
 layout(push_constant) uniform Push {
@@ -20,5 +29,5 @@ layout(push_constant) uniform Push {
 } push;
 
 void main() {
-    outColor = texture(texSampler, fragTexCoord, 1.0);
+    outColor = texture(texSampler, fragTexCoord);
 }
