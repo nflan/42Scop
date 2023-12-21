@@ -70,6 +70,7 @@ void    PointLightSystem::createPipeline(VkRenderPass renderPass)
     ft_Pipeline::enableAlphaBlending(pipelineConfig);
     pipelineConfig.attributeDescriptions.clear();
     pipelineConfig.bindingDescriptions.clear();
+    pipelineConfig.multisampleInfo.rasterizationSamples = this->_device.getMsaaSamples();
     pipelineConfig.renderPass = renderPass;
     pipelineConfig.pipelineLayout = this->_pipelineLayout;
     _pipeline = std::make_unique<ft_Pipeline>(

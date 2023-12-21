@@ -166,17 +166,28 @@ void	Display::run()
 			.build(_descriptorSets[i]);
 	}
 
-	_renderSystem.emplace_back(std::make_unique<RenderSystem>(
+	_renderSystems.emplace_back(std::make_unique<RenderSystem>(
 		this->_device,
 		this->_renderer.getSwapChainRenderPass(),
 		this->_globalDescriptorSetLayouts[0]->getDescriptorSetLayout(),
 		"color_shader"
 	));
-	_renderSystem.emplace_back(std::make_unique<RenderSystem>(
+	_renderSystems.emplace_back(std::make_unique<RenderSystem>(
 		this->_device,
 		this->_renderer.getSwapChainRenderPass(),
 		this->_globalDescriptorSetLayouts[1]->getDescriptorSetLayout(),
 		"texture_shader"
+	));
+
+	_pointLightSystems.emplace_back(std::make_unique<PointLightSystem>(
+		this->_device,
+		this->_renderer.getSwapChainRenderPass(),
+		this->_globalDescriptorSetLayouts[0]->getDescriptorSetLayout()
+	));
+	_pointLightSystems.emplace_back(std::make_unique<PointLightSystem>(
+		this->_device,
+		this->_renderer.getSwapChainRenderPass(),
+		this->_globalDescriptorSetLayouts[1]->getDescriptorSetLayout()
 	));
 	
 	ft_Camera camera{};
@@ -217,15 +228,15 @@ void	Display::run()
 			ubo.projection = camera.getProjection();
 			ubo.view = camera.getView();
 			ubo.inverseView = camera.getInverseView();
-			// pointLightSystem.update(frameInfo, ubo);
+			this->_pointLightSystems[RENDER]->update(frameInfo, ubo);
 			this->_buffers[frameIndex]->writeToBuffer(&ubo);
 			this->_buffers[frameIndex]->flush();
 
 			// render
 			this->_renderer.beginSwapChainRenderPass(commandBuffer);
 			
-			this->_renderSystem[RENDER]->renderGameObjects(frameInfo);
-			// pointLightSystem.render(frameInfo);
+			this->_renderSystems[RENDER]->renderGameObjects(frameInfo);
+			this->_pointLightSystems[RENDER]->render(frameInfo);
 
 			this->_renderer.endSwapChainRenderPass(commandBuffer);
 			this->_renderer.endFrame();
@@ -245,22 +256,22 @@ void Display::loadGameObjects()
 	
 	this->_gameObjects.emplace(gameObj.getId(), std::move(gameObj));
 
-	// std::vector<glm::vec3> lightColors{
-	// 	{1.f, 1.f, 1.f},
-  	// };
+	std::vector<glm::vec3> lightColors{
+		{1.f, 1.f, 1.f},
+  	};
 
-	// for (int i = 0; i < lightColors.size(); i++)
-	// {
-	// 	ft_GameObject pointLight = ft_GameObject::makePointLight(0.2f);
-	// 	pointLight.color = lightColors[i];
+	for (int i = 0; i < lightColors.size(); i++)
+	{
+		ft_GameObject pointLight = ft_GameObject::makePointLight(0.2f);
+		pointLight.color = lightColors[i];
 		
-	// 	glm::mat4 rotateLight = glm::rotate(
-	// 		glm::mat4(1.5f),
-	// 		(i * glm::two_pi<float>()) / lightColors.size(),
-	// 		{0.f, -1.f, 0.f});
-	// 	pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-1.f, -1.f, -1.f, 1.f));
-	// 	this->_gameObjects.emplace(pointLight.getId(), std::move(pointLight));
-  	// }
+		glm::mat4 rotateLight = glm::rotate(
+			glm::mat4(1.5f),
+			(i * glm::two_pi<float>()) / lightColors.size(),
+			{0.f, -1.f, 0.f});
+		pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-1.f, -1.f, -1.f, 1.f));
+		this->_gameObjects.emplace(pointLight.getId(), std::move(pointLight));
+  	}
 }
 
 void	Display::createTextureImage()
