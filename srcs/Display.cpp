@@ -122,73 +122,10 @@ void	Display::run()
 	createTextureImageView();
 	createTextureSampler();
 
-	
-	this->_buffers.resize(this->_renderer.getSwapChain().imageCount());
-	for (int i = 0; i < this->_renderer.getSwapChain().imageCount(); i++)
-	{
-		this->_buffers[i] = std::make_unique<ft_Buffer>(
-			this->_device,
-			sizeof(GlobalUbo),
-			1,
-			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		this->_buffers[i]->map();
-	}
-
-	std::unique_ptr<ft_DescriptorSetLayout> colorSetLayout =
-		ft_DescriptorSetLayout::Builder(this->_device)
-			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
-			.build();
-	std::unique_ptr<ft_DescriptorSetLayout> textureSetLayout =
-		ft_DescriptorSetLayout::Builder(this->_device)
-			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
-			.addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-			.build();
-
-	this->_globalDescriptorSetLayouts.clear();
-	this->_globalDescriptorSetLayouts.push_back(colorSetLayout.get());
-	this->_globalDescriptorSetLayouts.push_back(textureSetLayout.get());
-
-	VkDescriptorImageInfo imageInfo{};
-	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	imageInfo.imageView = this->_loadedTextures[0]._imageView;
-	imageInfo.sampler = this->_loadedTextures[0]._sampler;
-	_descriptorSetsWithoutTexture.resize(this->_renderer.getSwapChain().imageCount());
-	_descriptorSets.resize(this->_renderer.getSwapChain().imageCount());
-	for (int i = 0; i < this->_renderer.getSwapChain().imageCount(); i++) {
-		auto bufferInfo = _buffers[i]->descriptorInfo();
-		ft_DescriptorWriter(*_globalDescriptorSetLayouts[0], *_globalPool)
-			.writeBuffer(0, &bufferInfo)
-			.build(_descriptorSetsWithoutTexture[i]);
-		ft_DescriptorWriter(*_globalDescriptorSetLayouts[1], *_globalPoolText)
-			.writeBuffer(0, &bufferInfo)
-			.writeImage(1, &imageInfo)
-			.build(_descriptorSets[i]);
-	}
-
-	_renderSystems.emplace_back(std::make_unique<RenderSystem>(
-		this->_device,
-		this->_renderer.getSwapChainRenderPass(),
-		this->_globalDescriptorSetLayouts[0]->getDescriptorSetLayout(),
-		"color_shader"
-	));
-	_renderSystems.emplace_back(std::make_unique<RenderSystem>(
-		this->_device,
-		this->_renderer.getSwapChainRenderPass(),
-		this->_globalDescriptorSetLayouts[1]->getDescriptorSetLayout(),
-		"texture_shader"
-	));
-
-	_pointLightSystems.emplace_back(std::make_unique<PointLightSystem>(
-		this->_device,
-		this->_renderer.getSwapChainRenderPass(),
-		this->_globalDescriptorSetLayouts[0]->getDescriptorSetLayout()
-	));
-	_pointLightSystems.emplace_back(std::make_unique<PointLightSystem>(
-		this->_device,
-		this->_renderer.getSwapChainRenderPass(),
-		this->_globalDescriptorSetLayouts[1]->getDescriptorSetLayout()
-	));
+	createBuffers();
+	createDescriptorSetLayout();
+	createDescriptorSets();
+	createRenderSystems();
 	
 	ft_Camera camera{};
 
@@ -246,14 +183,86 @@ void	Display::run()
 	vkDeviceWaitIdle(this->_device.device());
 }
 
-void Display::loadGameObjects()
+void	Display::createBuffers()
+{
+	this->_buffers.resize(this->_renderer.getSwapChain().imageCount());
+	for (int i = 0; i < this->_renderer.getSwapChain().imageCount(); i++)
+	{
+		std::unique_ptr<ft_Buffer> buffer = std::make_unique<ft_Buffer>(
+			this->_device,
+			sizeof(GlobalUbo),
+			1,
+			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        buffer->map();
+        this->_buffers[i] = std::move(buffer);
+	}
+}
+
+void	Display::createDescriptorSetLayout()
+{
+    std::unique_ptr<ft_DescriptorSetLayout::Builder> builder = std::make_unique<ft_DescriptorSetLayout::Builder>(this->_device);
+    builder->addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
+
+    std::unique_ptr<ft_DescriptorSetLayout> colorSetLayout = builder->build();
+
+    builder->addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    std::unique_ptr<ft_DescriptorSetLayout> textureSetLayout = builder->build();
+
+	this->_globalDescriptorSetLayouts.push_back(std::move(colorSetLayout));
+	this->_globalDescriptorSetLayouts.push_back(std::move(textureSetLayout));
+}
+
+void	Display::createDescriptorSets()
+{
+	VkDescriptorImageInfo imageInfo{};
+	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	imageInfo.imageView = this->_loadedTextures[0]._imageView;
+	imageInfo.sampler = this->_loadedTextures[0]._sampler;
+
+	_descriptorSetsWithoutTexture.resize(this->_renderer.getSwapChain().imageCount());
+	_descriptorSets.resize(this->_renderer.getSwapChain().imageCount());
+
+	for (uint32_t i = 0; i < this->_renderer.getSwapChain().imageCount(); i++) {
+		VkDescriptorBufferInfo bufferInfo = _buffers[i]->descriptorInfo();
+		ft_DescriptorWriter(*_globalDescriptorSetLayouts[0], *_globalPool)
+			.writeBuffer(0, &bufferInfo)
+			.build(_descriptorSetsWithoutTexture[i]);
+		ft_DescriptorWriter(*_globalDescriptorSetLayouts[1], *_globalPoolText)
+			.writeBuffer(0, &bufferInfo)
+			.writeImage(1, &imageInfo)
+			.build(_descriptorSets[i]);
+	}
+}
+
+void	Display::createRenderSystems()
+{
+	std::cerr << this->_globalDescriptorSetLayouts.size() << std::endl;
+	for (uint32_t i = 0; i < this->_globalDescriptorSetLayouts.size(); i++)
+	{
+		_renderSystems.emplace_back(std::make_unique<RenderSystem>(
+			this->_device,
+			this->_renderer.getSwapChainRenderPass(),
+			this->_globalDescriptorSetLayouts[i]->getDescriptorSetLayout(),
+			i == 0 ? "color_shader" : "texture_shader"
+		));
+
+		_pointLightSystems.emplace_back(std::make_unique<PointLightSystem>(
+			this->_device,
+			this->_renderer.getSwapChainRenderPass(),
+			this->_globalDescriptorSetLayouts[i]->getDescriptorSetLayout()
+		));
+	}
+}
+	
+
+void	Display::loadGameObjects()
 {
   	std::shared_ptr<ft_Model> Model = ft_Model::createModelFromFile(this->_device, this->_file);
 	ft_GameObject	gameObj = ft_GameObject::createGameObject();
 	gameObj.model = Model;
 	// gameObj.transform.scale = glm::vec3(0.5f);
 
-	
 	this->_gameObjects.emplace(gameObj.getId(), std::move(gameObj));
 
 	std::vector<glm::vec3> lightColors{

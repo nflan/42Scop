@@ -67,19 +67,16 @@ class Display
 
 		void	setFile(const char* file);
 		void	run( void );
-		// bool	framebufferResized = false;
 	private:
   		void	loadGameObjects();
-		// void	loadTextures();
-		// void	createTexture(char *);
 		void	createTextureImage();
 		void	createTextureImageView();
 		void	createTextureSampler();
-		void    createDescriptorSetLayout();
-		void    createDescriptorPool();
+		void	createBuffers();
+		void	createDescriptorSetLayout();
+		void	createDescriptorSets();
+		void	createRenderSystems();
 		void	generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
-		void	createDescriptorSets(ft_DescriptorSetLayout& layout);
-		void	createDescriptorSetsNoText(ft_DescriptorSetLayout& layout);
 		void	transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
 
 		// Mesh						_mesh;
@@ -93,20 +90,17 @@ class Display
 		ft_GameObject::Map			_gameObjects;
 		std::vector<Texture>		_loadedTextures;
 
-		// std::vector<VkBuffer>		_uniformBuffers;
 		std::vector<std::unique_ptr<ft_Buffer>>		_buffers;
 
 		std::vector<std::unique_ptr<RenderSystem>>		_renderSystems;
 		std::vector<std::unique_ptr<PointLightSystem>>	_pointLightSystems;
-		std::vector<ft_DescriptorSetLayout*>	_globalDescriptorSetLayouts;
+		std::vector<std::unique_ptr<ft_DescriptorSetLayout>>	_globalDescriptorSetLayouts;
 
 		//DESCRIPTORS
 		VkDescriptorPool				_descriptorPool;
 		VkDescriptorPool				_descriptorPoolWithoutTexture;
 		std::vector<VkDescriptorSet>	_descriptorSets;
-    	std::vector<VkDescriptorSet>	_descriptorSetsWithTexture;
 		std::vector<VkDescriptorSet>	_descriptorSetsWithoutTexture;
-
 };
 
 #endif
