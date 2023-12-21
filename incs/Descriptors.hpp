@@ -43,7 +43,7 @@ class ft_DescriptorPool {
     public:
         class Builder {
             public:
-                Builder(ft_Device &Device, ft_SwapChain &SwapChain) : _device{Device}, _swapChain(SwapChain) {};
+                Builder(ft_Device &Device) : _device{Device} {};
 
                 Builder &addPool(std::array<VkDescriptorPoolSize, 2>);
                 Builder &addPoolSize(VkDescriptorType, uint32_t);
@@ -56,15 +56,14 @@ class ft_DescriptorPool {
             std::vector<VkDescriptorPoolSize>   _poolSizes{};
             uint32_t                            _maxSets = 1000;
             VkDescriptorPoolCreateFlags         _poolFlags = 0;
-            ft_SwapChain&                       _swapChain;
         };
 
-    ft_DescriptorPool(ft_Device &Device,uint32_t maxSets,VkDescriptorPoolCreateFlags poolFlags, std::vector<VkDescriptorPoolSize> &poolSizes, ft_SwapChain &);
+    ft_DescriptorPool(ft_Device &Device,uint32_t maxSets, VkDescriptorPoolCreateFlags poolFlags, const std::vector<VkDescriptorPoolSize> &poolSizes);
     ~ft_DescriptorPool();
     ft_DescriptorPool(const ft_DescriptorPool &) = delete;
     ft_DescriptorPool &operator=(const ft_DescriptorPool &) = delete;
 
-    bool    allocateDescriptor(const VkDescriptorSetLayout descriptorSetLayout, std::vector<VkDescriptorSet> &set);
+    bool    allocateDescriptor(const VkDescriptorSetLayout descriptorSetLayout, VkDescriptorSet& set);
     VkDescriptorPool    getDescriptorPool() { return _descriptorPool; }
     void    freeDescriptors(std::vector<VkDescriptorSet> &descriptors) const;
 
@@ -75,24 +74,22 @@ class ft_DescriptorPool {
     private:
         ft_Device&          _device;
         VkDescriptorPool    _descriptorPool;
-        ft_SwapChain&       _swapChain;
 
         friend class ft_DescriptorWriter;
 };
 
 class ft_DescriptorWriter {
     public:
-        ft_DescriptorWriter(ft_DescriptorSetLayout &setLayout, ft_DescriptorPool &pool, ft_Device &device);
+        ft_DescriptorWriter(ft_DescriptorSetLayout &setLayout, ft_DescriptorPool &pool);
 
         ft_DescriptorWriter    &writeBuffer(uint32_t binding, VkDescriptorBufferInfo *bufferInfo);
         ft_DescriptorWriter    &writeImage(uint32_t binding, VkDescriptorImageInfo *imageInfo);
         ft_DescriptorWriter    &writeImageBuffer(VkDescriptorBufferInfo *bufferInfo, VkDescriptorImageInfo *imageInfo, std::vector<VkDescriptorSet> descriptorSet);
 
-        bool build();
-        void overwrite(std::vector<VkDescriptorSet> set);
+        bool build(VkDescriptorSet &descriptorSet);
+        void overwrite(VkDescriptorSet &set);
 
     private:
-        ft_Device&                          _device;
         ft_DescriptorSetLayout&             _setLayout;
         ft_DescriptorPool&                  _pool;
         std::vector<VkDescriptorSet>        _descriptorSets;

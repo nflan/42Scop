@@ -236,7 +236,7 @@ void    ft_SwapChain::createImageViews()
     this->_swapChainImageViews.resize(this->_swapChainImages.size());
 
     for (uint32_t i = 0; i < this->_swapChainImages.size(); i++)
-        this->_swapChainImageViews[i] = this->createImageView(this->_swapChainImages[i], this->_swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, this->_device.getMipLevels());
+        this->_swapChainImageViews[i] = this->createImageView(this->_swapChainImages[i], this->_swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
 }
 
 void    ft_SwapChain::createRenderPass()
