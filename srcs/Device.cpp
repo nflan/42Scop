@@ -91,7 +91,7 @@ void DestroyDebugUtilsMessengerEXT(
 // class member functions
 ft_Device::ft_Device(ft_Window &window): _window{window}
 {
-	_mipLevels = 1;
+	// _mipLevels = 1;
     createInstance();
     setupDebugMessenger();
     createSurface();

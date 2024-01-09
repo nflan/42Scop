@@ -17,6 +17,7 @@
 bool		QUIT = false;
 bool		ROBJ = false;
 int			RENDER = 0;
+int			NBTEXT = 0;
 short		WAY = 1;
 float		ROTX = 0;
 float		ROTY = ROTATION; //change in tools.hpp
@@ -71,6 +72,10 @@ void	key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	{
 		RENDER == 0 ? RENDER = 1 : RENDER = 0;
 	}
+	else if ((key == GLFW_KEY_T) && action == GLFW_PRESS)
+	{
+		NBTEXT == 0 ? NBTEXT = 1 : NBTEXT = 0;
+	}
 	
 }
 
@@ -114,13 +119,13 @@ Display::~Display()
 }
 
 void	Display::setFile(const char* file) { this->_file = file; }
+void	Display::setText(const char* file) { this->_textFile = file; }
 
 void	Display::run()
 {
 	loadGameObjects();
-    createTextureImage();
-	createTextureImageView();
-	createTextureSampler();
+	if (this->_textFile.size())
+		loadTextures();
 
 	createBuffers();
 	createDescriptorSetLayout();
@@ -158,7 +163,7 @@ void	Display::run()
 				frameTime,
 				commandBuffer,
 				camera,
-				RENDER == 0 ? _descriptorSetsWithoutTexture[frameIndex] : _descriptorSets[frameIndex],
+				RENDER == 0 ? _descriptorSetsWithoutTexture[frameIndex] : _descriptorSets[NBTEXT],
 				this->_gameObjects};
 
 			GlobalUbo	ubo{};
@@ -183,6 +188,55 @@ void	Display::run()
 	vkDeviceWaitIdle(this->_device.device());
 }
 
+void	Display::loadTextures()
+{
+	getText();
+
+	for (uint32_t i = 0; i < this->_textFiles.size(); i++)
+	{
+		createTextureImage(this->_textFiles[i].c_str());
+		createTextureImageView(this->_loadedTextures[i]);
+		createTextureSampler(this->_loadedTextures[i]);
+	}
+}
+
+void	Display::getText()
+{
+	if (std::filesystem::exists(this->_textFile))
+	{
+		if (std::filesystem::is_directory(this->_textFile))
+		{
+			std::cerr << "dossier a gerer" << std::endl;
+		}
+		else if (std::filesystem::is_regular_file(this->_textFile))
+			this->_textFiles.push_back(this->_textFile);
+	}
+	else
+	{
+        std::cerr << "Wrong path: " << this->_textFile << std::endl;
+        exit(1);
+	}
+	//     std::ifstream in(filename, std::ios::in);
+    // if (!in)
+    // {
+        // std::cerr << "Wrong path: " << this->_textFile << std::endl;
+        // exit(1);
+    // }
+	// 	return (ft_perror("Error\nTexture: ", path), free(path), 1);
+	// if (S_ISDIR(state.st_mode))
+	// {
+	// 	fd = opendir(path);
+	// 	if (!fd)
+	// 		return (ft_perror("Error\nTexture: ", path), free(path), 1);
+	// 	if (ft_init_sprite(text, path, fd))
+	// 		return (free(path), closedir(fd), 1);
+	// 	closedir(fd);
+	// }
+	// else
+	// 	if (ft_sprite_new(text, path, 0))
+	// 		return (free(path), ft_putstr_error("Error\nMalloc error\n"));
+}
+
 void	Display::createBuffers()
 {
 	this->_buffers.resize(this->_renderer.getSwapChain().imageCount());
@@ -202,36 +256,43 @@ void	Display::createBuffers()
 void	Display::createDescriptorSetLayout()
 {
     std::unique_ptr<ft_DescriptorSetLayout::Builder> builder = std::make_unique<ft_DescriptorSetLayout::Builder>(this->_device);
-    builder->addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
 
+	builder->addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
     std::unique_ptr<ft_DescriptorSetLayout> colorSetLayout = builder->build();
 
-    builder->addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-    std::unique_ptr<ft_DescriptorSetLayout> textureSetLayout = builder->build();
-
 	this->_globalDescriptorSetLayouts.push_back(std::move(colorSetLayout));
-	this->_globalDescriptorSetLayouts.push_back(std::move(textureSetLayout));
+	
+	if (this->_loadedTextures.size())
+	{
+		builder->addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+		std::unique_ptr<ft_DescriptorSetLayout> textureSetLayout = builder->build();
+		this->_globalDescriptorSetLayouts.push_back(std::move(textureSetLayout));
+	}
+
 }
 
 void	Display::createDescriptorSets()
 {
-	VkDescriptorImageInfo imageInfo{};
-	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	imageInfo.imageView = this->_loadedTextures[0]._imageView;
-	imageInfo.sampler = this->_loadedTextures[0]._sampler;
-
 	_descriptorSetsWithoutTexture.resize(this->_renderer.getSwapChain().imageCount());
-	_descriptorSets.resize(this->_renderer.getSwapChain().imageCount());
+	_descriptorSets.resize(this->_loadedTextures.size());
 
 	for (uint32_t i = 0; i < this->_renderer.getSwapChain().imageCount(); i++) {
+		std::cerr << "image count " << i << std::endl;
 		VkDescriptorBufferInfo bufferInfo = _buffers[i]->descriptorInfo();
 		ft_DescriptorWriter(*_globalDescriptorSetLayouts[0], *_globalPool)
 			.writeBuffer(0, &bufferInfo)
 			.build(_descriptorSetsWithoutTexture[i]);
-		ft_DescriptorWriter(*_globalDescriptorSetLayouts[1], *_globalPoolText)
-			.writeBuffer(0, &bufferInfo)
-			.writeImage(1, &imageInfo)
-			.build(_descriptorSets[i]);
+		if (this->_loadedTextures.size() && this->_loadedTextures.size() > i)
+		{
+			VkDescriptorImageInfo imageInfo{};
+			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			imageInfo.imageView = this->_loadedTextures[i]._imageView;
+			imageInfo.sampler = this->_loadedTextures[i]._sampler;
+			ft_DescriptorWriter(*_globalDescriptorSetLayouts[1], *_globalPoolText)
+				.writeBuffer(0, &bufferInfo)
+				.writeImage(1, &imageInfo)
+				.build(_descriptorSets[i]);
+		}
 	}
 }
 
@@ -283,14 +344,14 @@ void	Display::loadGameObjects()
   	}
 }
 
-void	Display::createTextureImage()
+void	Display::createTextureImage(const char *file)
 {
 	Texture	text;
 	int	texWidth, texHeight, texChannels;
-    stbi_uc	*pixels = stbi_load(TEXTURE_PATH.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+    stbi_uc	*pixels = stbi_load(file, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
     VkDeviceSize	imageSize = texWidth * texHeight * 4;
 
-	this->_device.setMipLevels(static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1);//+1 pour rajouter l'image originale
+	text._mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
 
     if (!pixels)
 		throw std::runtime_error("failed to load texture image!");
@@ -309,21 +370,21 @@ void	Display::createTextureImage()
 
 	std::cerr << "msaasamples = " << this->_device.getMsaaSamples() << std::endl;
 
-    this->_renderer.getSwapChain().createImage(static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), this->_device.getMipLevels(), VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, text._image, text._imageMemory);
+    this->_renderer.getSwapChain().createImage(static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), text._mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, text._image, text._imageMemory);
 
-	this->transitionImageLayout(text._image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, this->_device.getMipLevels());
+	this->transitionImageLayout(text._image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, text._mipLevels);
 	this->_device.copyBufferToImage(stagingBuffer, text._image, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), 1);
 
 	vkDestroyBuffer(this->_device.device(), stagingBuffer, nullptr);
     vkFreeMemory(this->_device.device(), stagingBufferMemory, nullptr);
 
-	generateMipmaps(text._image, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, this->_device.getMipLevels());
+	generateMipmaps(text._image, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, text._mipLevels);
 	this->_loadedTextures.push_back(text);
 }
 
-void	Display::createTextureImageView()
+void	Display::createTextureImageView(Texture &loadedTexture)
 {
-    this->_loadedTextures[0]._imageView = this->_renderer.getSwapChain().createImageView(this->_loadedTextures[0]._image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, this->_device.getMipLevels());
+    loadedTexture._imageView = this->_renderer.getSwapChain().createImageView(loadedTexture._image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, loadedTexture._mipLevels);
 }
 
 void	Display::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels)
@@ -376,7 +437,7 @@ void	Display::transitionImageLayout(VkImage image, VkFormat format, VkImageLayou
     this->_device.endSingleTimeCommands(commandBuffer);
 }
 
-void	Display::createTextureSampler()
+void	Display::createTextureSampler(Texture &loadedTexture)
 {
 
 	VkPhysicalDeviceProperties properties{};
@@ -409,10 +470,11 @@ void	Display::createTextureSampler()
 	samplerInfo.minLod = 0.0f; //static_cast<float>(this->_device.getMipLevels() / 2);//minimum de details
     samplerInfo.maxLod = VK_LOD_CLAMP_NONE;//static_cast<float>(this->_device.getMipLevels());//maximum de details
 
-	if (vkCreateSampler(this->_device.device(), &samplerInfo, nullptr, &this->_loadedTextures[0]._sampler) != VK_SUCCESS)
+	if (vkCreateSampler(this->_device.device(), &samplerInfo, nullptr, &loadedTexture._sampler) != VK_SUCCESS)
         throw std::runtime_error("Fail to create Sampler for texture!");
 	// le sampler n'est pas lie a une image ! Il est independant et peut du coup etre efficace tout le long du programme. par contre si on veut changer la facon d'afficher, faut ptete le detruire et le refaire ?
 }
+
 void	Display::generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels)
 {
 	//Verifier si l'image supporte le filtrage lineaire

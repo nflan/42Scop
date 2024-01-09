@@ -29,10 +29,12 @@ int main(int ac, char **av)
 
 	try
 	{
-		if (ac != 2)
+		if (ac < 2 || ac > 3)
 			throw std::invalid_argument("Invalid number of args!");
 		// mesh.LoadObjModel(av[1]);
 		app.setFile(av[1]);
+		if (ac == 3)
+			app.setText(av[2]);
 		app.run();
 	} 
 	catch (const std::exception& e)

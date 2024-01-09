@@ -35,6 +35,7 @@
 #include "KeyboardMovementController.hpp"
 #include "Vertex.hpp"
 #include <vector>
+#include <filesystem>
 #include <iostream>
 #include <stdexcept>
 #include <functional>
@@ -55,6 +56,7 @@ struct Texture {
 	VkImageView		_imageView;
 	VkDeviceMemory	_imageMemory;
 	VkSampler		_sampler;
+	uint32_t		_mipLevels;
 };
 
 class Display
@@ -66,12 +68,15 @@ class Display
 		~Display( void );
 
 		void	setFile(const char* file);
+		void	setText(const char* file);
 		void	run( void );
 	private:
   		void	loadGameObjects();
-		void	createTextureImage();
-		void	createTextureImageView();
-		void	createTextureSampler();
+		void	loadTextures();
+		void	getText();
+		void	createTextureImage(const char *);
+		void	createTextureImageView(Texture&);
+		void	createTextureSampler(Texture&);
 		void	createBuffers();
 		void	createDescriptorSetLayout();
 		void	createDescriptorSets();
@@ -80,7 +85,9 @@ class Display
 		void	transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
 
 		// Mesh						_mesh;
-		const char*					_file;
+		std::string					_file;
+		std::string					_textFile;
+		std::vector<std::string>	_textFiles;
 
 		ft_Window					_window{WIDTH, HEIGHT, "FT_SCOP"};
 		ft_Device					_device{_window};

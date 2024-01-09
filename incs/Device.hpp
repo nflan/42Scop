@@ -66,8 +66,8 @@ class ft_Device {
         const std::vector<const char *> getDeviceExtensions() { return _deviceExtensions; }
 
         SwapChainSupportDetails getSwapChainSupport() { return querySwapChainSupport(_physicalDevice); }
-        void                    setMipLevels(uint32_t m) { _mipLevels = m; }
-        uint32_t                getMipLevels() { return _mipLevels; }
+        // void                    setMipLevels(uint32_t m) { _mipLevels = m; }
+        // uint32_t                getMipLevels() { return _mipLevels; }
         uint32_t                findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
         QueueFamilyIndices      findPhysicalQueueFamilies() { return findQueueFamilies(_physicalDevice); }
         VkFormat                findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
@@ -110,7 +110,7 @@ class ft_Device {
         VkPhysicalDevice                _physicalDevice = VK_NULL_HANDLE;
         ft_Window&                      _window;
         VkSampleCountFlagBits		    _msaaSamples = VK_SAMPLE_COUNT_1_BIT;
-        uint32_t					    _mipLevels;
+        // uint32_t					    _mipLevels;
         VkCommandPool                   _commandPool;
 
         VkDevice                        _device_;
