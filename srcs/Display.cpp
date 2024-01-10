@@ -14,14 +14,14 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "/mnt/nfs/homes/nflan/sgoinfre/bin/stb/stb_image.h"
 
-bool		QUIT = false;
-bool		ROBJ = false;
-int			RENDER = 0;
-int			NBTEXT = 0;
-short		WAY = 1;
-float		ROTX = 0;
-float		ROTY = ROTATION; //change in tools.hpp
-float		ROTZ = 0;
+bool			QUIT = false;
+bool			ROBJ = false;
+int				RENDER = 0;
+unsigned int	NBTEXT = 0;
+short			WAY = 1;
+float			ROTX = 0;
+float			ROTY = ROTATION; //change in tools.hpp
+float			ROTZ = 0;
 
 static	std::vector<char> readFile(const std::string& filename) {
 	std::ifstream	file(filename, std::ios::ate | std::ios::binary); //ate pour commencer a la fin / binary pour dire que c'est un binaire et pas recompiler
@@ -74,12 +74,13 @@ void	key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 	else if ((key == GLFW_KEY_T) && action == GLFW_PRESS)
 	{
-		NBTEXT == 0 ? NBTEXT = 1 : NBTEXT = 0;
+		NBTEXT++;
 	}
 	
 }
 
 Display::Display() {
+	_currDescriptorSets = 0;
 	_globalPool =
 		ft_DescriptorPool::Builder(_device)
 		.setMaxSets(this->_renderer.getSwapChain().imageCount())
@@ -88,6 +89,7 @@ Display::Display() {
 	_globalPoolText =
 		ft_DescriptorPool::Builder(_device)
 		.setMaxSets(this->_renderer.getSwapChain().imageCount())
+		.setPoolFlags(VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT)
         .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, this->_renderer.getSwapChain().imageCount())
         .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, this->_renderer.getSwapChain().imageCount())
 		.build();
@@ -132,6 +134,10 @@ void	Display::run()
 	createDescriptorSets();
 	createRenderSystems();
 	
+	std::cerr << "textfiles: " << std::endl;
+	for (std::string s : this->_textFiles)
+		std::cerr << s << std::endl;
+
 	ft_Camera camera{};
 
 	auto viewerObject = ft_GameObject::createGameObject();
@@ -157,13 +163,15 @@ void	Display::run()
 
 		if (VkCommandBuffer_T *commandBuffer = this->_renderer.beginFrame())
 		{
+			NBTEXT %= this->_loadedTextures.size();
 			int frameIndex = this->_renderer.getFrameIndex();
+			refreshDescriptorSets();
 			FrameInfo frameInfo{
 				frameIndex,
 				frameTime,
 				commandBuffer,
 				camera,
-				RENDER == 0 ? _descriptorSetsWithoutTexture[frameIndex] : _descriptorSets[NBTEXT],
+				RENDER == 0 ? _descriptorSetsWithoutTexture[frameIndex] : _descriptorSets[this->_currDescriptorSets],
 				this->_gameObjects};
 
 			GlobalUbo	ubo{};
@@ -206,35 +214,53 @@ void	Display::getText()
 	{
 		if (std::filesystem::is_directory(this->_textFile))
 		{
-			std::cerr << "dossier a gerer" << std::endl;
+			getTextInDir();
 		}
 		else if (std::filesystem::is_regular_file(this->_textFile))
 			this->_textFiles.push_back(this->_textFile);
 	}
 	else
 	{
-        std::cerr << "Wrong path: " << this->_textFile << std::endl;
-        exit(1);
+		throw std::invalid_argument(std::string("Wrong path: ").append(this->_textFile).c_str());
 	}
-	//     std::ifstream in(filename, std::ios::in);
-    // if (!in)
-    // {
-        // std::cerr << "Wrong path: " << this->_textFile << std::endl;
-        // exit(1);
-    // }
-	// 	return (ft_perror("Error\nTexture: ", path), free(path), 1);
-	// if (S_ISDIR(state.st_mode))
-	// {
-	// 	fd = opendir(path);
-	// 	if (!fd)
-	// 		return (ft_perror("Error\nTexture: ", path), free(path), 1);
-	// 	if (ft_init_sprite(text, path, fd))
-	// 		return (free(path), closedir(fd), 1);
-	// 	closedir(fd);
-	// }
-	// else
-	// 	if (ft_sprite_new(text, path, 0))
-	// 		return (free(path), ft_putstr_error("Error\nMalloc error\n"));
+}
+
+void	Display::getTextInDir()
+{
+	std::filesystem::directory_entry	dir{std::filesystem::path{this->_textFile}};
+	std::vector<std::string>	ext{"png", "jpg", "jpeg"};
+
+	for (std::filesystem::directory_entry const& entry : std::filesystem::directory_iterator(dir))
+	{
+		if (entry.is_regular_file())
+		{
+			bool	add = 0;
+			std::string	file(entry.path().filename());
+			std::string	extFile(file.c_str(), file.find_last_of('.') + 1, file.size() - (file.find_last_of('.') + 1));
+			for (std::string authorizedExt : ext)
+				if (authorizedExt == extFile)
+					add = !add;
+			if (!add)
+			{
+				std::cerr << "This extension is not usable: " << extFile << ". Try with those one ";
+				for (std::string authorizedExt : ext)
+				{
+					std::cerr << authorizedExt;
+					if (authorizedExt != ext[ext.size() - 1])
+						std::cerr << ", ";
+					else
+						std::cerr << ".";
+				}
+				std::cerr << std::endl; 
+			}
+			else
+				this->_textFiles.push_back(_textFile + "/" + file);
+		}
+		else
+			std::cerr << "Can't use this: " << _textFile << "/" << entry.path().filename() << " for texture." << std::endl;
+	}
+	for (auto t : _textFiles)
+		std::cerr << "t = '" << t << "'" << std::endl;
 }
 
 void	Display::createBuffers()
@@ -276,7 +302,8 @@ void	Display::createDescriptorSets()
 	_descriptorSetsWithoutTexture.resize(this->_renderer.getSwapChain().imageCount());
 	_descriptorSets.resize(this->_loadedTextures.size());
 
-	for (uint32_t i = 0; i < this->_renderer.getSwapChain().imageCount(); i++) {
+	for (uint32_t i = 0; i < this->_renderer.getSwapChain().imageCount(); i++)
+	{
 		std::cerr << "image count " << i << std::endl;
 		VkDescriptorBufferInfo bufferInfo = _buffers[i]->descriptorInfo();
 		ft_DescriptorWriter(*_globalDescriptorSetLayouts[0], *_globalPool)
@@ -294,6 +321,103 @@ void	Display::createDescriptorSets()
 				.build(_descriptorSets[i]);
 		}
 	}
+}
+
+// void	Display::refreshDescriptorSets()
+// {
+
+// 	VkCommandBuffer	commandBuffer = this->_device.beginSingleTimeCommands();
+
+// 	static unsigned int	change = 0;
+
+// 	if (!this->_loadedTextures.size() || change == NBTEXT)
+// 		return ;
+
+// 	static unsigned int	frame = 1;
+	
+// 	if (this->_currDescriptorSets + 1 == this->_renderer.getSwapChain().imageCount())
+// 		this->_currDescriptorSets = 0;
+// 	else
+// 		this->_currDescriptorSets++;
+
+// 	change = NBTEXT;
+
+// 	unsigned int	nbPic = 0;
+// 	if (NBTEXT + 1 != this->_loadedTextures.size())
+// 		nbPic = NBTEXT + 1;
+
+// 	if (frame + 1 == this->_renderer.getSwapChain().imageCount())
+// 		frame = 0;
+// 	else
+// 		frame++;
+
+// 	// std::cerr << "nbpic2 = " << nbPic << std::endl;
+// 	// std::cerr << "loadedtextures = " << this->_loadedTextures.size() << std::endl;
+// 	// std::cerr << "imagecount = " << this->_renderer.getSwapChain().imageCount() << std::endl;
+// 	// std::cerr << "frame = " << frame << std::endl;
+
+// 	VkDescriptorBufferInfo bufferInfo = _buffers[frame]->descriptorInfo();
+
+// 	VkDescriptorImageInfo imageInfo{};
+// 	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+// 	imageInfo.imageView = this->_loadedTextures[nbPic]._imageView;
+// 	imageInfo.sampler = this->_loadedTextures[nbPic]._sampler;
+
+// 	std::vector<VkDescriptorSet> tmp{_descriptorSets[frame]};
+// 	vkFreeDescriptorSets( this->_device.device(), this->_globalPoolText.get()->getDescriptorPool(), static_cast<uint32_t>(tmp.size()), tmp.data() );
+
+// 	ft_DescriptorWriter(*_globalDescriptorSetLayouts[1], *_globalPoolText)
+// 		.writeBuffer(0, &bufferInfo)
+// 		.writeImage(1, &imageInfo)
+// 		.build(_descriptorSets[frame]);
+
+// 	this->_device.endSingleTimeCommands(commandBuffer);
+// }
+
+void	Display::refreshDescriptorSets()
+{
+	static unsigned int	change = 0;
+
+	if (!this->_loadedTextures.size() || change == NBTEXT)
+		return ;
+
+	static unsigned int	frame = 1;
+	
+	if (this->_currDescriptorSets + 1 == this->_renderer.getSwapChain().imageCount())
+		this->_currDescriptorSets = 0;
+	else
+		this->_currDescriptorSets++;
+
+	change = NBTEXT;
+
+	unsigned int	nbPic = 0;
+	if (NBTEXT + 1 != this->_loadedTextures.size())
+		nbPic = NBTEXT + 1;
+
+	if (frame + 1 == this->_renderer.getSwapChain().imageCount())
+		frame = 0;
+	else
+		frame++;
+
+	// std::cerr << "nbpic2 = " << nbPic << std::endl;
+	// std::cerr << "loadedtextures = " << this->_loadedTextures.size() << std::endl;
+	// std::cerr << "imagecount = " << this->_renderer.getSwapChain().imageCount() << std::endl;
+	// std::cerr << "frame = " << frame << std::endl;
+
+	VkDescriptorBufferInfo bufferInfo = _buffers[frame]->descriptorInfo();
+
+	VkDescriptorImageInfo imageInfo{};
+	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	imageInfo.imageView = this->_loadedTextures[nbPic]._imageView;
+	imageInfo.sampler = this->_loadedTextures[nbPic]._sampler;
+
+	std::vector<VkDescriptorSet> tmp{_descriptorSets[frame]};
+	vkFreeDescriptorSets( this->_device.device(), this->_globalPoolText.get()->getDescriptorPool(), static_cast<uint32_t>(tmp.size()), tmp.data() );
+
+	ft_DescriptorWriter(*_globalDescriptorSetLayouts[1], *_globalPoolText)
+		.writeBuffer(0, &bufferInfo)
+		.writeImage(1, &imageInfo)
+		.build(_descriptorSets[frame]);
 }
 
 void	Display::createRenderSystems()
@@ -348,6 +472,7 @@ void	Display::createTextureImage(const char *file)
 {
 	Texture	text;
 	int	texWidth, texHeight, texChannels;
+	std::cerr << "file = '" << file << "'" << std::endl;
     stbi_uc	*pixels = stbi_load(file, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
     VkDeviceSize	imageSize = texWidth * texHeight * 4;
 

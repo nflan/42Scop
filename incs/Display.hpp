@@ -74,12 +74,14 @@ class Display
   		void	loadGameObjects();
 		void	loadTextures();
 		void	getText();
+		void	getTextInDir();
 		void	createTextureImage(const char *);
 		void	createTextureImageView(Texture&);
 		void	createTextureSampler(Texture&);
 		void	createBuffers();
 		void	createDescriptorSetLayout();
 		void	createDescriptorSets();
+		void	refreshDescriptorSets();
 		void	createRenderSystems();
 		void	generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
 		void	transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
@@ -107,6 +109,7 @@ class Display
 		VkDescriptorPool				_descriptorPool;
 		VkDescriptorPool				_descriptorPoolWithoutTexture;
 		std::vector<VkDescriptorSet>	_descriptorSets;
+		uint32_t						_currDescriptorSets;
 		std::vector<VkDescriptorSet>	_descriptorSetsWithoutTexture;
 };
 
