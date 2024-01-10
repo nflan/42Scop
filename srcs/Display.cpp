@@ -171,7 +171,7 @@ void	Display::run()
 				frameTime,
 				commandBuffer,
 				camera,
-				RENDER == 0 ? _descriptorSetsWithoutTexture[frameIndex] : _descriptorSets[this->_currDescriptorSets],
+				RENDER == 0 ? _descriptorSetsWithoutTexture[frameIndex] : _descriptorSets[frameIndex],
 				this->_gameObjects};
 
 			GlobalUbo	ubo{};
@@ -313,8 +313,8 @@ void	Display::createDescriptorSets()
 		{
 			VkDescriptorImageInfo imageInfo{};
 			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			imageInfo.imageView = this->_loadedTextures[i]._imageView;
-			imageInfo.sampler = this->_loadedTextures[i]._sampler;
+			imageInfo.imageView = this->_loadedTextures[0]._imageView;
+			imageInfo.sampler = this->_loadedTextures[0]._sampler;
 			ft_DescriptorWriter(*_globalDescriptorSetLayouts[1], *_globalPoolText)
 				.writeBuffer(0, &bufferInfo)
 				.writeImage(1, &imageInfo)
@@ -323,57 +323,6 @@ void	Display::createDescriptorSets()
 	}
 }
 
-// void	Display::refreshDescriptorSets()
-// {
-
-// 	VkCommandBuffer	commandBuffer = this->_device.beginSingleTimeCommands();
-
-// 	static unsigned int	change = 0;
-
-// 	if (!this->_loadedTextures.size() || change == NBTEXT)
-// 		return ;
-
-// 	static unsigned int	frame = 1;
-	
-// 	if (this->_currDescriptorSets + 1 == this->_renderer.getSwapChain().imageCount())
-// 		this->_currDescriptorSets = 0;
-// 	else
-// 		this->_currDescriptorSets++;
-
-// 	change = NBTEXT;
-
-// 	unsigned int	nbPic = 0;
-// 	if (NBTEXT + 1 != this->_loadedTextures.size())
-// 		nbPic = NBTEXT + 1;
-
-// 	if (frame + 1 == this->_renderer.getSwapChain().imageCount())
-// 		frame = 0;
-// 	else
-// 		frame++;
-
-// 	// std::cerr << "nbpic2 = " << nbPic << std::endl;
-// 	// std::cerr << "loadedtextures = " << this->_loadedTextures.size() << std::endl;
-// 	// std::cerr << "imagecount = " << this->_renderer.getSwapChain().imageCount() << std::endl;
-// 	// std::cerr << "frame = " << frame << std::endl;
-
-// 	VkDescriptorBufferInfo bufferInfo = _buffers[frame]->descriptorInfo();
-
-// 	VkDescriptorImageInfo imageInfo{};
-// 	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-// 	imageInfo.imageView = this->_loadedTextures[nbPic]._imageView;
-// 	imageInfo.sampler = this->_loadedTextures[nbPic]._sampler;
-
-// 	std::vector<VkDescriptorSet> tmp{_descriptorSets[frame]};
-// 	vkFreeDescriptorSets( this->_device.device(), this->_globalPoolText.get()->getDescriptorPool(), static_cast<uint32_t>(tmp.size()), tmp.data() );
-
-// 	ft_DescriptorWriter(*_globalDescriptorSetLayouts[1], *_globalPoolText)
-// 		.writeBuffer(0, &bufferInfo)
-// 		.writeImage(1, &imageInfo)
-// 		.build(_descriptorSets[frame]);
-
-// 	this->_device.endSingleTimeCommands(commandBuffer);
-// }
-
 void	Display::refreshDescriptorSets()
 {
 	static unsigned int	change = 0;
@@ -381,43 +330,27 @@ void	Display::refreshDescriptorSets()
 	if (!this->_loadedTextures.size() || change == NBTEXT)
 		return ;
 
-	static unsigned int	frame = 1;
-	
-	if (this->_currDescriptorSets + 1 == this->_renderer.getSwapChain().imageCount())
-		this->_currDescriptorSets = 0;
-	else
-		this->_currDescriptorSets++;
+	// VkCommandBuffer	commandBuffer = this->_device.beginSingleTimeCommands();
 
 	change = NBTEXT;
 
-	unsigned int	nbPic = 0;
-	if (NBTEXT + 1 != this->_loadedTextures.size())
-		nbPic = NBTEXT + 1;
+	vkDeviceWaitIdle(this->_device.device());
 
-	if (frame + 1 == this->_renderer.getSwapChain().imageCount())
-		frame = 0;
-	else
-		frame++;
+	vkFreeDescriptorSets( this->_device.device(), this->_globalPoolText.get()->getDescriptorPool(), static_cast<uint32_t>(this->_descriptorSets.size()), this->_descriptorSets.data() );
+	for (size_t i = 0; i < this->_renderer.getSwapChain().imageCount(); i++)
+	{
+		VkDescriptorBufferInfo bufferInfo = _buffers[i]->descriptorInfo();
+		VkDescriptorImageInfo imageInfo{};
+		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		imageInfo.imageView = this->_loadedTextures[NBTEXT]._imageView;
+		imageInfo.sampler = this->_loadedTextures[NBTEXT]._sampler;
 
-	// std::cerr << "nbpic2 = " << nbPic << std::endl;
-	// std::cerr << "loadedtextures = " << this->_loadedTextures.size() << std::endl;
-	// std::cerr << "imagecount = " << this->_renderer.getSwapChain().imageCount() << std::endl;
-	// std::cerr << "frame = " << frame << std::endl;
-
-	VkDescriptorBufferInfo bufferInfo = _buffers[frame]->descriptorInfo();
-
-	VkDescriptorImageInfo imageInfo{};
-	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	imageInfo.imageView = this->_loadedTextures[nbPic]._imageView;
-	imageInfo.sampler = this->_loadedTextures[nbPic]._sampler;
-
-	std::vector<VkDescriptorSet> tmp{_descriptorSets[frame]};
-	vkFreeDescriptorSets( this->_device.device(), this->_globalPoolText.get()->getDescriptorPool(), static_cast<uint32_t>(tmp.size()), tmp.data() );
-
-	ft_DescriptorWriter(*_globalDescriptorSetLayouts[1], *_globalPoolText)
-		.writeBuffer(0, &bufferInfo)
-		.writeImage(1, &imageInfo)
-		.build(_descriptorSets[frame]);
+		ft_DescriptorWriter(*_globalDescriptorSetLayouts[1], *_globalPoolText)
+			.writeBuffer(0, &bufferInfo)
+			.writeImage(1, &imageInfo)
+			.build(_descriptorSets[i]);
+	}
+	// this->_device.endSingleTimeCommands(commandBuffer);
 }
 
 void	Display::createRenderSystems()
