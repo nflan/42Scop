@@ -16,6 +16,7 @@
 
 bool			QUIT = false;
 bool			ROBJ = false;
+bool			ISTEXT = false;
 int				RENDER = 0;
 unsigned int	NBTEXT = 0;
 short			WAY = 1;
@@ -70,23 +71,32 @@ void	key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 	else if ((key == GLFW_KEY_C) && action == GLFW_PRESS)
 	{
-		RENDER == 0 ? RENDER = 1 : RENDER = 0;
+		if (ISTEXT)
+			RENDER == 0 ? RENDER = 1 : RENDER = 0;
 	}
 	else if ((key == GLFW_KEY_T) && action == GLFW_PRESS)
 	{
-		NBTEXT++;
+		if (ISTEXT)
+			NBTEXT++;
 	}
 	
 }
 
 Display::Display() {
-	_currDescriptorSets = 0;
+	_currText = 0;
 	_globalPool =
 		ft_DescriptorPool::Builder(_device)
 		.setMaxSets(this->_renderer.getSwapChain().imageCount())
         .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, this->_renderer.getSwapChain().imageCount())
 		.build();
 	_globalPoolText =
+		ft_DescriptorPool::Builder(_device)
+		.setMaxSets(this->_renderer.getSwapChain().imageCount())
+		.setPoolFlags(VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT)
+        .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, this->_renderer.getSwapChain().imageCount())
+        .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, this->_renderer.getSwapChain().imageCount())
+		.build();
+	_changePoolText =
 		ft_DescriptorPool::Builder(_device)
 		.setMaxSets(this->_renderer.getSwapChain().imageCount())
 		.setPoolFlags(VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT)
@@ -140,7 +150,7 @@ void	Display::run()
 
 	ft_Camera camera{};
 
-	auto viewerObject = ft_GameObject::createGameObject();
+	ft_GameObject viewerObject = ft_GameObject::createGameObject();
 
 	viewerObject.transform.translation.z = -10.f;
 	KeyboardMovementController cameraController(glm::vec3(0,0,-10.f));
@@ -163,15 +173,13 @@ void	Display::run()
 
 		if (VkCommandBuffer_T *commandBuffer = this->_renderer.beginFrame())
 		{
-			NBTEXT %= this->_loadedTextures.size();
-			int frameIndex = this->_renderer.getFrameIndex();
-			refreshDescriptorSets();
+			int	frameIndex = this->_renderer.getFrameIndex();
 			FrameInfo frameInfo{
 				frameIndex,
 				frameTime,
 				commandBuffer,
 				camera,
-				RENDER == 0 ? _descriptorSetsWithoutTexture[frameIndex] : _descriptorSets[frameIndex],
+				RENDER == 1 && ISTEXT ? _descriptorSets[frameIndex] : _descriptorSetsWithoutTexture[frameIndex],
 				this->_gameObjects};
 
 			GlobalUbo	ubo{};
@@ -190,6 +198,15 @@ void	Display::run()
 
 			this->_renderer.endSwapChainRenderPass(commandBuffer);
 			this->_renderer.endFrame();
+			if (ISTEXT)
+			{
+				NBTEXT %= this->_loadedTextures.size();
+				if (this->_loadedTextures.size() > 1 && NBTEXT != this->_currText)
+				{
+					refreshDescriptorSets();
+					this->_currText = NBTEXT;
+				}
+			}
 		}
 	}
 
@@ -198,6 +215,7 @@ void	Display::run()
 
 void	Display::loadTextures()
 {
+	ISTEXT = true;
 	getText();
 
 	for (uint32_t i = 0; i < this->_textFiles.size(); i++)
@@ -300,7 +318,8 @@ void	Display::createDescriptorSetLayout()
 void	Display::createDescriptorSets()
 {
 	_descriptorSetsWithoutTexture.resize(this->_renderer.getSwapChain().imageCount());
-	_descriptorSets.resize(this->_loadedTextures.size());
+	_descriptorSets.resize(this->_renderer.getSwapChain().imageCount());
+	_changeDescriptorSets.resize(this->_renderer.getSwapChain().imageCount());
 
 	for (uint32_t i = 0; i < this->_renderer.getSwapChain().imageCount(); i++)
 	{
@@ -309,7 +328,7 @@ void	Display::createDescriptorSets()
 		ft_DescriptorWriter(*_globalDescriptorSetLayouts[0], *_globalPool)
 			.writeBuffer(0, &bufferInfo)
 			.build(_descriptorSetsWithoutTexture[i]);
-		if (this->_loadedTextures.size() && this->_loadedTextures.size() > i)
+		if (this->_loadedTextures.size())
 		{
 			VkDescriptorImageInfo imageInfo{};
 			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -325,18 +344,9 @@ void	Display::createDescriptorSets()
 
 void	Display::refreshDescriptorSets()
 {
-	static unsigned int	change = 0;
+	VkCommandBuffer	commandBuffer = this->_device.beginSingleTimeCommands();
+	this->_device.endSingleTimeCommands(commandBuffer);
 
-	if (!this->_loadedTextures.size() || change == NBTEXT)
-		return ;
-
-	// VkCommandBuffer	commandBuffer = this->_device.beginSingleTimeCommands();
-
-	change = NBTEXT;
-
-	vkDeviceWaitIdle(this->_device.device());
-
-	vkFreeDescriptorSets( this->_device.device(), this->_globalPoolText.get()->getDescriptorPool(), static_cast<uint32_t>(this->_descriptorSets.size()), this->_descriptorSets.data() );
 	for (size_t i = 0; i < this->_renderer.getSwapChain().imageCount(); i++)
 	{
 		VkDescriptorBufferInfo bufferInfo = _buffers[i]->descriptorInfo();
@@ -345,12 +355,14 @@ void	Display::refreshDescriptorSets()
 		imageInfo.imageView = this->_loadedTextures[NBTEXT]._imageView;
 		imageInfo.sampler = this->_loadedTextures[NBTEXT]._sampler;
 
-		ft_DescriptorWriter(*_globalDescriptorSetLayouts[1], *_globalPoolText)
+		ft_DescriptorWriter(*_globalDescriptorSetLayouts[1], *_changePoolText)
 			.writeBuffer(0, &bufferInfo)
 			.writeImage(1, &imageInfo)
-			.build(_descriptorSets[i]);
+			.build(_changeDescriptorSets[i]);
 	}
-	// this->_device.endSingleTimeCommands(commandBuffer);
+	_descriptorSets.swap(_changeDescriptorSets);
+	_globalPoolText.swap(_changePoolText);
+	vkFreeDescriptorSets( this->_device.device(), this->_changePoolText.get()->getDescriptorPool(), static_cast<uint32_t>(this->_changeDescriptorSets.size()), this->_changeDescriptorSets.data() );
 }
 
 void	Display::createRenderSystems()

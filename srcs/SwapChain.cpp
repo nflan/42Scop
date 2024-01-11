@@ -157,7 +157,6 @@ void    ft_SwapChain::createSwapChain()
     VkExtent2D              extent = chooseSwapExtent(swapChainSupport.capabilities);
 
     uint32_t    imageCount = swapChainSupport.capabilities.minImageCount + 1;
-    std::cerr << "maximagecount = " << swapChainSupport.capabilities.maxImageCount << std::endl << "minimagecount = " << swapChainSupport.capabilities.minImageCount << std::endl;
 	if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount)
 		imageCount = swapChainSupport.capabilities.maxImageCount;
 
@@ -236,7 +235,7 @@ void    ft_SwapChain::createImageViews()
 {
     this->_swapChainImageViews.resize(this->_swapChainImages.size());
 
-    for (uint32_t i = 0; i < this->_swapChainImages.size(); i++)
+    for (std::size_t i = 0; i < this->_swapChainImages.size(); i++)
         this->_swapChainImageViews[i] = this->createImageView(this->_swapChainImages[i], this->_swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
 }
 

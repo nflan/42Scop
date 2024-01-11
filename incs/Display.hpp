@@ -91,13 +91,15 @@ class Display
 		std::string					_textFile;
 		std::vector<std::string>	_textFiles;
 
-		ft_Window					_window{WIDTH, HEIGHT, "FT_SCOP"};
-		ft_Device					_device{_window};
-		ft_Renderer					_renderer{_window, _device};
+		ft_Window							_window{WIDTH, HEIGHT, "FT_SCOP"};
+		ft_Device							_device{_window};
+		ft_Renderer							_renderer{_window, _device};
 		std::unique_ptr<ft_DescriptorPool>	_globalPool{};
 		std::unique_ptr<ft_DescriptorPool>	_globalPoolText{};
-		ft_GameObject::Map			_gameObjects;
-		std::vector<Texture>		_loadedTextures;
+		std::unique_ptr<ft_DescriptorPool>	_changePoolText{};
+		ft_GameObject::Map					_gameObjects;
+		std::vector<Texture>				_loadedTextures;
+		unsigned int						_currText;
 
 		std::vector<std::unique_ptr<ft_Buffer>>		_buffers;
 
@@ -109,7 +111,7 @@ class Display
 		VkDescriptorPool				_descriptorPool;
 		VkDescriptorPool				_descriptorPoolWithoutTexture;
 		std::vector<VkDescriptorSet>	_descriptorSets;
-		uint32_t						_currDescriptorSets;
+		std::vector<VkDescriptorSet>	_changeDescriptorSets;
 		std::vector<VkDescriptorSet>	_descriptorSetsWithoutTexture;
 };
 
