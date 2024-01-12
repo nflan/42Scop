@@ -37,19 +37,6 @@ namespace std {
 
 }
 
-struct  Material {
-    std::string         _newmtl;//name
-    std::vector<float>  _ka;//ambient color
-    std::vector<float>  _kd;//diffuse color
-    std::vector<float>  _ks;//spectacular color
-    std::vector<float>  _ke;//couleur émissive (emissive)
-    bool                _illum;//illum = 1(0) a flat material with no specular highlights, illum = 2(1) denotes the presence of specular highlights
-    float               _ns;//shininess of the material
-    float               _ni;//densite optique
-    float               _d;//transparency d or Tr
-    std::string         _mapKa;//names a file containing a texture map, which should just be an ASCII dump of RGB values
-};
-
 struct  Texture {
 	VkImage			                    _image;
 	VkImageView		                    _imageView;
