@@ -49,16 +49,6 @@
 const uint32_t	WIDTH = 800;
 const uint32_t	HEIGHT = 600;
 
-const std::string	TEXTURE_PATH = "textures/cute.png";
-
-struct Texture {
-	VkImage			_image;
-	VkImageView		_imageView;
-	VkDeviceMemory	_imageMemory;
-	VkSampler		_sampler;
-	uint32_t		_mipLevels;
-};
-
 class Display
 {
 	public:
