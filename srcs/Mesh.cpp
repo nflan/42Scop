@@ -25,7 +25,9 @@ void Mesh::LoadObjModel(const std::string &filename)
     std::string line;
     while (std::getline(in, line))
     {
-        if (line.substr(0,2)=="v ")
+        if (line.substr(0, 7) == "mtllib ")
+            this->_mtlFile = line.substr(7);
+        else if (line.substr(0,2)=="v ")
         {
             std::istringstream  v(line.substr(2));
             glm::vec3   vert;
@@ -140,3 +142,4 @@ std::vector<uint32_t>   Mesh::getTextureIndex() { return this->_textureIndex; }
 std::vector<glm::vec2>  Mesh::getTexCoord() { return this->_texCoord; }
 std::vector<glm::vec3>  Mesh::getNormals() { return this->_normals; }
 std::vector<glm::vec3>  Mesh::getNormCoord() { return this->_normCoord; }
+std::string             Mesh::getMtlFile() { return this->_mtlFile; }

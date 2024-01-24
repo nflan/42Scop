@@ -16,6 +16,7 @@
 #include "Buffer.hpp"
 #include "Device.hpp"
 #include "Mesh.hpp"
+#include "Material.hpp"
 // libs
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -77,6 +78,8 @@ class ft_Model {
         uint32_t                    _indexCount;
         glm::vec3                   _centerOfObj;
         float                       _scaleObj;
+        std::map<std::string, ft_Material>  _mtl;
+        std::string                 _mtlFile;
 };
 
 #endif

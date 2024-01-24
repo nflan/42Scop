@@ -27,7 +27,6 @@
 int main(int ac, char **av)
 {
 	// static_cast<void>(ac);
-	// ft_Material mat(av[1]);
 	Display	app;
 	Mesh	mesh;
 

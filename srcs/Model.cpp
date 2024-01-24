@@ -285,6 +285,8 @@ void	ft_Model::Builder::loadModel(const std::string &filepath)
     Mesh    mesh;
 
     mesh.LoadObjModel(filepath);
+    std::cout << "mtlfile  = " << mesh.getMtlFile() << std::endl;
+	// ft_Material mat(av[1]);
 	// tinyobj::attrib_t	attrib;
     // std::vector<tinyobj::shape_t>	shapes;
     // std::vector<tinyobj::material_t>	materials;

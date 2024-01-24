@@ -19,14 +19,14 @@
 
 struct  Material {
     std::string         _newmtl;//name
-    std::vector<double>  _ka;//ambient color
-    std::vector<double>  _kd;//diffuse color
-    std::vector<double>  _ks;//spectacular color
-    std::vector<double>  _ke;//couleur émissive (emissive)
+    std::vector<double> _ka;//ambient color
+    std::vector<double> _kd;//diffuse color
+    std::vector<double> _ks;//spectacular color
+    std::vector<double> _ke;//couleur émissive (emissive)
     bool                _illum;//illum = 1(0) a flat material with no specular highlights, illum = 2(1) denotes the presence of specular highlights
-    double               _ns;//shininess of the material
-    double               _ni;//densite optique
-    double               _d;//transparency d or Tr
+    double              _ns;//shininess of the material
+    double              _ni;//densite optique
+    double              _d;//transparency d or Tr
     std::string         _mapKa;//names a file containing a texture map, which should just be an ASCII dump of RGB values
 };
 

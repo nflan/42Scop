@@ -382,7 +382,6 @@ void    ft_SwapChain::createImage(uint32_t width, uint32_t height, uint32_t mipL
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
     allocInfo.memoryTypeIndex = this->_device.findMemoryType(memRequirements.memoryTypeBits, properties);
-
     if (vkAllocateMemory(this->_device.device(), &allocInfo, nullptr, &imageMemory) != VK_SUCCESS)
         throw std::runtime_error("echec de l'allocation de la memoire d'une image!");
 

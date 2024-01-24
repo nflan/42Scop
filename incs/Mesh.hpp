@@ -34,6 +34,7 @@ class Mesh
         std::vector<glm::vec2>  getTexCoord();
         std::vector<glm::vec3>  getNormals();
         std::vector<glm::vec3>  getNormCoord();
+        std::string             getMtlFile();
 
     private:
         std::vector<glm::vec3>  _vertices;//to store vertex information of 3D model started with v
@@ -45,6 +46,7 @@ class Mesh
         std::vector<glm::vec2>  _textures;
         std::vector<uint32_t>   _textureIndex;
         std::vector<glm::vec2>  _texCoord;
+        std::string             _mtlFile;
 };
 
 #endif
