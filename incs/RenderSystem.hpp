@@ -24,10 +24,8 @@
 #include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/gtx/transform.hpp>
 #include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
 
-
 // std
 #include <memory>
-#include <vector>
 
 class RenderSystem {
     public:
@@ -37,7 +35,8 @@ class RenderSystem {
         RenderSystem(const RenderSystem &) = delete;
         RenderSystem &operator=(const RenderSystem &) = delete;
 
-        void renderGameObjects(FrameInfo &frameInfo);
+        void    update(FrameInfo &frameInfo, GlobalUbo &ubo);
+        void    renderGameObjects(FrameInfo &frameInfo);
 
     private:
         void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);

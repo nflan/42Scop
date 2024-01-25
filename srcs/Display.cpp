@@ -139,6 +139,13 @@ void	Display::run()
 	if (this->_textFile.size())
 		loadTextures();
 
+	addMaterials();
+	for (const std::pair<std::string, ft_Material>& print : this->_materials)
+		for (const std::pair<std::string, Material>& p : print.second.getMaterials())
+			printMaterial(p.second);
+	
+	for (std::pair<const ft_GameObject::id_t, ft_GameObject>& print : this->_gameObjects)
+			printMaterial(print.second.model->getMaterial().getMaterial(print.second.model->getMtlFile()));
 	createBuffers();
 	createDescriptorSetLayout();
 	createDescriptorSets();
@@ -187,6 +194,7 @@ void	Display::run()
 			ubo.view = camera.getView();
 			ubo.inverseView = camera.getInverseView();
 			this->_pointLightSystems[RENDER]->update(frameInfo, ubo);
+			this->_renderSystems[RENDER]->update(frameInfo, ubo);
 			this->_buffers[frameIndex]->writeToBuffer(&ubo);
 			this->_buffers[frameIndex]->flush();
 
@@ -385,13 +393,45 @@ void	Display::createRenderSystems()
 	}
 }
 	
+void	Display::addMaterials()
+{
+	for (std::pair<std::string, ft_Material> mtl : this->_materials)
+	{
+		mtl.second.setFile(mtl.first);
+		mtl.second.parseFile();
+	}
+	for (auto& objects : this->_gameObjects)
+	{
+		std::map<std::string, ft_Material>::iterator tofind = this->_materials.find(objects.second.model->getMtlFile());
+		if (tofind != this->_materials.end())
+			objects.second.model->setMaterial(tofind->second);
+	}
+}
 
 void	Display::loadGameObjects()
 {
   	std::shared_ptr<ft_Model> Model = ft_Model::createModelFromFile(this->_device, this->_file);
 	ft_GameObject	gameObj = ft_GameObject::createGameObject();
 	gameObj.model = Model;
+	this->_materials.insert(make_pair<std::string, ft_Material>(Model->getMtlFile(), ft_Material()));
 	// gameObj.transform.scale = glm::vec3(0.5f);
+
+	// std::cerr << Model->getMaterial().getMaterials().size() << std::endl;
+	// std::map<std::string, Material>::iterator end = Model->getMaterial().getMaterials().end();
+	// for (std::map<std::string, Material>::iterator it = Model->getMaterial().getMaterials().begin(); it != Model->getMaterial().getMaterials().end(); it++)
+	// {
+	// 	std::cout << "ptr it = " << *it << std::endl;
+	// 	std::cout << "ptr end = " << *end << std::endl;
+	// 	std::cout << "Material->first = " << it->first << std::endl;
+	// 	printMaterial(it->second);
+	// }
+	// for (const std::pair<std::string, Material>& material : Model->getMaterial().getMaterials())
+    // {
+    //     std::cout << "Material.first = " << material.first << std::endl;
+    //     printMaterial(material.second);
+    // }
+	// printMaterial(Model->getMaterial().getMaterials().begin()->second);
+
 
 	this->_gameObjects.emplace(gameObj.getId(), std::move(gameObj));
 

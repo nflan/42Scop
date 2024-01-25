@@ -108,7 +108,8 @@ void    PointLightSystem::render(FrameInfo& frameInfo)
     std::map<float, ft_GameObject::id_t> sorted;
     for (auto& kv : frameInfo.gameObjects) {
         auto& obj = kv.second;
-        if (obj.pointLight == nullptr) continue;
+        if (obj.pointLight == nullptr)
+            continue;
 
         // calculate distance
         auto offset = frameInfo.camera.getPosition() - obj.transform.translation;

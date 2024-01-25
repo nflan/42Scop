@@ -56,12 +56,14 @@ SRC_FT =	Buffer \
 			Display \
 			GameObject \
 			KeyboardMovementController \
+			Material \
 			Mesh \
 			Model \
 			Pipeline \
+			PointLightSystem \
+			tools \
 			Renderer \
 			RenderSystem \
-			PointLightSystem \
 			scop \
 			SwapChain \
 			Vertex \

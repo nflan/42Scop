@@ -47,6 +47,8 @@ class ft_Model {
         struct Builder {
             std::vector<Vertex>     _vertices{};
             std::vector<uint32_t>   _indices{};
+            std::string             _path;
+            std::string             _mtlFile;
 
             void    loadModel(const std::string &filepath);
         };
@@ -60,6 +62,10 @@ class ft_Model {
         static std::unique_ptr<ft_Model> createModelFromFile(ft_Device &device, const std::string &filepath);
         glm::vec3   getCenterOfObj( void ) { return _centerOfObj; };
         float       getScaleObj( void ) { return _scaleObj; };
+        std::string getMtlFile() { return _mtlFile; };
+        ft_Material&    getMaterial() { return _material; };
+        void            setMaterial(ft_Material& mtl) { _material = mtl; };
+
 
         void    bind(VkCommandBuffer commandBuffer);
         void    draw(VkCommandBuffer commandBuffer);
@@ -78,8 +84,8 @@ class ft_Model {
         uint32_t                    _indexCount;
         glm::vec3                   _centerOfObj;
         float                       _scaleObj;
-        std::map<std::string, ft_Material>  _mtl;
         std::string                 _mtlFile;
+        ft_Material                _material;
 };
 
 #endif

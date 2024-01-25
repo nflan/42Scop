@@ -36,10 +36,13 @@ namespace std {
     };
 }
 
-ft_Model::ft_Model(ft_Device &device, const ft_Model::Builder &builder) : _device{device}
+ft_Model::ft_Model(ft_Device &device, const ft_Model::Builder &builder) : _device{device}, _mtlFile{builder._mtlFile}
 {
     createVertexBuffers(builder._vertices);
     createIndexBuffers(builder._indices);
+    // std::map<std::string, Material> tmp(_mtl.getMaterials());
+    // for (std::map<std::string, Material>::iterator it = tmp.begin(); it != tmp.end(); it++)
+    //     printMaterial(it->second);
 }
 
 ft_Model::~ft_Model() {}
@@ -284,16 +287,10 @@ void	ft_Model::Builder::loadModel(const std::string &filepath)
 {
     Mesh    mesh;
 
-    mesh.LoadObjModel(filepath);
-    std::cout << "mtlfile  = " << mesh.getMtlFile() << std::endl;
-	// ft_Material mat(av[1]);
-	// tinyobj::attrib_t	attrib;
-    // std::vector<tinyobj::shape_t>	shapes;
-    // std::vector<tinyobj::material_t>	materials;
-    // std::string	warn, err;
+    mesh.loadObjModel(filepath);
+    this->_path = filepath.substr(0, filepath.find_last_of('/') + 1);
+    this->_mtlFile = mesh.getMtlFile();
 
-    // if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, MODEL_PATH.c_str()))
-    //     throw std::runtime_error(warn + err);
 	this->_vertices.clear();
     this->_indices.clear();
 	std::unordered_map<Vertex, uint32_t> uniqueVertices;

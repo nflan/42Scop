@@ -73,6 +73,19 @@ void    RenderSystem::createPipeline(VkRenderPass renderPass)
         pipelineConfig);
 }
 
+void    RenderSystem::update(FrameInfo& frameInfo, GlobalUbo& ubo)
+{
+    for (std::pair<const ft_GameObject::id_t, ft_GameObject>& kv : frameInfo.gameObjects)
+    {
+        ft_GameObject& obj = kv.second;
+        if (obj.model == nullptr)
+            continue;
+        // copy light to ubo
+        Material    light = obj.model->getMaterial().getMaterials().begin()->second;
+        ubo.ambientLightColor = glm::vec4(light._ka[0], light._ka[1], light._ka[2], light._ni);
+    }
+}
+
 void    RenderSystem::renderGameObjects(FrameInfo& frameInfo)
 {
     this->_pipeline->bind(frameInfo.commandBuffer);
