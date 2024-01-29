@@ -81,8 +81,19 @@ void    RenderSystem::update(FrameInfo& frameInfo, GlobalUbo& ubo)
         if (obj.model == nullptr)
             continue;
         // copy light to ubo
-        Material    light = obj.model->getMaterial().getMaterials().begin()->second;
-        ubo.ambientLightColor = glm::vec4(light._ka[0], light._ka[1], light._ka[2], light._ni);
+        if (obj.model->getMtlFile().size())
+        {
+            Material    light = obj.model->getMaterial().getMaterials().begin()->second;
+            std::cerr << "spect = " << light._ks[0] << std::endl;
+            ubo.ka = glm::vec3(light._ka[0], light._ka[1], light._ka[2]);
+            ubo.kd = glm::vec3(light._kd[0], light._kd[1], light._kd[2]);
+            if (light._illum)
+                ubo.ks = glm::vec3(light._ks[0], light._ks[1], light._ka[2]);
+            ubo.ke = glm::vec3(light._ke[0], light._ke[1], light._ke[2]);
+            ubo.ns = light._ns;
+            ubo.ni = light._ni;
+            ubo.d = light._d;
+        }
     }
 }
 

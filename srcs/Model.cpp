@@ -36,13 +36,14 @@ namespace std {
     };
 }
 
-ft_Model::ft_Model(ft_Device &device, const ft_Model::Builder &builder) : _device{device}, _mtlFile{builder._mtlFile}
+ft_Model::ft_Model(ft_Device &device, const ft_Model::Builder &builder) : _device{device}
 {
     createVertexBuffers(builder._vertices);
     createIndexBuffers(builder._indices);
-    // std::map<std::string, Material> tmp(_mtl.getMaterials());
-    // for (std::map<std::string, Material>::iterator it = tmp.begin(); it != tmp.end(); it++)
-    //     printMaterial(it->second);
+    if (builder._mtlFile.size())
+    {
+        createMaterial(builder._path + builder._mtlFile);
+    }
 }
 
 ft_Model::~ft_Model() {}
@@ -53,6 +54,14 @@ std::unique_ptr<ft_Model> ft_Model::createModelFromFile(
     Builder builder{};
     builder.loadModel(filepath);
     return std::make_unique<ft_Model>(device, builder);
+}
+
+void    ft_Model::createMaterial(const std::string& mtlFile)
+{
+    this->_mtlFile = mtlFile;
+    this->_material = ft_Material(this->_mtlFile);
+    if (!this->_material.getFile().size())
+        this->_mtlFile.clear();
 }
 
 void    ft_Model::createVertexBuffers(const std::vector<Vertex> &vertices)

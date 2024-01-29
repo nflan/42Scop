@@ -64,7 +64,6 @@ class ft_Model {
         float       getScaleObj( void ) { return _scaleObj; };
         std::string getMtlFile() { return _mtlFile; };
         ft_Material&    getMaterial() { return _material; };
-        void            setMaterial(ft_Material& mtl) { _material = mtl; };
 
 
         void    bind(VkCommandBuffer commandBuffer);
@@ -73,6 +72,7 @@ class ft_Model {
     private:
         void    createVertexBuffers(const std::vector<Vertex> &vertices);
         void    createIndexBuffers(const std::vector<uint32_t> &indices);
+        void    createMaterial(const std::string& mtlFile);
 
         ft_Device&                  _device;
 
@@ -85,7 +85,7 @@ class ft_Model {
         glm::vec3                   _centerOfObj;
         float                       _scaleObj;
         std::string                 _mtlFile;
-        ft_Material                _material;
+        ft_Material                 _material;
 };
 
 #endif

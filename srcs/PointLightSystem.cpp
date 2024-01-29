@@ -86,7 +86,8 @@ void    PointLightSystem::update(FrameInfo& frameInfo, GlobalUbo& ubo)
     int lightIndex = 0;
     for (auto& kv : frameInfo.gameObjects) {
         auto& obj = kv.second;
-        if (obj.pointLight == nullptr) continue;
+        if (obj.pointLight == nullptr)
+            continue;
 
         assert(lightIndex < MAX_LIGHTS && "Point lights exceed maximum specified");
 

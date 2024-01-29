@@ -47,8 +47,7 @@ void    ft_Material::parseFile()
     std::ifstream in(this->_file, std::ios::in);
     if (!in)
     {
-        std::cerr << "Cannot open " << this->_file << std::endl;
-        exit(1);
+        this->_file.clear();
     }
     long long	i = -1;
     std::vector<Material>	mtl(1);

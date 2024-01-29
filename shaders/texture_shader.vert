@@ -19,8 +19,14 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
     mat4 projection;
     mat4 view;
     mat4 invView;
-    vec4 ambientLightColor; // w is intensity
-    PointLight pointLights[1];
+    vec3 ka; // ambient color
+    vec3 kd; // diffuse color
+    vec3 ks; // specular color
+    vec3 ke; // emissive color
+    float ns; // shininess
+    float ni; // optical density
+    float d;  // transparency
+    PointLight pointLights[2];
     int numLights;
 } ubo;
 

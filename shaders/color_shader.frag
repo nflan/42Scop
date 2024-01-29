@@ -16,8 +16,14 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
     mat4 projection;
     mat4 view;
     mat4 invView;
-    vec4 ambientLightColor; // w is intensity
-    PointLight pointLights[1];
+    vec3 ka; // ambient color
+    vec3 kd; // diffuse color
+    vec3 ks; // specular color
+    vec3 ke; // emissive color
+    float ns; // shininess
+    float ni; // optical density
+    float d;  // transparency
+    PointLight pointLights[2];
     int numLights;
 } ubo;
 
@@ -27,8 +33,8 @@ layout(push_constant) uniform Push {
 } push;
 
 void main() {
-    vec3 diffuseLight = ubo.ambientLightColor.xyz * ubo.ambientLightColor.w;
-    vec3 specularLight = vec3(0.0);
+    vec3 diffuseLight = ubo.ka * ubo.ni;
+    vec3 specularLight = ubo.ks;
     vec3 surfaceNormal = normalize(fragNormalWorld);
 
     vec3 cameraPosWorld = ubo.invView[3].xyz;

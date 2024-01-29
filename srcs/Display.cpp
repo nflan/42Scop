@@ -139,13 +139,11 @@ void	Display::run()
 	if (this->_textFile.size())
 		loadTextures();
 
-	addMaterials();
-	for (const std::pair<std::string, ft_Material>& print : this->_materials)
-		for (const std::pair<std::string, Material>& p : print.second.getMaterials())
-			printMaterial(p.second);
+	// addMaterials();
+	// for (const std::pair<std::string, ft_Material>& print : this->_materials)
+	// 	for (const std::pair<std::string, Material>& p : print.second.getMaterials())
+	// 		printMaterial(p.second);
 	
-	for (std::pair<const ft_GameObject::id_t, ft_GameObject>& print : this->_gameObjects)
-			printMaterial(print.second.model->getMaterial().getMaterial(print.second.model->getMtlFile()));
 	createBuffers();
 	createDescriptorSetLayout();
 	createDescriptorSets();
@@ -393,27 +391,30 @@ void	Display::createRenderSystems()
 	}
 }
 	
-void	Display::addMaterials()
-{
-	for (std::pair<std::string, ft_Material> mtl : this->_materials)
-	{
-		mtl.second.setFile(mtl.first);
-		mtl.second.parseFile();
-	}
-	for (auto& objects : this->_gameObjects)
-	{
-		std::map<std::string, ft_Material>::iterator tofind = this->_materials.find(objects.second.model->getMtlFile());
-		if (tofind != this->_materials.end())
-			objects.second.model->setMaterial(tofind->second);
-	}
-}
+// void	Display::addMaterials()
+// {
+// 	for (std::pair<std::string, ft_Material> mtl : this->_materials)
+// 	{
+// 		std::cerr << "mtlfile = " << mtl.first << std::endl;
+// 		mtl.second.setFile(mtl.first);
+// 		mtl.second.parseFile();
+// 	}
+// 	for (auto& objects : this->_gameObjects)
+// 	{
+//        	if (objects.second.model == nullptr)
+//             continue;
+// 		std::map<std::string, ft_Material>::iterator tofind = this->_materials.find(objects.second.model->getMtlFile());
+// 		if (tofind != this->_materials.end())
+// 			objects.second.model->setMaterial(tofind->second);
+// 	}
+// }
 
 void	Display::loadGameObjects()
 {
   	std::shared_ptr<ft_Model> Model = ft_Model::createModelFromFile(this->_device, this->_file);
 	ft_GameObject	gameObj = ft_GameObject::createGameObject();
 	gameObj.model = Model;
-	this->_materials.insert(make_pair<std::string, ft_Material>(Model->getMtlFile(), ft_Material()));
+	// this->_materials.insert(make_pair<std::string, ft_Material>(Model->getMtlFile(), ft_Material()));
 	// gameObj.transform.scale = glm::vec3(0.5f);
 
 	// std::cerr << Model->getMaterial().getMaterials().size() << std::endl;
@@ -436,6 +437,7 @@ void	Display::loadGameObjects()
 	this->_gameObjects.emplace(gameObj.getId(), std::move(gameObj));
 
 	std::vector<glm::vec3> lightColors{
+		{1.f, 1.f, 1.f},
 		{1.f, 1.f, 1.f},
   	};
 

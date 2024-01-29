@@ -87,7 +87,7 @@ class Display
 		std::unique_ptr<ft_DescriptorPool>	_changePoolText{};
 		ft_GameObject::Map					_gameObjects;
 		std::vector<Texture>				_loadedTextures;
-		std::map<std::string, ft_Material>	_materials;
+		// std::map<std::string, ft_Material>	_materials;
 		unsigned int						_currText;
 
 		std::vector<std::unique_ptr<ft_Buffer>>		_buffers;
