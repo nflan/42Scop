@@ -61,7 +61,7 @@ class ft_Model {
 
         static std::unique_ptr<ft_Model> createModelFromFile(ft_Device &device, const std::string &filepath);
         glm::vec3   getCenterOfObj( void ) { return _centerOfObj; };
-        float       getScaleObj( void ) { return _scaleObj; };
+        double       getScaleObj( void ) { return _scaleObj; };
         std::string getMtlFile() { return _mtlFile; };
         ft_Material&    getMaterial() { return _material; };
 
@@ -83,7 +83,7 @@ class ft_Model {
         std::unique_ptr<ft_Buffer>  _indexBuffer;
         uint32_t                    _indexCount;
         glm::vec3                   _centerOfObj;
-        float                       _scaleObj;
+        double                      _scaleObj;
         std::string                 _mtlFile;
         ft_Material                 _material;
 };

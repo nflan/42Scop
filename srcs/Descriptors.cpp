@@ -35,7 +35,7 @@ ft_DescriptorSetLayout::ft_DescriptorSetLayout(ft_Device &device, std::unordered
 {
     std::vector<VkDescriptorSetLayoutBinding>   setLayoutBindings{};
     
-    for (auto kv : bindings)
+    for (std::pair<uint32_t, VkDescriptorSetLayoutBinding> kv : bindings)
         setLayoutBindings.push_back(kv.second);
 
     std::cout << "setlayoutbindings size = " << setLayoutBindings.size() << std::endl;

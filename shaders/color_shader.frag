@@ -20,10 +20,11 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
     vec3 kd; // diffuse color
     vec3 ks; // specular color
     vec3 ke; // emissive color
-    float ns; // shininess
-    float ni; // optical density
-    float d;  // transparency
     PointLight pointLights[2];
+    float ni; // optical density
+    float ns; // shininess
+    float d;  // transparency
+    int illum; //illum = 1 a flat material with no specular highlights, illum = 2 denotes the presence of specular highlights
     int numLights;
 } ubo;
 
@@ -32,7 +33,8 @@ layout(push_constant) uniform Push {
     mat4 normalMatrix;
 } push;
 
-void main() {
+void main()
+{
     vec3 diffuseLight = ubo.ka * ubo.ni;
     vec3 specularLight = ubo.ks;
     vec3 surfaceNormal = normalize(fragNormalWorld);
@@ -55,8 +57,10 @@ void main() {
         vec3 halfAngle = normalize(directionToLight + viewDirection);
         float blinnTerm = dot(surfaceNormal, halfAngle);
         blinnTerm = clamp(blinnTerm, 0, 1);
-        blinnTerm = pow(blinnTerm, 512.0); // higher values -> sharper highlight
+        blinnTerm = pow(blinnTerm, 512.f); // use shininess from material
         specularLight += intensity * blinnTerm;
     }
-    outColor = vec4(diffuseLight * fragColor + specularLight * fragColor, 1.0);
+        
+    //outColor = vec4((diffuseLight * ubo.kd + specularLight * ubo.ks) * fragColor + ubo.ke, ubo.d);
+	outColor = vec4(diffuseLight * fragColor + specularLight * fragColor, 1.f);
 }

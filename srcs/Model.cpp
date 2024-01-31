@@ -66,7 +66,7 @@ void    ft_Model::createMaterial(const std::string& mtlFile)
 
 void    ft_Model::createVertexBuffers(const std::vector<Vertex> &vertices)
 {
-    _centerOfObj = glm::vec3(0.0f);
+    _centerOfObj = glm::vec3(0.f);
     glm::vec3   min(vertices[0].position), max(vertices[0].position);
 
     for (const Vertex& vertex : vertices)
@@ -87,7 +87,7 @@ void    ft_Model::createVertexBuffers(const std::vector<Vertex> &vertices)
     std::cerr << "scale = " << _scaleObj << std::endl;
     // _centerOfObj = _scaleObj * _centerOfObj;
     _centerOfObj /= static_cast<float>(vertices.size());
-    this->_vertexCount = static_cast<uint32_t>(vertices.size());
+    this->_vertexCount = static_cast<uint64_t>(vertices.size());
 
     assert(this->_vertexCount >= 3 && "Vertex count must be at least 3");
     VkDeviceSize    bufferSize = sizeof(vertices[0]) * this->_vertexCount;
@@ -276,10 +276,10 @@ std::vector<VkVertexInputAttributeDescription>   ft_Model::Vertex::getAttributeD
 
 // 			vertex.uv = {
 // 				attrib.texcoords[2 * index.texcoord_index + 0],
-// 				1.0f - attrib.texcoords[2 * index.texcoord_index + 1]//textures a l'envers parce que OBJ part d'en bas a gauche et Vulkan en haut a gauche
+// 				1.f - attrib.texcoords[2 * index.texcoord_index + 1]//textures a l'envers parce que OBJ part d'en bas a gauche et Vulkan en haut a gauche
 // 			};
 
-// 			vertex.color = {1.0f, 1.0f, 1.0f};
+// 			vertex.color = {1.f, 1.f, 1.f};
 
 // 			if (uniqueVertices.count(vertex) == 0)
 // 			{
@@ -303,9 +303,9 @@ void	ft_Model::Builder::loadModel(const std::string &filepath)
 	this->_vertices.clear();
     this->_indices.clear();
 	std::unordered_map<Vertex, uint32_t> uniqueVertices;
-    float y = 0;
+    float y = 0.;
 
-	for (uint32_t i = 0; i < mesh.getFaceIndex().size(); i++)
+	for (uint64_t i = 0; i < mesh.getFaceIndex().size(); i++)
 	{
 		Vertex  vertex{};
         glm::vec3   vertices = mesh.getMeshVertices()[i];
@@ -325,14 +325,14 @@ void	ft_Model::Builder::loadModel(const std::string &filepath)
         if (i % 3 == 0)
             y += 0.1;
         if (y >= .6)
-            y = 0;
+            y = 0.;
         // std::cout << "y = " << y << " et i = " << i << std::endl;
         vertex.color = glm::vec3(y);
 		// vertex.color = {static_cast <float> (rand()) / static_cast <float> (RAND_MAX), static_cast <float> (rand()) / static_cast <float> (RAND_MAX), static_cast <float> (rand()) / static_cast <float> (RAND_MAX)};
 
 		if (uniqueVertices.count(vertex) == 0)
 		{
-			uniqueVertices[vertex] = static_cast<uint32_t>(this->_vertices.size());
+			uniqueVertices[vertex] = static_cast<uint64_t>(this->_vertices.size());
 			this->_vertices.push_back(vertex);
 		}
 		// this->_vertices.push_back(vertex);

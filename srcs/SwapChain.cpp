@@ -90,12 +90,12 @@ VkResult    ft_SwapChain::acquireNextImage(uint32_t *imageIndex)
         1,
         &this->_inFlightFences[this->_currentFrame],
         VK_TRUE,
-        std::numeric_limits<uint64_t>::max());
+        std::numeric_limits<uint32_t>::max());
 
     VkResult result = vkAcquireNextImageKHR(
         this->_device.device(),
         this->_swapChain,
-        std::numeric_limits<uint64_t>::max(),
+        std::numeric_limits<uint32_t>::max(),
         this->_imageAvailableSemaphores[this->_currentFrame],  // must be a not signaled semaphore
         VK_NULL_HANDLE,
         imageIndex);
@@ -494,7 +494,7 @@ VkPresentModeKHR    ft_SwapChain::chooseSwapPresentMode(const std::vector<VkPres
 
 VkExtent2D ft_SwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities)
 {
-    if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
+    if (capabilities.currentExtent.width != std::numeric_limits<uint64_t>::max())
         return capabilities.currentExtent;
     else
     {

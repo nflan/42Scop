@@ -75,6 +75,15 @@ void    RenderSystem::createPipeline(VkRenderPass renderPass)
 
 void    RenderSystem::update(FrameInfo& frameInfo, GlobalUbo& ubo)
 {
+    // std::cerr << "UBO before : " << std::endl;
+    // std::cerr << "- ka = " << ubo.ka.x << "," << ubo.ka.y << "," << ubo.ka.z << std::endl;
+    // std::cerr << "- kd = " << ubo.kd.x << "," << ubo.kd.y << "," << ubo.kd.z << std::endl;
+    // std::cerr << "- ks = " << ubo.ks.x << "," << ubo.ks.y << "," << ubo.ks.z << std::endl;
+    // std::cerr << "- ke = " << ubo.ke.x << "," << ubo.ke.y << "," << ubo.ke.z << std::endl;
+    // std::cerr << "- illum = " << ubo.illum << std::endl;
+    // std::cerr << "- ns = " << ubo.ns << std::endl;
+    // std::cerr << "- ni = " << ubo.ni << std::endl;
+    // std::cerr << "- d = " << ubo.d << std::endl;
     for (std::pair<const ft_GameObject::id_t, ft_GameObject>& kv : frameInfo.gameObjects)
     {
         ft_GameObject& obj = kv.second;
@@ -84,17 +93,30 @@ void    RenderSystem::update(FrameInfo& frameInfo, GlobalUbo& ubo)
         if (obj.model->getMtlFile().size())
         {
             Material    light = obj.model->getMaterial().getMaterials().begin()->second;
-            std::cerr << "spect = " << light._ks[0] << std::endl;
-            ubo.ka = glm::vec3(light._ka[0], light._ka[1], light._ka[2]);
-            ubo.kd = glm::vec3(light._kd[0], light._kd[1], light._kd[2]);
-            if (light._illum)
-                ubo.ks = glm::vec3(light._ks[0], light._ks[1], light._ka[2]);
-            ubo.ke = glm::vec3(light._ke[0], light._ke[1], light._ke[2]);
-            ubo.ns = light._ns;
+            if (light._ka.size())
+                ubo.ka = glm::vec3(light._ka[0], light._ka[1], light._ka[2]);
+            if (light._kd.size())
+                ubo.kd = glm::vec3(light._kd[0], light._kd[1], light._kd[2]);
+            if (light._ks.size())
+                ubo.ks = glm::vec3(light._ks[0], light._ks[1], light._ks[2]);
+            if (light._ke.size())
+                ubo.ke = glm::vec3(light._ke[0], light._ke[1], light._ke[2]);
+            ubo.illum = light._illum;
             ubo.ni = light._ni;
+            ubo.ns = light._ns;
             ubo.d = light._d;
         }
     }
+    std::cerr << "UBO after : " << std::endl;
+    std::cerr << "- ka = " << ubo.ka.x << "," << ubo.ka.y << "," << ubo.ka.z << std::endl;
+    std::cerr << "- kd = " << ubo.kd.x << "," << ubo.kd.y << "," << ubo.kd.z << std::endl;
+    std::cerr << "- ks = " << ubo.ks.x << "," << ubo.ks.y << "," << ubo.ks.z << std::endl;
+    std::cerr << "- ke = " << ubo.ke.x << "," << ubo.ke.y << "," << ubo.ke.z << std::endl;
+    std::cerr << "- illum = " << ubo.illum << std::endl;
+    std::cerr << "- ns = " << ubo.ns << std::endl;
+    std::cerr << "- d = " << ubo.d << std::endl;
+    std::cerr << "Size of GlobalUbo: " << sizeof(GlobalUbo) << std::endl;
+    std::cerr << "Alignment of GlobalUbo: " << alignof(GlobalUbo) << std::endl;
 }
 
 void    RenderSystem::renderGameObjects(FrameInfo& frameInfo)
@@ -125,16 +147,16 @@ void    RenderSystem::renderGameObjects(FrameInfo& frameInfo)
         obj.transform.rotation += glm::vec3(ROTX * WAY, ROTY * WAY, ROTZ * WAY); // rotate on itself
         if (ROBJ)
         {
-            obj.transform.rotation = glm::vec3(.0f, .0f, .0f);
+            obj.transform.rotation = glm::vec3(0.f, 0.f, 0.f);
             ROBJ = false;
         }
         glm::quat rotationQuat = glm::quat(obj.transform.rotation); // quaternions est plus interessant que euler pour ce calcul. Eulers > humanoid / camera
 
         // Translation to the origin, rotation, and then translation back
-        obj.transform.modelMatrix = glm::translate(glm::mat4(1.0f), -obj.transform.translation) *
+        obj.transform.modelMatrix = glm::translate(glm::mat4(1.f), -obj.transform.translation) *
             glm::mat4_cast(rotationQuat) *
-            glm::translate(glm::mat4(1.0f), obj.transform.translation) *
-            glm::scale(glm::mat4(1.0f), obj.transform.scale);
+            glm::translate(glm::mat4(1.f), obj.transform.translation) *
+            glm::scale(glm::mat4(1.f), obj.transform.scale);
 
         SimplePushConstantData push{};
         push.modelMatrix = obj.transform.modelMatrix;

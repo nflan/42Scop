@@ -35,7 +35,7 @@ class ft_Material
         const std::string&                      getFile() const { return _file; };
         void                                    setFile(std::string);  
         void                                parseFile();
-        void	                            parseKaKdKsKe(std::istringstream, std::vector<double>&);
+        void	                            parseKaKdKsKe(std::istringstream, std::vector<float>&);
     private:
         std::string                     _file; 
         std::map<std::string, Material> _materials;

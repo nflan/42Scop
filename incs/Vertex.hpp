@@ -54,7 +54,7 @@
 // types : SFLOAT / UINT / SINT
 // ivec2 correspond à VK_FORMAT_R32G32_SINT et est un vecteur à deux composantes d'entiers signés de 32 bits
 // uvec4 correspond à VK_FORMAT_R32G32B32A32_UINT et est un vecteur à quatre composantes d'entiers non signés de 32 bits
-// double correspond à VK_FORMAT_R64_SFLOAT et est un float à précision double (donc de 64 bits)
+// float correspond à VK_FORMAT_R64_SFLOAT et est un float à précision float (donc de 64 bits)
 // */
 // 		attributeDescriptions[0].offset = offsetof(Vertex, pos);//calcul automatique de decalage dans les donnes extraites pour avoir le debut de la variable avec offsetof
 

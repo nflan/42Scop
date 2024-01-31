@@ -1,12 +1,12 @@
 #version 450
 
 const vec2 OFFSETS[6] = vec2[](
-  vec2(-1.0, -1.0),
-  vec2(-1.0, 1.0),
-  vec2(1.0, -1.0),
-  vec2(1.0, -1.0),
-  vec2(-1.0, 1.0),
-  vec2(1.0, 1.0)
+  vec2(-1.f, -1.f),
+  vec2(-1.f, 1.f),
+  vec2(1.f, -1.f),
+  vec2(1.f, -1.f),
+  vec2(-1.f, 1.f),
+  vec2(1.f, 1.f)
 );
 
 layout (location = 0) out vec2 fragOffset;
@@ -24,6 +24,7 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
     vec3 kd; // diffuse color
     vec3 ks; // specular color
     vec3 ke; // emissive color
+    int illum; //illum = 1 a flat material with no specular highlights, illum = 2 denotes the presence of specular highlights
     float ns; // shininess
     float ni; // optical density
     float d;  // transparency
@@ -37,8 +38,8 @@ layout(push_constant) uniform Push {
   float radius;
 } push;
 
-
-void main() {
+void main()
+{
   fragOffset = OFFSETS[gl_VertexIndex];
   vec3 cameraRightWorld = {ubo.view[0][0], ubo.view[1][0], ubo.view[2][0]};
   vec3 cameraUpWorld = {ubo.view[0][1], ubo.view[1][1], ubo.view[2][1]};
@@ -47,5 +48,5 @@ void main() {
     + push.radius * fragOffset.x * cameraRightWorld
     + push.radius * fragOffset.y * cameraUpWorld;
 
-  gl_Position = ubo.projection * ubo.view * vec4(positionWorld, 1.0);
+  gl_Position = ubo.projection * ubo.view * vec4(positionWorld, 1.f);
 }

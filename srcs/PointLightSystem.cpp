@@ -82,7 +82,7 @@ void    PointLightSystem::createPipeline(VkRenderPass renderPass)
 
 void    PointLightSystem::update(FrameInfo& frameInfo, GlobalUbo& ubo)
 {
-    auto    rotateLight = glm::rotate(glm::mat4(1.f), 0.5f * frameInfo.frameTime, {0.f, -1.f, 0.f});
+    auto    rotateLight = glm::rotate(glm::mat4(1.f), .5f * frameInfo.frameTime, {0.f, -1.f, 0.f});
     int lightIndex = 0;
     for (auto& kv : frameInfo.gameObjects) {
         auto& obj = kv.second;
@@ -92,7 +92,7 @@ void    PointLightSystem::update(FrameInfo& frameInfo, GlobalUbo& ubo)
         assert(lightIndex < MAX_LIGHTS && "Point lights exceed maximum specified");
 
         // update light position
-        obj.transform.translation = glm::vec3(rotateLight * glm::vec4(obj.transform.translation, 1.f));
+        obj.transform.translation = glm::vec3(rotateLight * glm::vec4(obj.transform.translation, 1.0));
 
         // copy light to ubo
         ubo.pointLights[lightIndex].position = glm::vec4(obj.transform.translation, 1.f);

@@ -31,7 +31,7 @@ void Mesh::loadObjModel(const std::string &filename)
         {
             std::istringstream  v(line.substr(2));
             glm::vec3   vert;
-            double x,y,z;
+            float x,y,z;
             v >> x; v >> y; v >> z;
             vert = glm::vec3(x,y,z);
             this->_vertices.push_back(vert);
@@ -41,7 +41,7 @@ void Mesh::loadObjModel(const std::string &filename)
         {
             std::istringstream  vt(line.substr(3));
             glm::vec2   tex;
-            double    U, V;
+            float    U, V;
             vt >> U; vt >> V;
             tex = glm::vec2(U,V);
             this->_textures.push_back(tex);
@@ -51,7 +51,7 @@ void Mesh::loadObjModel(const std::string &filename)
         {
             std::istringstream  vn(line.substr(3));
             glm::vec3   norm;
-            double x,y,z;
+            float x,y,z;
             vn >> x; vn >> y; vn >> z;
             // std::cerr << "x = " << x << " y = " << y << " z = " << z <<std::endl;
             norm = glm::vec3(x,y,z);
@@ -117,7 +117,7 @@ void Mesh::loadObjModel(const std::string &filename)
         {
             // std::cout << "this->_texture[_textureIndex[i]].x " << this->_texture[_textureIndex[i]].x << std::endl;
             // std::cout << "this->_texture[_textureIndex[i]].x " << this->_texture[_textureIndex[i]].x << std::endl;
-            texData = glm::vec2(this->_textures[this->_textureIndex[i]].x, 1.0f - this->_textures[this->_textureIndex[i]].y);
+            texData = glm::vec2(this->_textures[this->_textureIndex[i]].x, 1.f - this->_textures[this->_textureIndex[i]].y);
             this->_texCoord.push_back(texData);
             std::cout << "uv.x = " << texData.x << " uv.y " << texData.y << std::endl;
         }

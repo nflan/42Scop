@@ -18,7 +18,7 @@
 
 void ft_Camera::setOrthographicProjection(float left, float right, float top, float bottom, float near, float far)
 {
-    _projectionMatrix = glm::mat4{1.0f};
+    _projectionMatrix = glm::mat4{1.f};
     _projectionMatrix[0][0] = 2.f / (right - left);
     _projectionMatrix[1][1] = 2.f / (bottom - top);
     _projectionMatrix[2][2] = 1.f / (far - near);
@@ -29,10 +29,10 @@ void ft_Camera::setOrthographicProjection(float left, float right, float top, fl
 
 void ft_Camera::setPerspectiveProjection(float fovy, float aspect, float near, float far)
 {
-    assert(glm::abs(aspect - std::numeric_limits<float>::epsilon()) > 0.0f);
+    assert(glm::abs(aspect - std::numeric_limits<float>::epsilon()) > 0.f);
     
     const float tanHalfFovy = tan(fovy / 2.f);
-    _projectionMatrix = glm::mat4{0.0f};
+    _projectionMatrix = glm::mat4{0.f};
     _projectionMatrix[0][0] = 1.f / (aspect * tanHalfFovy);
     _projectionMatrix[1][1] = 1.f / (tanHalfFovy);
     _projectionMatrix[2][2] = far / (far - near);

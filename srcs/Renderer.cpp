@@ -136,8 +136,8 @@ void    ft_Renderer::beginSwapChainRenderPass(VkCommandBuffer commandBuffer)
     renderPassInfo.renderArea.extent = this->_swapChain->getSwapChainExtent();
 
     std::array<VkClearValue, 2> clearValues{};
-    clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
-	clearValues[1].depthStencil = {1.0f, 0};//Dans vulkan, 0.0 correspond au plan near et 1.0 far.
+    clearValues[0].color = {0.f, 0.f, 0.f, 1.f};
+	clearValues[1].depthStencil = {1.f, 0};//Dans vulkan, 0.f correspond au plan near et 1.f far.
 
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
     renderPassInfo.pClearValues = clearValues.data();
@@ -145,12 +145,12 @@ void    ft_Renderer::beginSwapChainRenderPass(VkCommandBuffer commandBuffer)
     vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
     VkViewport viewport{};
-    viewport.x = 0.0f;
-    viewport.y = 0.0f;// pour inverse viewport, mettre la height (a faire au debut du projet ptete)
+    viewport.x = 0.f;
+    viewport.y = 0.f;// pour inverse viewport, mettre la height (a faire au debut du projet ptete)
     viewport.width = static_cast<float>(this->_swapChain->getSwapChainExtent().width);
     viewport.height = static_cast<float>(this->_swapChain->getSwapChainExtent().height); // on peut inverser l'axe dans le viewport mais ca inverse tous les autres calculs et ca trigger les validations layers
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
+    viewport.minDepth = 0.f;
+    viewport.maxDepth = 1.f;
     VkRect2D scissor{{0, 0}, this->_swapChain->getSwapChainExtent()};
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);

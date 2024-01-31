@@ -28,18 +28,19 @@ struct PointLight {
 };
 
 struct GlobalUbo {
-    glm::mat4   projection{1.f};
-    glm::mat4   view{1.f};
-    glm::mat4   inverseView{1.f};
-    glm::vec3   ka{1.f, 1.f, 1.f}; // ambient color
-    glm::vec3   kd{0.7f, 0.7f, 0.7f}; // diffuse color
-    glm::vec3   ks{1.f, 1.f, 1.f}; // specular color
-    glm::vec3   ke{0.f, 0.f, 0.f}; // emissive color
-    double      ni{0.08f};
-    double      ns{520.f};
-    double      d{1.f};
-    PointLight  pointLights[MAX_LIGHTS];
-    int         numLights;
+    alignas(16) glm::mat4   projection{1.f};
+    alignas(16) glm::mat4   view{1.f};
+    alignas(16) glm::mat4   inverseView{1.f};
+    alignas(16) glm::vec3   ka{1.f, 1.f, 1.f}; // ambient color
+    alignas(16) glm::vec3   kd{0.f, 0.f, 0.f}; // diffuse color
+    alignas(16) glm::vec3   ks{0.f, 0.f, 0.f}; // specular color
+    alignas(16) glm::vec3   ke{0.f, 0.f, 0.f}; // emissive color
+    alignas(16) PointLight  pointLights[MAX_LIGHTS];
+    alignas(4) float       ni{.08f}; //intensity
+    alignas(4) float       ns{512.f}; //
+    alignas(4) float       d{1.f};
+    alignas(4) int         illum{1};
+    alignas(4) int         numLights;
 };
 
 struct FrameInfo {

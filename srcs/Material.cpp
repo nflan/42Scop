@@ -70,13 +70,7 @@ void    ft_Material::parseFile()
         else if (line.substr(0,3) == "Ke ")
             parseKaKdKsKe(std::istringstream(line.substr(3)), mtl[i]._ke);
         else if (line.substr(0, 6) == "illum ")
-        {
-            std::istringstream	illum(line.substr(6));
-            float	il;
-            illum >> il;
-            if (il == 2)
-                mtl[i]._illum = 1;
-        }
+            std::istringstream(line.substr(6)) >> mtl[i]._illum;
         else if (line.substr(0,3) == "Ns ")
             std::istringstream(line.substr(3)) >> mtl[i]._ns;
         else if (line.substr(0,3) == "Ni ")
@@ -96,7 +90,7 @@ void    ft_Material::parseFile()
     //     printMaterial(it->second);
 }
 
-void	ft_Material::parseKaKdKsKe(std::istringstream rgb, std::vector<double>& toFill)
+void	ft_Material::parseKaKdKsKe(std::istringstream rgb, std::vector<float>& toFill)
 {
 	float	R, G , B;
 	rgb >> R; rgb >> G; rgb >> B;

@@ -96,6 +96,10 @@ void    ft_Buffer::unmap()
  * @param offset (Optional) Byte offset from beginning of mapped region
  *
  */
+
+#include <iostream>
+
+
 void    ft_Buffer::writeToBuffer(void *data, VkDeviceSize size, VkDeviceSize offset)
 {
     assert(this->_mapped && "Cannot copy to unmapped buffer");

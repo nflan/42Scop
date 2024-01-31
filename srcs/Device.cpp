@@ -261,9 +261,9 @@ void ft_Device::createLogicalDevice()
 	QueueFamilyIndices	indices = findQueueFamilies(this->_physicalDevice);
 
 	std::vector<VkDeviceQueueCreateInfo>	queueCreateInfos;
-	std::set<uint32_t>	uniqueQueueFamilies = {indices.graphicsFamily, indices.presentFamily};
+	std::set<uint64_t>	uniqueQueueFamilies = {indices.graphicsFamily, indices.presentFamily};
 
-	float queuePriority = 1.0f;
+	float queuePriority = 1.f;
 	for (uint32_t queueFamily : uniqueQueueFamilies)
 	{
 		VkDeviceQueueCreateInfo queueCreateInfo{};
