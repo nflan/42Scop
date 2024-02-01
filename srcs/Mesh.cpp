@@ -63,11 +63,14 @@ void Mesh::loadObjModel(const std::string &filename)
             //vector de points
             std::istringstream  f(line.substr(2));
             std::vector<std::string>    elements;
+            // std::cerr << "elements = ";
             for (std::string element; f >> element;)
             {
                 elements.push_back(element);
                 // std::cerr << element << std::endl;
             }
+            // for (const std::string& e : elements)
+            //     std::cerr << e << std::endl;
             for (size_t i = 0; i < elements.size(); i++)
             {
                 if (elements[i].find('/') != std::string::npos)
@@ -84,6 +87,10 @@ void Mesh::loadObjModel(const std::string &filename)
                         this->_textureIndex.push_back(static_cast<uint32_t>(std::stoul(uv)) - 1);
                     if (!norm.empty())
                         this->_normalsIndex.push_back(static_cast<uint32_t>(std::stoul(norm)) - 1);
+                    // std::cerr << "print index: " << std::endl;
+                    // std::cerr << "faceIndex = " << _faceIndex[_faceIndex.size() - 1] << std::endl;
+                    // std::cerr << "textureIndex = " << _textureIndex[_textureIndex.size() - 1] << std::endl;
+                    // std::cerr << "normalIndex = " << _normalsIndex[_normalsIndex.size() - 1] << std::endl;
                 }
                 else
                 {

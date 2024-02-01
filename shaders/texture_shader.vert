@@ -23,11 +23,11 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
     vec3 kd; // diffuse color
     vec3 ks; // specular color
     vec3 ke; // emissive color
+    PointLight pointLights[1];
     int illum; //illum = 1 a flat material with no specular highlights, illum = 2 denotes the presence of specular highlights
     float ns; // shininess
     float ni; // optical density
     float d;  // transparency
-    PointLight pointLights[2];
     int numLights;
 } ubo;
 

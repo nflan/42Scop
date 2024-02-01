@@ -59,11 +59,11 @@ class ft_Model {
         ft_Model(const ft_Model &) = delete;
         ft_Model &operator=(const ft_Model &) = delete;
 
-        static std::unique_ptr<ft_Model> createModelFromFile(ft_Device &device, const std::string &filepath);
-        glm::vec3   getCenterOfObj( void ) { return _centerOfObj; };
-        double       getScaleObj( void ) { return _scaleObj; };
-        std::string getMtlFile() { return _mtlFile; };
-        ft_Material&    getMaterial() { return _material; };
+        static std::unique_ptr<ft_Model>    createModelFromFile(ft_Device &device, const std::string &filepath);
+        glm::vec3                           getCenterOfObj( void ) { return _centerOfObj; };
+        double                              getScaleObj( void ) { return _scaleObj; };
+        std::string                         getMtlFile() { return _mtlFile; };
+        ft_Material&                        getMaterial() { return _material; };
 
 
         void    bind(VkCommandBuffer commandBuffer);

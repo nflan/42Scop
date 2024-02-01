@@ -15,8 +15,6 @@
 #include "../incs/tools.hpp"
 
 // libs
-#define TINYOBJLOADER_IMPLEMENTATION
-#include </mnt/nfs/homes/nflan/sgoinfre/bin/tinyobjloader/tiny_obj_loader.h>
 #define GLM_ENABLE_EXPERIMENTAL
 #include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/gtx/hash.hpp>
 
@@ -41,15 +39,12 @@ ft_Model::ft_Model(ft_Device &device, const ft_Model::Builder &builder) : _devic
     createVertexBuffers(builder._vertices);
     createIndexBuffers(builder._indices);
     if (builder._mtlFile.size())
-    {
         createMaterial(builder._path + builder._mtlFile);
-    }
 }
 
 ft_Model::~ft_Model() {}
 
-std::unique_ptr<ft_Model> ft_Model::createModelFromFile(
-    ft_Device &device, const std::string &filepath)
+std::unique_ptr<ft_Model> ft_Model::createModelFromFile(ft_Device &device, const std::string &filepath)
 {
     Builder builder{};
     builder.loadModel(filepath);
@@ -66,8 +61,8 @@ void    ft_Model::createMaterial(const std::string& mtlFile)
 
 void    ft_Model::createVertexBuffers(const std::vector<Vertex> &vertices)
 {
-    _centerOfObj = glm::vec3(0.f);
     glm::vec3   min(vertices[0].position), max(vertices[0].position);
+    _centerOfObj = glm::vec3(0.f);
 
     for (const Vertex& vertex : vertices)
     {
@@ -75,6 +70,7 @@ void    ft_Model::createVertexBuffers(const std::vector<Vertex> &vertices)
         max = glm::max(max, vertex.position);
         _centerOfObj += vertex.position;
     }
+    std::cerr << "vertex.size = " << vertices.size() << std::endl;
     std::cout << "min.x + min.y + min.z" << " " << min.x << " " << min.y << " " << min.z << std::endl;
     std::cout << "max.x + max.y + max.z" << " " << max.x << " " << max.y << " " << max.z << std::endl;
     std::cout << min.x + min.y + min.z << " " << max.x + max.y + max.z << std::endl;
@@ -91,9 +87,9 @@ void    ft_Model::createVertexBuffers(const std::vector<Vertex> &vertices)
 
     assert(this->_vertexCount >= 3 && "Vertex count must be at least 3");
     VkDeviceSize    bufferSize = sizeof(vertices[0]) * this->_vertexCount;
-    uint32_t    vertexSize = sizeof(vertices[0]);
+    uint32_t        vertexSize = sizeof(vertices[0]);
 
-    ft_Buffer stagingBuffer{
+    ft_Buffer   stagingBuffer{
         this->_device,
         vertexSize,
         this->_vertexCount,

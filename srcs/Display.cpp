@@ -201,7 +201,7 @@ void	Display::run()
 			this->_renderer.beginSwapChainRenderPass(commandBuffer);
 			
 			this->_renderSystems[RENDER]->renderGameObjects(frameInfo);
-			this->_pointLightSystems[RENDER]->render(frameInfo);
+			// this->_pointLightSystems[RENDER]->render(frameInfo);
 
 			this->_renderer.endSwapChainRenderPass(commandBuffer);
 			this->_renderer.endFrame();
@@ -330,7 +330,6 @@ void	Display::createDescriptorSets()
 
 	for (uint32_t i = 0; i < this->_renderer.getSwapChain().imageCount(); i++)
 	{
-		std::cerr << "image count " << i << std::endl;
 		VkDescriptorBufferInfo bufferInfo = _buffers[i]->descriptorInfo();
 		ft_DescriptorWriter(*_globalDescriptorSetLayouts[0], *_globalPool)
 			.writeBuffer(0, &bufferInfo)
@@ -391,58 +390,20 @@ void	Display::createRenderSystems()
 		));
 	}
 }
-	
-// void	Display::addMaterials()
-// {
-// 	for (std::pair<std::string, ft_Material> mtl : this->_materials)
-// 	{
-// 		std::cerr << "mtlfile = " << mtl.first << std::endl;
-// 		mtl.second.setFile(mtl.first);
-// 		mtl.second.parseFile();
-// 	}
-// 	for (auto& objects : this->_gameObjects)
-// 	{
-//        	if (objects.second.model == nullptr)
-//             continue;
-// 		std::map<std::string, ft_Material>::iterator tofind = this->_materials.find(objects.second.model->getMtlFile());
-// 		if (tofind != this->_materials.end())
-// 			objects.second.model->setMaterial(tofind->second);
-// 	}
-// }
 
 void	Display::loadGameObjects()
 {
   	std::shared_ptr<ft_Model> Model = ft_Model::createModelFromFile(this->_device, this->_file);
 	ft_GameObject	gameObj = ft_GameObject::createGameObject();
 	gameObj.model = Model;
-	// this->_materials.insert(make_pair<std::string, ft_Material>(Model->getMtlFile(), ft_Material()));
-	// gameObj.transform.scale = glm::vec3(0.5f);
-
-	// std::cerr << Model->getMaterial().getMaterials().size() << std::endl;
-	// std::map<std::string, Material>::iterator end = Model->getMaterial().getMaterials().end();
-	// for (std::map<std::string, Material>::iterator it = Model->getMaterial().getMaterials().begin(); it != Model->getMaterial().getMaterials().end(); it++)
-	// {
-	// 	std::cout << "ptr it = " << *it << std::endl;
-	// 	std::cout << "ptr end = " << *end << std::endl;
-	// 	std::cout << "Material->first = " << it->first << std::endl;
-	// 	printMaterial(it->second);
-	// }
-	// for (const std::pair<std::string, Material>& material : Model->getMaterial().getMaterials())
-    // {
-    //     std::cout << "Material.first = " << material.first << std::endl;
-    //     printMaterial(material.second);
-    // }
-	// printMaterial(Model->getMaterial().getMaterials().begin()->second);
-
 
 	this->_gameObjects.emplace(gameObj.getId(), std::move(gameObj));
 
 	std::vector<glm::vec3> lightColors{
-		{1.f, 1.f, 1.f},
-		{1.f, 1.f, 1.f},
-  	};
+		{1.f, 1.f, 1.f}
+  	};//add light color if needed
 
-	for (int i = 0; i < lightColors.size(); i++)
+	for (int i = 0; i < MAX_LIGHTS; i++)
 	{
 		ft_GameObject pointLight = ft_GameObject::makePointLight(0.2f);
 		pointLight.color = lightColors[i];
@@ -460,7 +421,6 @@ void	Display::createTextureImage(const char *file)
 {
 	Texture	text;
 	int	texWidth, texHeight, texChannels;
-	std::cerr << "file = '" << file << "'" << std::endl;
     stbi_uc	*pixels = stbi_load(file, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
     VkDeviceSize	imageSize = texWidth * texHeight * 4;
 
@@ -480,8 +440,6 @@ void	Display::createTextureImage(const char *file)
 	vkUnmapMemory(this->_device.device(), stagingBufferMemory);
 
 	stbi_image_free(pixels);
-
-	std::cerr << "msaasamples = " << this->_device.getMsaaSamples() << std::endl;
 
     this->_renderer.getSwapChain().createImage(static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), text._mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, text._image, text._imageMemory);
 

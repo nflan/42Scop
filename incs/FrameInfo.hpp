@@ -20,7 +20,7 @@
 // lib
 #include <vulkan/vulkan.h>
 
-#define MAX_LIGHTS 2
+#define MAX_LIGHTS 1
 
 struct PointLight {
     glm::vec4   position{};  // ignore w
@@ -32,7 +32,7 @@ struct GlobalUbo {
     alignas(16) glm::mat4   view{1.f};
     alignas(16) glm::mat4   inverseView{1.f};
     alignas(16) glm::vec3   ka{1.f, 1.f, 1.f}; // ambient color
-    alignas(16) glm::vec3   kd{0.f, 0.f, 0.f}; // diffuse color
+    alignas(16) glm::vec3   kd{1.f, 1.f, 1.f}; // diffuse color
     alignas(16) glm::vec3   ks{0.f, 0.f, 0.f}; // specular color
     alignas(16) glm::vec3   ke{0.f, 0.f, 0.f}; // emissive color
     alignas(16) PointLight  pointLights[MAX_LIGHTS];

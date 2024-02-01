@@ -20,7 +20,7 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
     vec3 kd; // diffuse color
     vec3 ks; // specular color
     vec3 ke; // emissive color
-    PointLight pointLights[2];
+    PointLight pointLights[1]; // change to modify lights
     float ni; // optical density
     float ns; // shininess
     float d;  // transparency
@@ -57,10 +57,10 @@ void main()
         vec3 halfAngle = normalize(directionToLight + viewDirection);
         float blinnTerm = dot(surfaceNormal, halfAngle);
         blinnTerm = clamp(blinnTerm, 0, 1);
-        blinnTerm = pow(blinnTerm, 512.f); // use shininess from material
+        blinnTerm = pow(blinnTerm, ubo.ns); // use shininess from material
         specularLight += intensity * blinnTerm;
     }
         
-    //outColor = vec4((diffuseLight * ubo.kd + specularLight * ubo.ks) * fragColor + ubo.ke, ubo.d);
-	outColor = vec4(diffuseLight * fragColor + specularLight * fragColor, 1.f);
+    outColor = vec4((diffuseLight * ubo.kd + specularLight * ubo.ks) * fragColor + ubo.ke, ubo.d);
+	//outColor = vec4(diffuseLight * fragColor + specularLight * fragColor, ubo.d);
 }

@@ -107,16 +107,16 @@ void    RenderSystem::update(FrameInfo& frameInfo, GlobalUbo& ubo)
             ubo.d = light._d;
         }
     }
-    std::cerr << "UBO after : " << std::endl;
-    std::cerr << "- ka = " << ubo.ka.x << "," << ubo.ka.y << "," << ubo.ka.z << std::endl;
-    std::cerr << "- kd = " << ubo.kd.x << "," << ubo.kd.y << "," << ubo.kd.z << std::endl;
-    std::cerr << "- ks = " << ubo.ks.x << "," << ubo.ks.y << "," << ubo.ks.z << std::endl;
-    std::cerr << "- ke = " << ubo.ke.x << "," << ubo.ke.y << "," << ubo.ke.z << std::endl;
-    std::cerr << "- illum = " << ubo.illum << std::endl;
-    std::cerr << "- ns = " << ubo.ns << std::endl;
-    std::cerr << "- d = " << ubo.d << std::endl;
-    std::cerr << "Size of GlobalUbo: " << sizeof(GlobalUbo) << std::endl;
-    std::cerr << "Alignment of GlobalUbo: " << alignof(GlobalUbo) << std::endl;
+    // std::cerr << "UBO after : " << std::endl;
+    // std::cerr << "- ka = " << ubo.ka.x << "," << ubo.ka.y << "," << ubo.ka.z << std::endl;
+    // std::cerr << "- kd = " << ubo.kd.x << "," << ubo.kd.y << "," << ubo.kd.z << std::endl;
+    // std::cerr << "- ks = " << ubo.ks.x << "," << ubo.ks.y << "," << ubo.ks.z << std::endl;
+    // std::cerr << "- ke = " << ubo.ke.x << "," << ubo.ke.y << "," << ubo.ke.z << std::endl;
+    // std::cerr << "- illum = " << ubo.illum << std::endl;
+    // std::cerr << "- ns = " << ubo.ns << std::endl;
+    // std::cerr << "- d = " << ubo.d << std::endl;
+    // std::cerr << "Size of GlobalUbo: " << sizeof(GlobalUbo) << std::endl;
+    // std::cerr << "Alignment of GlobalUbo: " << alignof(GlobalUbo) << std::endl;
 }
 
 void    RenderSystem::renderGameObjects(FrameInfo& frameInfo)
@@ -135,7 +135,7 @@ void    RenderSystem::renderGameObjects(FrameInfo& frameInfo)
 
     for (std::pair<const ft_GameObject::id_t, ft_GameObject>& kv : frameInfo.gameObjects)
     {
-        ft_GameObject& obj = kv.second;
+        ft_GameObject&  obj = kv.second;
         if (obj.model == nullptr)
             continue;
 
