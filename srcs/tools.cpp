@@ -16,15 +16,11 @@ void	printMaterial(Material print)
 {
     std::cout << std::fixed << std::setprecision(7);
 	std::cout << std::endl << "--------- Material ---------" << std::endl;
-	std::cout << "Newmtl = '" << print._newmtl << "'" << std::endl;
-	if (print._ka.size())
-	std::cout << "Ka = '" << print._ka[0] << "' '" << print._ka[1] << "' '" << print._ka[2] << "'" << std::endl;
-	if (print._kd.size())
-	std::cout << "Kd = '" << print._kd[0] << "' '" << print._kd[1] << "' '" << print._kd[2] << "'" << std::endl;
-	if (print._ks.size())
-	std::cout << "Ks = '" << print._ks[0] << "' '" << print._ks[1] << "' '" << print._ks[2] << "'" << std::endl;
-	if (print._ke.size())
-		std::cout << "Ke = '" << print._ke[0] << "' '" << print._ke[1] << "' '" << print._ke[2] << "'" << std::endl;
+	std::cout << "Newmtl = '" << print._name << "'" << std::endl;
+	std::cout << "Ka = '" << print._ka.x << "' '" << print._ka.y << "' '" << print._ka.z << "'" << std::endl;
+	std::cout << "Kd = '" << print._kd.x << "' '" << print._kd.y << "' '" << print._kd.z << "'" << std::endl;
+	std::cout << "Ks = '" << print._ks.x << "' '" << print._ks.y << "' '" << print._ks.z << "'" << std::endl;
+	std::cout << "Ke = '" << print._ke.x << "' '" << print._ke.y << "' '" << print._ke.z << "'" << std::endl;
 	std::cout << "illum = '" << print._illum << "'" << std::endl;
 	std::cout << "Ns = '" << print._ns << "'" << std::endl;
 	std::cout << "Ni = '" << print._ni << "'" << std::endl;

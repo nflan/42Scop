@@ -14,6 +14,7 @@
 #define TOOLS_HPP
 
 #define GLFW_INCLUDE_VULKAN
+#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
 #include <GLFW/glfw3.h>
 #include <vector>
 #include <string>
@@ -41,17 +42,35 @@ namespace std {
 
 }
 
-struct  Material {
-    std::string         _newmtl;//name
-    std::vector<float>  _ka;//ambient color
-    std::vector<float>  _kd;//diffuse color
-    std::vector<float>  _ks;//spectacular color
-    std::vector<float>  _ke;//couleur émissive (emissive)
+struct  Material
+{
+    Material()
+    {
+        _name;
+        _ka = glm::vec3(1.f);
+        _kd = glm::vec3(1.f);
+        _ks = glm::vec3(0.f);
+        _ke = glm::vec3(0.f);
+        _illum = 1;
+        _ns = 512.f;
+        _ni = 0.08f;
+        _d = 1.0f;
+    }
+    std::string         _name;//name
+    glm::vec3           _ka;//ambient color
+    glm::vec3           _kd;//diffuse color
+    glm::vec3           _ks;//spectacular color
+    glm::vec3           _ke;//couleur émissive (emissive)
     int                 _illum;//illum = 1(0) a flat material with no specular highlights, illum = 2(1) denotes the presence of specular highlights
     float               _ns;//shininess of the material
     float               _ni;//densite optique
     float               _d;//transparency d or Tr
-    std::string         _mapKa;//names a file containing a texture map, which should just be an ASCII dump of RGB values
+    std::string         _mapKa;//names a file containing an Ambient Texture Map, which should just be an ASCII dump of RGB values
+    std::string         _mapKd;//names a file containing a Diffuse Texture Map, which should just be an ASCII dump of RGB values
+    std::string         _mapKs;//names a file containing a Specular Texture Map, which should just be an ASCII dump of RGB values
+    std::string         _mapNs;//names a file containing a Specular Hightlight Map, which should just be an ASCII dump of RGB values
+    std::string         _mapD;//names a file containing an Alpha Texture Map, which should just be an ASCII dump of RGB values
+    std::string         _mapBump;//names a file containing a Bump Map, which should just be an ASCII dump of RGB values
 };
 
 struct  Texture {

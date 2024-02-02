@@ -33,7 +33,6 @@
 #include "Descriptors.hpp"
 #include "UniformBufferObject.hpp"
 #include "KeyboardMovementController.hpp"
-#include "Vertex.hpp"
 #include <filesystem>
 #include <stdexcept>
 #include <functional>

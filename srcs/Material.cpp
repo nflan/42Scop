@@ -59,7 +59,7 @@ void    ft_Material::parseFile()
             i++;
             if (i == mtl.size())
                 mtl.resize(mtl.size() + 1);
-            std::istringstream(line.substr(7)) >> mtl[i]._newmtl;
+            std::istringstream(line.substr(7)) >> mtl[i]._name;
         }
         else if (line.substr(0,3) == "Ka ")
             parseKaKdKsKe(std::istringstream(line.substr(3)), mtl[i]._ka);
@@ -83,18 +83,18 @@ void    ft_Material::parseFile()
             std::istringstream(line.substr(7)) >> mtl[i]._mapKa;
     }
     for (Material& mat : mtl)
-        this->_materials.insert(std::pair<std::string, Material>(mat._newmtl, mat));
+        this->_materials.insert(std::pair<std::string, Material>(mat._name, mat));
     for (std::pair<std::string, Material> print : this->_materials)
         printMaterial(print.second);
     // for (std::map<std::string, Material>::iterator it = _materials.begin(); it != _materials.end(); it++)
     //     printMaterial(it->second);
 }
 
-void	ft_Material::parseKaKdKsKe(std::istringstream rgb, std::vector<float>& toFill)
+void	ft_Material::parseKaKdKsKe(std::istringstream rgb, glm::vec3& toFill)
 {
 	float	R, G , B;
 	rgb >> R; rgb >> G; rgb >> B;
-	toFill.push_back(R);
-	toFill.push_back(G);
-	toFill.push_back(B);
+	toFill.x = R;
+	toFill.y = G;
+	toFill.z = B;
 }

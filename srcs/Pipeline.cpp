@@ -202,8 +202,8 @@ void ft_Pipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo)
         static_cast<uint32_t>(configInfo.dynamicStateEnables.size());
     configInfo.dynamicStateInfo.flags = 0;
 
-    configInfo.bindingDescriptions = ft_Model::Vertex::getBindingDescriptions();
-    configInfo.attributeDescriptions = ft_Model::Vertex::getAttributeDescriptions();
+    configInfo.bindingDescriptions = Vertex::getBindingDescriptions();
+    configInfo.attributeDescriptions = Vertex::getAttributeDescriptions();
 }
 
 void ft_Pipeline::pipelineConfigInfo(PipelineConfigInfo& configInfo)
@@ -280,8 +280,8 @@ Tout autre mode que fill doit être activé lors de la mise en place du logical 
     configInfo.dynamicStateInfo.pDynamicStates = configInfo.dynamicStateEnables.data();
     configInfo.dynamicStateInfo.flags = 0;
 
-    configInfo.bindingDescriptions = ft_Model::Vertex::getBindingDescriptions();
-    configInfo.attributeDescriptions = ft_Model::Vertex::getAttributeDescriptions();
+    configInfo.bindingDescriptions = Vertex::getBindingDescriptions();
+    configInfo.attributeDescriptions = Vertex::getAttributeDescriptions();
 }
 
 void    ft_Pipeline::enableAlphaBlending(PipelineConfigInfo& configInfo)

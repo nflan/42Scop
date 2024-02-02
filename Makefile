@@ -21,7 +21,7 @@ SRCB_DIR =		srcs_bonus
 
 GLSLC =			/mnt/nfs/homes/nflan/sgoinfre/bin/glslc
 
-INC =			$(addsuffix .hpp, $(addprefix $(INC_DIR), scop PointLightSystem Descriptors Device Window Camera Display Vertex Mesh FrameInfo tools GameObject))
+INC =			$(addsuffix .hpp, $(addprefix $(INC_DIR), Buffer Camera Descriptors Device Display FrameInfo GameObject KeyboardMovementController Loader Material Mesh Model Pipeline PointLightSystem Renderer RenderSystem SwapChain tools UniformBufferObject Window))
 
 SRC =			$(SRC_FT:%=$(SRC_DIR)/%.cpp)
 SRCB =			$(SRCB_FT:%=$(SRCB_DIR)/%.cpp)
@@ -55,6 +55,7 @@ SRC_FT =	Buffer \
 			Display \
 			GameObject \
 			KeyboardMovementController \
+			Loader \
 			Material \
 			Mesh \
 			Model \

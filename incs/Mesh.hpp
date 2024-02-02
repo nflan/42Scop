@@ -16,10 +16,34 @@
 #define GLFW_INCLUDE_VULKAN
 #include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
 #include "Material.hpp"
+#include "Vertex.hpp"
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <vector>
+
+struct Meshou
+{
+    // Default Constructor
+    Meshou()
+    {
+
+    }
+    // Variable Set Constructor
+    Meshou(std::vector<Vertex>& _Vertices, std::vector<unsigned int>& _Indices)
+    {
+        Vertices = _Vertices;
+        Indices = _Indices;
+    }
+    // Mesh Name
+    std::string                 MeshName;
+    // Vertex List
+    std::vector<Vertex>         Vertices;
+    // Index List
+    std::vector<unsigned int>   Indices;
+    // Material
+    Material                    MeshMaterial;
+};
 
 class Mesh
 {

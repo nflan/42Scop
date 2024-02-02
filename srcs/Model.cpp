@@ -25,8 +25,8 @@
 
 namespace std {
     template <>
-    struct hash<ft_Model::Vertex> {
-        size_t operator()(ft_Model::Vertex const &vertex) const {
+    struct hash<Vertex> {
+        size_t operator()(Vertex const &vertex) const {
             size_t seed = 0;
             std::hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.uv);
             return seed;
@@ -44,10 +44,41 @@ ft_Model::ft_Model(ft_Device &device, const ft_Model::Builder &builder) : _devic
 
 ft_Model::~ft_Model() {}
 
+// void    addObjlVertexToModelVertex(objl::Vertex& ov, Vertex mv)
+// {
+//     mv.position.x = ov.Position.X;
+//     mv.position.y = ov.Position.Y;
+//     mv.position.z = ov.Position.Z;
+//     mv.normal.x = ov.Normal.X;
+//     mv.normal.y = ov.Normal.Y;
+//     mv.normal.x = ov.Normal.X;
+//     mv.uv.x = ov.TextureCoordinate.X;
+//     mv.uv.y = ov.TextureCoordinate.Y;
+// }
+
+// Vertex    objlVertexToModelVertex(objl::Vertex& ov)
+// {
+//     Vertex v;
+//     v.position.x = ov.Position.X;
+//     v.position.y = ov.Position.Y;
+//     v.position.z = ov.Position.Z;
+//     v.normal.x = ov.Normal.X;
+//     v.normal.y = ov.Normal.Y;
+//     v.normal.x = ov.Normal.X;
+//     v.uv.x = ov.TextureCoordinate.X;
+//     v.uv.y = ov.TextureCoordinate.Y;
+//     return (v);
+// }
+
 std::unique_ptr<ft_Model> ft_Model::createModelFromFile(ft_Device &device, const std::string &filepath)
 {
     Builder builder{};
     builder.loadModel(filepath);
+    Loader  load;
+    load.LoadFile(filepath);
+    builder._vertices = load.LoadedMeshes[0].Vertices;
+    builder._indices = load.LoadedMeshes[0].Indices;
+    builder._file = filepath;
     return std::make_unique<ft_Model>(device, builder);
 }
 
@@ -168,7 +199,7 @@ void    ft_Model::bind(VkCommandBuffer commandBuffer)
     }
 }
 
-std::vector<VkVertexInputBindingDescription>     ft_Model::Vertex::getBindingDescriptions()
+std::vector<VkVertexInputBindingDescription>     Vertex::getBindingDescriptions()
 {
     std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
     bindingDescriptions[0].binding = 0;
@@ -178,7 +209,7 @@ std::vector<VkVertexInputBindingDescription>     ft_Model::Vertex::getBindingDes
     return bindingDescriptions;
 }
 
-std::vector<VkVertexInputAttributeDescription>   ft_Model::Vertex::getAttributeDescriptions()
+std::vector<VkVertexInputAttributeDescription>   Vertex::getAttributeDescriptions()
 {
     std::vector<VkVertexInputAttributeDescription> attributeDescriptions{};
 

@@ -13,6 +13,8 @@
 #ifndef MATERIAL_HPP
 #define MATERIAL_HPP
 
+#define GLFW_INCLUDE_VULKAN
+#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
 #include <map>
 #include <utility>
 #include <fstream>
@@ -34,8 +36,8 @@ class ft_Material
         const Material&                         getMaterial(std::string s) const { return _materials.at(s); };
         const std::string&                      getFile() const { return _file; };
         void                                    setFile(std::string);  
-        void                                parseFile();
-        void	                            parseKaKdKsKe(std::istringstream, std::vector<float>&);
+        void                                    parseFile();
+        void	                                parseKaKdKsKe(std::istringstream, glm::vec3&);
     private:
         std::string                     _file; 
         std::map<std::string, Material> _materials;
