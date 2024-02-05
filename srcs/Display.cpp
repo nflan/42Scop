@@ -19,7 +19,7 @@ bool			ROBJ = false;
 bool			ISTEXT = false;
 int				RENDER = 0;
 unsigned int	NBTEXT = 0;
-short			WAY = 1;
+short			WAY = -1;
 float			ROTX = 0;
 float			ROTY = ROTATION; //change in tools.hpp
 float			ROTZ = 0;
@@ -193,14 +193,14 @@ void	Display::run()
 			ubo.view = camera.getView();
 			ubo.inverseView = camera.getInverseView();
 			this->_pointLightSystems[RENDER]->update(frameInfo, ubo);
-			this->_renderSystems[RENDER]->update(frameInfo, ubo);
-			this->_buffers[frameIndex]->writeToBuffer(&ubo);
-			this->_buffers[frameIndex]->flush();
+			// this->_renderSystems[RENDER]->update(frameInfo, ubo);
+			// this->_buffers[frameIndex]->writeToBuffer(&ubo);
+			// this->_buffers[frameIndex]->flush();
 
 			// render
 			this->_renderer.beginSwapChainRenderPass(commandBuffer);
 			
-			this->_renderSystems[RENDER]->renderGameObjects(frameInfo);
+			this->_renderSystems[RENDER]->renderGameObjects(frameInfo, &this->_buffers[frameIndex], ubo);
 			// this->_pointLightSystems[RENDER]->render(frameInfo);
 
 			this->_renderer.endSwapChainRenderPass(commandBuffer);
@@ -393,11 +393,16 @@ void	Display::createRenderSystems()
 
 void	Display::loadGameObjects()
 {
-  	std::shared_ptr<ft_Model> Model = ft_Model::createModelFromFile(this->_device, this->_file);
-	ft_GameObject	gameObj = ft_GameObject::createGameObject();
-	gameObj.model = Model;
+  	std::vector<std::shared_ptr<ft_Model>> Model = ft_Model::createModelFromFile(this->_device, this->_file);
+	
+	for (uint64_t i = 0; i < Model.size(); i++)
+	{
+		ft_GameObject	gameObj = ft_GameObject::createGameObject();
+		gameObj.model = Model[i];
 
-	this->_gameObjects.emplace(gameObj.getId(), std::move(gameObj));
+		this->_gameObjects.emplace(gameObj.getId(), std::move(gameObj));
+	}
+
 
 	std::vector<glm::vec3> lightColors{
 		{1.f, 1.f, 1.f}

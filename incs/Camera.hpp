@@ -29,7 +29,7 @@ class ft_Camera {
         const glm::mat4&    getProjection() const { return _projectionMatrix; }
         const glm::mat4&    getView() const { return _viewMatrix; }
         const glm::mat4&    getInverseView() const { return _inverseViewMatrix; }
-        const glm::vec3 getPosition() const { return glm::vec3(_inverseViewMatrix[3]); }
+        const glm::vec3     getPosition() const { return glm::vec3(_inverseViewMatrix[3]); }
 
     private:
         glm::mat4   _projectionMatrix{1.f};

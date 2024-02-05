@@ -36,7 +36,9 @@ class RenderSystem {
         RenderSystem &operator=(const RenderSystem &) = delete;
 
         void    update(FrameInfo &frameInfo, GlobalUbo &ubo);
+        void    update(ft_GameObject& model, GlobalUbo& ubo);
         void    renderGameObjects(FrameInfo &frameInfo);
+        void    renderGameObjects(FrameInfo& frameInfo, std::unique_ptr<ft_Buffer>* buffer, GlobalUbo& ubo);
 
     private:
         void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);

@@ -33,24 +33,25 @@ class ft_Model {
         struct Builder {
             std::vector<Vertex>     _vertices{};
             std::vector<uint32_t>   _indices{};
-            std::string             _file;
-            std::string             _path;
             std::string             _mtlFile;
+            std::string             _path;
+            std::string             _file;
 
             void    loadModel(const std::string &filepath);
         };
 
-        ft_Model(ft_Device &device, const ft_Model::Builder &builder);
+        // ft_Model(ft_Device &device, const ft_Model::Builder &builder);
+        ft_Model(ft_Device &device, std::string mtlFile, const std::vector<Vertex> &vertices, const std::vector<uint32_t> &indices, const Material &materials);
         ~ft_Model();
 
         ft_Model(const ft_Model &) = delete;
         ft_Model &operator=(const ft_Model &) = delete;
 
-        static std::unique_ptr<ft_Model>    createModelFromFile(ft_Device &device, const std::string &filepath);
-        glm::vec3                           getCenterOfObj( void ) { return _centerOfObj; };
-        double                              getScaleObj( void ) { return _scaleObj; };
-        std::string                         getMtlFile() { return _mtlFile; };
-        ft_Material&                        getMaterial() { return _material; };
+        static std::vector<std::shared_ptr<ft_Model>>   createModelFromFile(ft_Device &device, const std::string &filepath);
+        glm::vec3                                       getCenterOfObj( void ) { return _centerOfObj; };
+        float                                           getScaleObj( void ) { return _scaleObj; };
+        std::string                                     getMtlFile() { return _mtlFile; };
+        const Material&                                 getMaterial() { return _material; };
 
 
         void    bind(VkCommandBuffer commandBuffer);
@@ -59,7 +60,7 @@ class ft_Model {
     private:
         void    createVertexBuffers(const std::vector<Vertex> &vertices);
         void    createIndexBuffers(const std::vector<uint32_t> &indices);
-        void    createMaterial(const std::string& mtlFile);
+        // void    createMaterial(const std::string& mtlFile);
 
         ft_Device&                  _device;
 
@@ -70,9 +71,9 @@ class ft_Model {
         std::unique_ptr<ft_Buffer>  _indexBuffer;
         uint32_t                    _indexCount;
         glm::vec3                   _centerOfObj;
-        double                      _scaleObj;
+        float                      _scaleObj;
         std::string                 _mtlFile;
-        ft_Material                 _material;
+        const Material              _material;
 };
 
 #endif

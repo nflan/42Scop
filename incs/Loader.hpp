@@ -13,7 +13,7 @@ class Loader
 		// Default Constructor
 		Loader()
 		{
-
+            _mtlFile;
 		}
 		~Loader()
 		{
@@ -28,8 +28,6 @@ class Loader
 		// or unable to be loaded return false
         bool    LoadFile(const std::string& Path);
 
-        std::string             _file;
-        std::string             _path;
         std::string             _mtlFile;
         // Loaded Mesh Objects
         std::vector<Meshou>         LoadedMeshes;

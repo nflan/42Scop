@@ -34,61 +34,50 @@ namespace std {
     };
 }
 
-ft_Model::ft_Model(ft_Device &device, const ft_Model::Builder &builder) : _device{device}
+// ft_Model::ft_Model(ft_Device &device, const ft_Model::Builder &builder) : _device{device}
+// {
+//     createVertexBuffers(builder._vertices);
+//     createIndexBuffers(builder._indices);
+//     if (builder._mtlFile.size())
+//         createMaterial(builder._path + builder._mtlFile);
+// }
+
+ft_Model::ft_Model(ft_Device &device, std::string mtlFile, const std::vector<Vertex> &vertices, const std::vector<uint32_t> &indices, const Material &material) : _device{device}, _material(material), _mtlFile(mtlFile)
 {
-    createVertexBuffers(builder._vertices);
-    createIndexBuffers(builder._indices);
-    if (builder._mtlFile.size())
-        createMaterial(builder._path + builder._mtlFile);
+    createVertexBuffers(vertices);
+    createIndexBuffers(indices);
+    // if (builder._mtlFile.size())
+    //     createMaterial(builder._path + builder._mtlFile);
 }
 
 ft_Model::~ft_Model() {}
 
-// void    addObjlVertexToModelVertex(objl::Vertex& ov, Vertex mv)
-// {
-//     mv.position.x = ov.Position.X;
-//     mv.position.y = ov.Position.Y;
-//     mv.position.z = ov.Position.Z;
-//     mv.normal.x = ov.Normal.X;
-//     mv.normal.y = ov.Normal.Y;
-//     mv.normal.x = ov.Normal.X;
-//     mv.uv.x = ov.TextureCoordinate.X;
-//     mv.uv.y = ov.TextureCoordinate.Y;
-// }
-
-// Vertex    objlVertexToModelVertex(objl::Vertex& ov)
-// {
-//     Vertex v;
-//     v.position.x = ov.Position.X;
-//     v.position.y = ov.Position.Y;
-//     v.position.z = ov.Position.Z;
-//     v.normal.x = ov.Normal.X;
-//     v.normal.y = ov.Normal.Y;
-//     v.normal.x = ov.Normal.X;
-//     v.uv.x = ov.TextureCoordinate.X;
-//     v.uv.y = ov.TextureCoordinate.Y;
-//     return (v);
-// }
-
-std::unique_ptr<ft_Model> ft_Model::createModelFromFile(ft_Device &device, const std::string &filepath)
+std::vector<std::shared_ptr<ft_Model>> ft_Model::createModelFromFile(ft_Device &device, const std::string &filepath)
 {
-    Builder builder{};
-    builder.loadModel(filepath);
+    std::vector<std::shared_ptr<ft_Model>>  Models;
+
+    // Builder builder{};
+    // builder.loadModel(filepath);
     Loader  load;
     load.LoadFile(filepath);
-    builder._vertices = load.LoadedMeshes[0].Vertices;
-    builder._indices = load.LoadedMeshes[0].Indices;
-    builder._file = filepath;
-    return std::make_unique<ft_Model>(device, builder);
+    for (const Meshou& mesh : load.LoadedMeshes)
+    {
+        Models.emplace_back(make_unique<ft_Model>(device, load._mtlFile, mesh.Vertices, mesh.Indices, mesh.MeshMaterial));
+    }
+    return Models;
+    // builder._vertices = load.LoadedMeshes[0].Vertices;
+    // builder._indices = load.LoadedMeshes[0].Indices;
+    // builder._file = filepath;
+    // return std::make_unique<ft_Model>(device, builder);
 }
 
-void    ft_Model::createMaterial(const std::string& mtlFile)
-{
-    this->_mtlFile = mtlFile;
-    this->_material = ft_Material(this->_mtlFile);
-    if (!this->_material.getFile().size())
-        this->_mtlFile.clear();
-}
+// void    ft_Model::createMaterial(const std::string& mtlFile)
+// {
+//     this->_mtlFile = mtlFile;
+//     this->_material = ft_Material(this->_mtlFile);
+//     if (!this->_material.getFile().size())
+//         this->_mtlFile.clear();
+// }
 
 void    ft_Model::createVertexBuffers(const std::vector<Vertex> &vertices)
 {
@@ -108,10 +97,15 @@ void    ft_Model::createVertexBuffers(const std::vector<Vertex> &vertices)
     std::cout << glm::distance(min, max) << std::endl;
     std::cout << static_cast<float>(8 / glm::distance(min, max)) << std::endl;
 
+    // glm::vec3 objectSize = max - min;
+    // float maxDimension = glm::max(objectSize.x, glm::max(objectSize.y, objectSize.z));
+    // _scaleObj = glm::vec3(8.f / maxDimension);
+
     _scaleObj = static_cast<float>(8 / glm::distance(min, max));
+
     if (_scaleObj < 0)
         _scaleObj *= -1;
-    std::cerr << "scale = " << _scaleObj << std::endl;
+    std::cerr << "scale.x = " << _scaleObj << std::endl;
     // _centerOfObj = _scaleObj * _centerOfObj;
     _centerOfObj /= static_cast<float>(vertices.size());
     this->_vertexCount = static_cast<uint64_t>(vertices.size());

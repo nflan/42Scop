@@ -225,16 +225,18 @@ bool Loader::LoadFile(const std::string& Path)
                     pathtomat += temp[i] + "/";
                 }
             }
-
-
+            while (!isalpha(curline[curline.size() - 1]))
+            {
+                std::cout << "hola" << std::endl;
+                curline.pop_back();
+            }
             pathtomat += tools::ft_tail(curline);
-
             #ifdef OBJL_CONSOLE_OUTPUT
             std::cout << std::endl << "- find materials in: " << pathtomat << std::endl;
             #endif
-
             // Load Materials
             LoadMaterials(pathtomat);
+            std::cout << _mtlFile << std::endl;
         }
     }
 
@@ -314,12 +316,13 @@ void    Loader::GenVerticesFromRawOBJ(std::vector<Vertex>& oVerts,
     for (uint64_t i = 0; i < sface.size(); i++)
     {
         // See What type the vertex is.
-        int vtype;
+        int vtype = 0;
 
         tools::ft_split(sface[i], svert, "/");
+        std::cerr << "svert[0] = '" << svert[0] << "'" << std::endl;
 
         // Check for just position - v1
-        if (svert.size() == 1)
+        if (svert.size() == 1 && isdigit(svert[0][0]))
         {
             // Only position
             vtype = 1;
@@ -340,7 +343,7 @@ void    Loader::GenVerticesFromRawOBJ(std::vector<Vertex>& oVerts,
             {
                 // position, Texture, and normal
                 vtype = 4;
-            }
+            } 
             else
             {
                 // position & normal
@@ -353,7 +356,7 @@ void    Loader::GenVerticesFromRawOBJ(std::vector<Vertex>& oVerts,
         {
             case 1: // P
             {
-                vVert.position = -tools::ft_getElement(iPositions, svert[0]);
+                vVert.position = tools::ft_getElement(iPositions, svert[0]);
                 vVert.uv = -tools::ft_getElement(iPositions, svert[0]);
                 noNormal = true;
                 oVerts.push_back(vVert);
@@ -361,7 +364,7 @@ void    Loader::GenVerticesFromRawOBJ(std::vector<Vertex>& oVerts,
             }
             case 2: // P/T
             {
-                vVert.position = -tools::ft_getElement(iPositions, svert[0]);
+                vVert.position = tools::ft_getElement(iPositions, svert[0]);
                 vVert.uv = tools::ft_getElement(iTCoords, svert[1]);
                 vVert.uv.y = 1.f - vVert.uv.y;
                 noNormal = true;
@@ -370,7 +373,7 @@ void    Loader::GenVerticesFromRawOBJ(std::vector<Vertex>& oVerts,
             }
             case 3: // P//N
             {
-                vVert.position = -tools::ft_getElement(iPositions, svert[0]);
+                vVert.position = tools::ft_getElement(iPositions, svert[0]);
                 vVert.uv = -tools::ft_getElement(iPositions, svert[0]);
                 vVert.normal = tools::ft_getElement(iNormals, svert[2]);
                 oVerts.push_back(vVert);
@@ -378,7 +381,7 @@ void    Loader::GenVerticesFromRawOBJ(std::vector<Vertex>& oVerts,
             }
             case 4: // P/T/N
             {
-                vVert.position = -tools::ft_getElement(iPositions, svert[0]);
+                vVert.position = tools::ft_getElement(iPositions, svert[0]);
                 vVert.uv = tools::ft_getElement(iTCoords, svert[1]);
                 vVert.uv.y = 1.f - vVert.uv.y;
                 vVert.normal = tools::ft_getElement(iNormals, svert[2]);
@@ -400,7 +403,7 @@ void    Loader::GenVerticesFromRawOBJ(std::vector<Vertex>& oVerts,
         glm::vec3 A = oVerts[0].position - oVerts[1].position;
         glm::vec3 B = oVerts[2].position - oVerts[1].position;
 
-        glm::vec3 normal = tools::ft_CrossV3(A, B);
+        glm::vec3 normal = tools::ft_CrossV3(B, A);
 
         for (int i = 0; i < int(oVerts.size()); i++)
         {
@@ -582,14 +585,20 @@ void    Loader::VertexTriangluation(std::vector<unsigned int>& oIndices,
 bool    Loader::LoadMaterials(std::string path)
 {
     // If the file is not a material file return false
-    if (path.substr(path.size() - 4, path.size()) != ".mtl")
+    if (path.substr(path.find_last_of('.'), path.size()) != ".mtl")
+    {
+        std::cerr << "False path: " << path << std::endl;
         return false;
+    }
 
     std::ifstream file(path);
 
     // If the file is not found return false
     if (!file.is_open())
+    {
+        std::cerr << "File not open" << std::endl;
         return false;
+    }
 
     Material tempMaterial;
 
@@ -749,7 +758,10 @@ bool    Loader::LoadMaterials(std::string path)
         return false;
     // If so return true
     else
-        return true;
+    {
+        this->_mtlFile = path;
+        return (true);
+    }
 }
 
 namespace tools {
@@ -843,15 +855,13 @@ namespace tools {
     }
 
     // Split a String into a string array at a given token
-    void ft_split(const std::string &in,
-        std::vector<std::string> &out,
-        std::string token)
+    void    ft_split(const std::string &in, std::vector<std::string> &out, std::string token)
     {
         out.clear();
 
         std::string temp;
 
-        for (int i = 0; i < int(in.size()); i++)
+        for (std::size_t i = 0; i < in.size(); i++)
         {
             std::string test = in.substr(i, token.size());
 
@@ -861,7 +871,7 @@ namespace tools {
                 {
                     out.push_back(temp);
                     temp.clear();
-                    i += (int)token.size() - 1;
+                    i += token.size() - 1;
                 }
                 else
                 {
@@ -922,9 +932,17 @@ namespace tools {
     template <class T>
     const T & ft_getElement(const std::vector<T> &elements, std::string &index)
     {
-        int idx = std::stoi(index);
+        std::cerr << "index = '" << index << "'" << std::endl;
+        unsigned long idx = 0;
+        try {
+            idx = std::stoul(index);
+        }
+        catch (std::exception())
+        {
+            idx = 0;
+        }
         if (idx < 0)
-            idx = int(elements.size()) + idx;
+            idx = elements.size() + idx;
         else
             idx--;
         return elements[idx];
