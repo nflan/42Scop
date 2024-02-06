@@ -1,16 +1,29 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Loader.cpp                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/02/06 18:51:41 by nflan             #+#    #+#             */
+/*   Updated: 2024/02/06 18:51:43 by nflan            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../incs/Loader.hpp"
+
+#define OBJL_CONSOLE_OUTPUT
 
 bool Loader::LoadFile(const std::string& Path)
 {
     // If the file is not an .obj file return false
     if (Path.substr(Path.size() - 4, 4) != ".obj")
-        return false;
-
+		throw std::runtime_error("'" + Path + "' is not a .obj file!");
 
     std::ifstream file(Path);
 
-    if (!file.is_open())
-        return false;
+    if (!file)
+		throw std::runtime_error("Failed to open: '" + Path + "'!");
 
     LoadedMeshes.clear();
     LoadedVertices.clear();
@@ -20,15 +33,15 @@ bool Loader::LoadFile(const std::string& Path)
     std::vector<glm::vec2> TCoords;
     std::vector<glm::vec3> Normals;
 
-    std::vector<Vertex> Vertices;
-    std::vector<unsigned int> Indices;
+    std::vector<Vertex> _vertices;
+    std::vector<unsigned int> _indices;
 
     std::vector<std::string> MeshMatNames;
 
     bool listening = false;
     std::string meshname;
 
-    Meshou tempMesh;
+    Mesh tempMesh;
 
     #ifdef OBJL_CONSOLE_OUTPUT
     const unsigned int outputEveryNth = 1000;
@@ -48,7 +61,7 @@ bool Loader::LoadFile(const std::string& Path)
                     << "\t| vertices > " << Positions.size()
                     << "\t| texcoords > " << TCoords.size()
                     << "\t| normals > " << Normals.size()
-                    << "\t| triangles > " << (Vertices.size() / 3)
+                    << "\t| triangles > " << (_vertices.size() / 3)
                     << (!MeshMatNames.empty() ? "\t| material: " + MeshMatNames.back() : "");
             }
         }
@@ -62,30 +75,26 @@ bool Loader::LoadFile(const std::string& Path)
                 listening = true;
 
                 if (tools::ft_firstToken(curline) == "o" || tools::ft_firstToken(curline) == "g")
-                {
                     meshname = tools::ft_tail(curline);
-                }
                 else
-                {
                     meshname = "unnamed";
-                }
             }
             else
             {
                 // Generate the mesh to put into the array
 
-                if (!Indices.empty() && !Vertices.empty())
+                if (!_indices.empty() && !_vertices.empty())
                 {
                     // Create Mesh
-                    tempMesh = Meshou(Vertices, Indices);
-                    tempMesh.MeshName = meshname;
+                    tempMesh = Mesh(_vertices, _indices);
+                    tempMesh._meshName = meshname;
 
                     // Insert Mesh
                     LoadedMeshes.push_back(tempMesh);
 
                     // Cleanup
-                    Vertices.clear();
-                    Indices.clear();
+                    _vertices.clear();
+                    _indices.clear();
                     meshname.clear();
 
                     meshname = tools::ft_tail(curline);
@@ -152,10 +161,10 @@ bool Loader::LoadFile(const std::string& Path)
             std::vector<Vertex> vVerts;
             GenVerticesFromRawOBJ(vVerts, Positions, TCoords, Normals, curline);
 
-            // Add Vertices
+            // Add _vertices
             for (uint64_t i = 0; i < vVerts.size(); i++)
             {
-                Vertices.push_back(vVerts[i]);
+                _vertices.push_back(vVerts[i]);
 
                 LoadedVertices.push_back(vVerts[i]);
             }
@@ -164,11 +173,11 @@ bool Loader::LoadFile(const std::string& Path)
 
             VertexTriangluation(iIndices, vVerts);
 
-            // Add Indices
+            // Add _indices
             for (uint64_t i = 0; i < iIndices.size(); i++)
             {
-                uint64_t indnum = (Vertices.size()) - vVerts.size() + iIndices[i];
-                Indices.push_back(indnum);
+                uint64_t indnum = (_vertices.size()) - vVerts.size() + iIndices[i];
+                _indices.push_back(indnum);
 
                 indnum = (LoadedVertices.size()) - vVerts.size() + iIndices[i];
                 LoadedIndices.push_back(indnum);
@@ -180,17 +189,17 @@ bool Loader::LoadFile(const std::string& Path)
             MeshMatNames.push_back(tools::ft_tail(curline));
 
             // Create new Mesh, if Material changes within a group
-            if (!Indices.empty() && !Vertices.empty())
+            if (!_indices.empty() && !_vertices.empty())
             {
                 // Create Mesh
-                tempMesh = Meshou(Vertices, Indices);
-                tempMesh.MeshName = meshname;
+                tempMesh = Mesh(_vertices, _indices);
+                tempMesh._meshName = meshname;
                 int i = 2;
                 while(1) {
-                    tempMesh.MeshName = meshname + "_" + std::to_string(i);
+                    tempMesh._meshName = meshname + "_" + std::to_string(i);
 
                     for (auto &m : LoadedMeshes)
-                        if (m.MeshName == tempMesh.MeshName)
+                        if (m._meshName == tempMesh._meshName)
                             continue;
                     break;
                 }
@@ -199,8 +208,8 @@ bool Loader::LoadFile(const std::string& Path)
                 LoadedMeshes.push_back(tempMesh);
 
                 // Cleanup
-                Vertices.clear();
-                Indices.clear();
+                _vertices.clear();
+                _indices.clear();
             }
 
             #ifdef OBJL_CONSOLE_OUTPUT
@@ -246,23 +255,23 @@ bool Loader::LoadFile(const std::string& Path)
 
     // Deal with last mesh
 
-    if (!Indices.empty() && !Vertices.empty())
+    if (!_indices.empty() && !_vertices.empty())
     { 
         float       y = 0.f;
         uint64_t    i = 0;
 
-        for (Vertex& v : Vertices)
+        for (Vertex& v : _vertices)
         {
             if (i % 3 == 0)
                 y += 0.1;
             if (y >= .6)
                 y = 0.;
+            i++;
             v.color = glm::vec3(y);
-            std::cerr << "y = " << y << std::endl;
         }
         // Create Mesh
-        tempMesh = Meshou(Vertices, Indices);
-        tempMesh.MeshName = meshname;
+        tempMesh = Mesh(_vertices, _indices);
+        tempMesh._meshName = meshname;
 
         // Insert Mesh
         LoadedMeshes.push_back(tempMesh);
@@ -281,7 +290,7 @@ bool Loader::LoadFile(const std::string& Path)
         {
             if (LoadedMaterials[j]._name == matname)
             {
-                LoadedMeshes[i].MeshMaterial = LoadedMaterials[j];
+                LoadedMeshes[i]._meshMaterial = LoadedMaterials[j];
                 break;
             }
         }
@@ -319,7 +328,6 @@ void    Loader::GenVerticesFromRawOBJ(std::vector<Vertex>& oVerts,
         int vtype = 0;
 
         tools::ft_split(sface[i], svert, "/");
-        std::cerr << "svert[0] = '" << svert[0] << "'" << std::endl;
 
         // Check for just position - v1
         if (svert.size() == 1 && isdigit(svert[0][0]))
@@ -357,7 +365,7 @@ void    Loader::GenVerticesFromRawOBJ(std::vector<Vertex>& oVerts,
             case 1: // P
             {
                 vVert.position = tools::ft_getElement(iPositions, svert[0]);
-                vVert.uv = -tools::ft_getElement(iPositions, svert[0]);
+                vVert.uv = glm::vec2(tools::ft_getElement(iPositions, svert[0]).x, 1.f - tools::ft_getElement(iPositions, svert[0]).y);
                 noNormal = true;
                 oVerts.push_back(vVert);
                 break;
@@ -365,8 +373,7 @@ void    Loader::GenVerticesFromRawOBJ(std::vector<Vertex>& oVerts,
             case 2: // P/T
             {
                 vVert.position = tools::ft_getElement(iPositions, svert[0]);
-                vVert.uv = tools::ft_getElement(iTCoords, svert[1]);
-                vVert.uv.y = 1.f - vVert.uv.y;
+                vVert.uv = glm::vec2(tools::ft_getElement(iTCoords, svert[1]).x, 1.f - tools::ft_getElement(iTCoords, svert[1]).y);
                 noNormal = true;
                 oVerts.push_back(vVert);
                 break;
@@ -374,7 +381,7 @@ void    Loader::GenVerticesFromRawOBJ(std::vector<Vertex>& oVerts,
             case 3: // P//N
             {
                 vVert.position = tools::ft_getElement(iPositions, svert[0]);
-                vVert.uv = -tools::ft_getElement(iPositions, svert[0]);
+                vVert.uv = glm::vec2(tools::ft_getElement(iPositions, svert[0]).x, 1.f - tools::ft_getElement(iPositions, svert[0]).y);
                 vVert.normal = tools::ft_getElement(iNormals, svert[2]);
                 oVerts.push_back(vVert);
                 break;
@@ -382,8 +389,7 @@ void    Loader::GenVerticesFromRawOBJ(std::vector<Vertex>& oVerts,
             case 4: // P/T/N
             {
                 vVert.position = tools::ft_getElement(iPositions, svert[0]);
-                vVert.uv = tools::ft_getElement(iTCoords, svert[1]);
-                vVert.uv.y = 1.f - vVert.uv.y;
+                vVert.uv = glm::vec2(tools::ft_getElement(iTCoords, svert[1]).x, 1.f - tools::ft_getElement(iTCoords, svert[1]).y);
                 vVert.normal = tools::ft_getElement(iNormals, svert[2]);
                 oVerts.push_back(vVert);
                 break;
@@ -405,7 +411,7 @@ void    Loader::GenVerticesFromRawOBJ(std::vector<Vertex>& oVerts,
 
         glm::vec3 normal = tools::ft_CrossV3(B, A);
 
-        for (int i = 0; i < int(oVerts.size()); i++)
+        for (size_t i = 0; i < oVerts.size(); i++)
         {
             oVerts[i].normal = normal;
         }
@@ -932,7 +938,6 @@ namespace tools {
     template <class T>
     const T & ft_getElement(const std::vector<T> &elements, std::string &index)
     {
-        std::cerr << "index = '" << index << "'" << std::endl;
         unsigned long idx = 0;
         try {
             idx = std::stoul(index);

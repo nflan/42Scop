@@ -117,7 +117,6 @@ bool ft_DescriptorPool::allocateDescriptor(const VkDescriptorSetLayout descripto
     // a new pool w henever an old pool fills up. But this is beyond our current scope
     if (vkAllocateDescriptorSets(this->_device.device(), &allocInfo, &set) != VK_SUCCESS)
         return false;
-
     return true;
 }
 
@@ -139,7 +138,7 @@ ft_DescriptorWriter    &ft_DescriptorWriter::writeBuffer(uint32_t binding, VkDes
 {
     assert(this->_setLayout._bindings.count(binding) == 1 && "Layout does not contain specified binding");
 
-    auto &bindingDescription = this->_setLayout._bindings[binding];
+    VkDescriptorSetLayoutBinding    &bindingDescription = this->_setLayout._bindings[binding];
 
     assert(bindingDescription.descriptorCount == 1 && "Binding single descriptor info, but binding expects multiple");
 
@@ -159,7 +158,7 @@ ft_DescriptorWriter    &ft_DescriptorWriter::writeImage(uint32_t binding, VkDesc
 {
     assert(this->_setLayout._bindings.count(binding) == 1 && "Layout does not contain specified binding");
 
-    auto &bindingDescription = this->_setLayout._bindings[binding];
+    VkDescriptorSetLayoutBinding    &bindingDescription = this->_setLayout._bindings[binding];
 
     assert(bindingDescription.descriptorCount == 1 && "Binding single descriptor info, but binding expects multiple");
 

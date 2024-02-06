@@ -45,7 +45,7 @@ void main()
     for (int i = 0; i < ubo.numLights; i++) {
         PointLight light = ubo.pointLights[i];
         vec3 directionToLight = light.position.xyz - fragPosWorld;
-        float attenuation = dot(directionToLight, directionToLight); // distance squared
+        float attenuation = 1 / dot(directionToLight, directionToLight); // distance squared
         directionToLight = normalize(directionToLight);
 
         float cosAngIncidence = max(dot(surfaceNormal, directionToLight), 0);
@@ -64,7 +64,10 @@ void main()
     vec3 finalDiffuseColor = ubo.kd * fragColor;  // Use Kd from MTL file for diffuse color
     vec3 finalSpecularColor = ubo.ks * fragColor;  // Use Ks from MTL file for specular color
 
-    outColor = vec4((diffuseLight * finalDiffuseColor + specularLight * finalSpecularColor) + ubo.ke, ubo.d);
+    if (ubo.illum == 2)
+        outColor = vec4((diffuseLight * finalDiffuseColor + specularLight * finalSpecularColor) + ubo.ke, ubo.d);
+    else
+        outColor = vec4((diffuseLight * finalDiffuseColor) + ubo.ke, ubo.d);
 
     //float tr = 1.0f - ubo.d;
     //outColor = vec4((diffuseLight * ubo.kd + specularLight * ubo.ks) * fragColor + ubo.ke, tr);

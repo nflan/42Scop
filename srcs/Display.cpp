@@ -23,22 +23,12 @@ short			WAY = -1;
 float			ROTX = 0;
 float			ROTY = ROTATION; //change in tools.hpp
 float			ROTZ = 0;
-
-static	std::vector<char> readFile(const std::string& filename) {
-	std::ifstream	file(filename, std::ios::ate | std::ios::binary); //ate pour commencer a la fin / binary pour dire que c'est un binaire et pas recompiler
-
-	if (!file.is_open())
-		throw std::runtime_error(std::string {"Failed to open: "} + filename + "!");
-	size_t	fileSize = (size_t) file.tellg(); // on a commence a la fin donc voir ou est le pointeur
-	std::vector<char>	buffer(fileSize);
-
-	file.seekg(0); // tout lire jusqu'au debut
-	file.read(buffer.data(), fileSize);
-
-	file.close();
-
-	return buffer;
-}
+glm::mat4   	ROTATE = glm::mat4(
+        1, 0, 0, 0,
+        0, -1, 0, 0,
+        0, 0, -1, 0,
+        0, 0, 0, 1
+        );
 
 void	key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
@@ -50,25 +40,15 @@ void	key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	else if ((key == GLFW_KEY_F) && action == GLFW_PRESS)
 		WAY *= -1;
 	else if ((key == GLFW_KEY_P) && action == GLFW_PRESS)
-	{
 		ROTY = ROTX = ROTZ = 0.f;
-	}
 	else if ((key == GLFW_KEY_1) && action == GLFW_PRESS)
-	{
 		ROTY == 0.f ? ROTY = ROTATION : ROTY = 0.f;
-	}
 	else if ((key == GLFW_KEY_2) && action == GLFW_PRESS)
-	{
 		ROTX == 0.f ? ROTX = ROTATION : ROTX = 0.f;
-	}
 	else if ((key == GLFW_KEY_3) && action == GLFW_PRESS)
-	{
 		ROTZ == 0.f ? ROTZ = ROTATION : ROTZ = 0.f;
-	}
 	else if ((key == GLFW_KEY_4) && action == GLFW_PRESS)
-	{
 		ROBJ = true;
-	}
 	else if ((key == GLFW_KEY_C) && action == GLFW_PRESS)
 	{
 		if (ISTEXT)
@@ -82,7 +62,8 @@ void	key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	
 }
 
-Display::Display() {
+Display::Display()
+{
 	_currText = 0;
 	_globalPool =
 		ft_DescriptorPool::Builder(_device)
@@ -105,13 +86,14 @@ Display::Display() {
 		.build();
 }
 
-Display::Display( const Display & o) {
+Display::Display( const Display & o)
+{
 	if (this != &o)
 		*this = o;
 	return ;
 }
 
-Display &	Display::operator=( const Display& o )
+Display	&Display::operator=( const Display& o )
 {
 	if (this == &o)
 		return (*this);
@@ -138,36 +120,26 @@ void	Display::run()
 	loadGameObjects();
 	if (this->_textFile.size())
 		loadTextures();
-
-	// addMaterials();
-	// for (const std::pair<std::string, ft_Material>& print : this->_materials)
-	// 	for (const std::pair<std::string, Material>& p : print.second.getMaterials())
-	// 		printMaterial(p.second);
 	
 	createBuffers();
 	createDescriptorSetLayout();
 	createDescriptorSets();
 	createRenderSystems();
-	
-	std::cerr << "textfiles: " << std::endl;
-	for (std::string s : this->_textFiles)
-		std::cerr << s << std::endl;
 
-	ft_Camera camera{};
-
-	ft_GameObject viewerObject = ft_GameObject::createGameObject();
+	ft_Camera									camera{};
+	ft_GameObject								viewerObject = ft_GameObject::createGameObject();
+	KeyboardMovementController					cameraController(glm::vec3(0,0,-10.f));
+	std::chrono::_V2::system_clock::time_point	currentTime = std::chrono::high_resolution_clock::now();
 
 	viewerObject.transform.translation.z = -10.f;
-	KeyboardMovementController cameraController(glm::vec3(0,0,-10.f));
-
-	std::chrono::_V2::system_clock::time_point currentTime = std::chrono::high_resolution_clock::now();
+	
 	while (!this->_window.shouldClose() && !QUIT)
 	{
 		glfwSetKeyCallback(this->_window.getWindow(), key_callback);
 		glfwPollEvents();
 
-		std::chrono::_V2::system_clock::time_point newTime = std::chrono::high_resolution_clock::now();
-		float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
+		std::chrono::_V2::system_clock::time_point	newTime = std::chrono::high_resolution_clock::now();
+		float	frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
 		currentTime = newTime;
 
 		cameraController.moveInPlaneXZ(this->_window.getWindow(), frameTime, viewerObject);
@@ -179,23 +151,20 @@ void	Display::run()
 		if (VkCommandBuffer_T *commandBuffer = this->_renderer.beginFrame())
 		{
 			int	frameIndex = this->_renderer.getFrameIndex();
-			FrameInfo frameInfo{
+
+			FrameInfo	frameInfo{
 				frameIndex,
 				frameTime,
 				commandBuffer,
 				camera,
 				RENDER == 1 && ISTEXT ? _descriptorSets[frameIndex] : _descriptorSetsWithoutTexture[frameIndex],
 				this->_gameObjects};
-
 			
 			GlobalUbo	ubo{};
 			ubo.projection = camera.getProjection();
 			ubo.view = camera.getView();
 			ubo.inverseView = camera.getInverseView();
 			this->_pointLightSystems[RENDER]->update(frameInfo, ubo);
-			// this->_renderSystems[RENDER]->update(frameInfo, ubo);
-			// this->_buffers[frameIndex]->writeToBuffer(&ubo);
-			// this->_buffers[frameIndex]->flush();
 
 			// render
 			this->_renderer.beginSwapChainRenderPass(commandBuffer);
@@ -238,22 +207,18 @@ void	Display::getText()
 	if (std::filesystem::exists(this->_textFile))
 	{
 		if (std::filesystem::is_directory(this->_textFile))
-		{
 			getTextInDir();
-		}
 		else if (std::filesystem::is_regular_file(this->_textFile))
 			this->_textFiles.push_back(this->_textFile);
 	}
 	else
-	{
-		throw std::invalid_argument(std::string("Wrong path: ").append(this->_textFile).c_str());
-	}
+		throw std::invalid_argument("Wrong path: " + this->_textFile);
 }
 
 void	Display::getTextInDir()
 {
 	std::filesystem::directory_entry	dir{std::filesystem::path{this->_textFile}};
-	std::vector<std::string>	ext{"png", "jpg", "jpeg"};
+	std::vector<std::string>			ext{"png", "jpg", "jpeg"};
 
 	for (std::filesystem::directory_entry const& entry : std::filesystem::directory_iterator(dir))
 	{
@@ -282,16 +247,16 @@ void	Display::getTextInDir()
 				this->_textFiles.push_back(_textFile + "/" + file);
 		}
 		else
-			std::cerr << "Can't use this: " << _textFile << "/" << entry.path().filename() << " for texture." << std::endl;
+			std::cerr << "Can't use this: '" << _textFile << "/" << entry.path().filename() << "' for texture." << std::endl;
 	}
-	for (auto t : _textFiles)
+	for (std::string t : _textFiles)
 		std::cerr << "t = '" << t << "'" << std::endl;
 }
 
 void	Display::createBuffers()
 {
 	this->_buffers.resize(this->_renderer.getSwapChain().imageCount());
-	for (int i = 0; i < this->_renderer.getSwapChain().imageCount(); i++)
+	for (size_t i = 0; i < this->_renderer.getSwapChain().imageCount(); i++)
 	{
 		std::unique_ptr<ft_Buffer> buffer = std::make_unique<ft_Buffer>(
 			this->_device,
@@ -306,17 +271,17 @@ void	Display::createBuffers()
 
 void	Display::createDescriptorSetLayout()
 {
-    std::unique_ptr<ft_DescriptorSetLayout::Builder> builder = std::make_unique<ft_DescriptorSetLayout::Builder>(this->_device);
+    std::unique_ptr<ft_DescriptorSetLayout::Builder>	builder = std::make_unique<ft_DescriptorSetLayout::Builder>(this->_device);
 
 	builder->addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS);
-    std::unique_ptr<ft_DescriptorSetLayout> colorSetLayout = builder->build();
+    std::unique_ptr<ft_DescriptorSetLayout>	colorSetLayout = builder->build();
 
 	this->_globalDescriptorSetLayouts.push_back(std::move(colorSetLayout));
 	
 	if (this->_loadedTextures.size())
 	{
 		builder->addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-		std::unique_ptr<ft_DescriptorSetLayout> textureSetLayout = builder->build();
+		std::unique_ptr<ft_DescriptorSetLayout>	textureSetLayout = builder->build();
 		this->_globalDescriptorSetLayouts.push_back(std::move(textureSetLayout));
 	}
 
@@ -328,7 +293,7 @@ void	Display::createDescriptorSets()
 	_descriptorSets.resize(this->_renderer.getSwapChain().imageCount());
 	_changeDescriptorSets.resize(this->_renderer.getSwapChain().imageCount());
 
-	for (uint32_t i = 0; i < this->_renderer.getSwapChain().imageCount(); i++)
+	for (uint64_t i = 0; i < this->_renderer.getSwapChain().imageCount(); i++)
 	{
 		VkDescriptorBufferInfo bufferInfo = _buffers[i]->descriptorInfo();
 		ft_DescriptorWriter(*_globalDescriptorSetLayouts[0], *_globalPool)
@@ -353,7 +318,7 @@ void	Display::refreshDescriptorSets()
 	VkCommandBuffer	commandBuffer = this->_device.beginSingleTimeCommands();
 	this->_device.endSingleTimeCommands(commandBuffer);
 
-	for (size_t i = 0; i < this->_renderer.getSwapChain().imageCount(); i++)
+	for (uint64_t i = 0; i < this->_renderer.getSwapChain().imageCount(); i++)
 	{
 		VkDescriptorBufferInfo bufferInfo = _buffers[i]->descriptorInfo();
 		VkDescriptorImageInfo imageInfo{};
@@ -373,8 +338,7 @@ void	Display::refreshDescriptorSets()
 
 void	Display::createRenderSystems()
 {
-	std::cerr << this->_globalDescriptorSetLayouts.size() << std::endl;
-	for (uint32_t i = 0; i < this->_globalDescriptorSetLayouts.size(); i++)
+	for (uint64_t i = 0; i < this->_globalDescriptorSetLayouts.size(); i++)
 	{
 		_renderSystems.emplace_back(std::make_unique<RenderSystem>(
 			this->_device,
@@ -393,16 +357,13 @@ void	Display::createRenderSystems()
 
 void	Display::loadGameObjects()
 {
-  	std::vector<std::shared_ptr<ft_Model>> Model = ft_Model::createModelFromFile(this->_device, this->_file);
-	
+  	std::vector<std::shared_ptr<ft_Model>>	Model = ft_Model::createModelFromFile(this->_device, this->_file);
 	for (uint64_t i = 0; i < Model.size(); i++)
 	{
 		ft_GameObject	gameObj = ft_GameObject::createGameObject();
 		gameObj.model = Model[i];
-
 		this->_gameObjects.emplace(gameObj.getId(), std::move(gameObj));
 	}
-
 
 	std::vector<glm::vec3> lightColors{
 		{1.f, 1.f, 1.f}
@@ -410,23 +371,23 @@ void	Display::loadGameObjects()
 
 	for (int i = 0; i < MAX_LIGHTS; i++)
 	{
-		ft_GameObject pointLight = ft_GameObject::makePointLight(0.2f);
+		ft_GameObject	pointLight = ft_GameObject::makePointLight(.1f);
 		pointLight.color = lightColors[i];
 		
-		glm::mat4 rotateLight = glm::rotate(
+		glm::mat4	rotateLight = glm::rotate(
 			glm::mat4(1.5f),
 			(i * glm::two_pi<float>()) / lightColors.size(),
 			{0.f, -1.f, 0.f});
-		pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-1.f, -1.f, -1.f, 1.f));
+		pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-2.f, 0.f, -2.f, 1.f));
 		this->_gameObjects.emplace(pointLight.getId(), std::move(pointLight));
   	}
 }
 
 void	Display::createTextureImage(const char *file)
 {
-	Texture	text;
-	int	texWidth, texHeight, texChannels;
-    stbi_uc	*pixels = stbi_load(file, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+	Texture			text;
+	int				texWidth, texHeight, texChannels;
+    stbi_uc			*pixels = stbi_load(file, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
     VkDeviceSize	imageSize = texWidth * texHeight * 4;
 
 	text._mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
@@ -528,14 +489,14 @@ void	Display::createTextureSampler(Texture &loadedTexture)
 	samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 	/*
-	VK_SAMPLER_ADDRESS_MODE_REPEAT : répète le texture
+	VK_SAMPLER_ADDRESS_MODE_REPEAT : répète la texture
 	VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT : répète en inversant les coordonnées pour réaliser un effet miroir
 	VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE : prend la couleur du pixel de bordure le plus proche
 	VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE : prend la couleur de l'opposé du plus proche côté de l'image
 	VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER : utilise une couleur fixée
 	*/
-	samplerInfo.anisotropyEnable = VK_TRUE; ///on pourrait le desactiver si le mec n'a pas une cg qui peut le faire
-	samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy; // et passer ca a 1.f si le mec n'a pas une cg pour le faire
+	samplerInfo.anisotropyEnable = VK_TRUE; ///on pourrait le desactiver si l'utilisateur n'a pas une cg qui peut le faire
+	samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy; // et passer ca a 1.f si l'utilisateur n'a pas une cg qui peut le faire
 	samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK; //si l'image est plus petite que la fenetre, couleur du reste mais que black white or transparent
 	samplerInfo.unnormalizedCoordinates = VK_FALSE;
 	// Le champ unnomalizedCoordinates indique le système de coordonnées que vous voulez utiliser pour accéder aux texels de l'image. Avec VK_TRUE, vous pouvez utiliser des coordonnées dans [0, texWidth) et [0, texHeight). Sinon, les valeurs sont accédées avec des coordonnées dans [0, 1). Dans la plupart des cas les coordonnées sont utilisées normalisées car cela permet d'utiliser un même shader pour des textures de résolution différentes.
@@ -543,7 +504,7 @@ void	Display::createTextureSampler(Texture &loadedTexture)
 	samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
 	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 	samplerInfo.mipLodBias = 0.f;//Lod -> Level of Details
-	samplerInfo.minLod = 0.f; //static_cast<float>(this->_device.getMipLevels() / 2);//minimum de details
+	samplerInfo.minLod = 0.f; //static_cast<float>(this->_device.getMipLevels() / 2);//minimum de details (rend flou de pres)
     samplerInfo.maxLod = VK_LOD_CLAMP_NONE;//static_cast<float>(this->_device.getMipLevels());//maximum de details
 
 	if (vkCreateSampler(this->_device.device(), &samplerInfo, nullptr, &loadedTexture._sampler) != VK_SUCCESS)
@@ -577,12 +538,7 @@ void	Display::generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWi
 
 	for (uint32_t i = 1; i < mipLevels; i++)
 	{
-		std::cout << "\ti = " << i << std::endl;
-		std::cout << "\tmiplevels = " <<  mipLevels << std::endl;
-		std::cout << "\tmipWidth = " <<  mipWidth << std::endl;
-		std::cout << "\tmipHeight = " <<  mipHeight << std::endl;
 		barrier.subresourceRange.baseMipLevel = i - 1;
-		std::cout << "\tbarrier.subresourceRange.baseMipLevel = " <<  barrier.subresourceRange.baseMipLevel << std::endl;
 		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 		barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -612,7 +568,7 @@ void	Display::generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWi
 		
 		vkCmdBlitImage(commandBuffer,
 			image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-			image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,//queue graphique obligatoire
+			image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,//Graphic Queue mandatory
 			1, &blit,
 			VK_FILTER_LINEAR);
 
@@ -646,22 +602,3 @@ void	Display::generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWi
 
     this->_device.endSingleTimeCommands(commandBuffer);
 }
-
-// void	Display::updateUniformBuffer(uint32_t currentImage)
-// {
-// 	static auto 	startTime = std::chrono::high_resolution_clock::now();
-
-//     auto 	currentTime = std::chrono::high_resolution_clock::now();
-//     float 	time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
-// 	UniformBufferObject ubo{};
-// 	ubo.model = glm::rotate(glm::mat4(1.f), time * glm::radians(0.f), glm::vec3(0.f, 0.f, 1.f));
-// 	ubo.view = glm::lookAt(glm::vec3(5.ff, 5.ff, 5.ff), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 1.f));
-// 	ubo.proj = glm::perspective(glm::radians(45.ff), this->_swapChainExtent.width / (float) this->_swapChainExtent.height, 0.1f, 20.ff);
-// 	ubo.proj[1][1] *= -1; //glm fait pour opengl donc inverse x y
-
-// 	void*	data;
-// 	vkMapMemory(this->_device.device(), this->_uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
-//     	memcpy(data, &ubo, sizeof(ubo));
-// 	vkUnmapMemory(this->_device.device(), this->_uniformBuffersMemory[currentImage]);
-// }

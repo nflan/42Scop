@@ -40,28 +40,17 @@ glm::mat4 TransformComponent::mat4()
 			scale.z * (c1 * c2),
 			0.f,
 		},
-		// 		{
-		// 	scale.x * (c1 * c3 - s1 * c2 * s3),
-		// 	scale.x * (s1 * c3 + c1 * c2 *s3),
-		// 	scale.x * (s2 * s3),
-		// 	0.f,
-		// },
-		// {
-		// 	scale.y * ((-c1) * s3 - s1 * c2 * c3),
-		// 	scale.y * ((-s1) * s3 + c1 *c2 *c3),
-		// 	scale.y * (s2 * c3),
-		// 	0.f,
-		// },
-		// {
-		// 	scale.z * (s1 * s2),
-		// 	scale.z * ((-c1) * s2),
-		// 	scale.z * (c2),
-		// 	0.f,
-		// },
-		{translation.x, translation.y, translation.z, 1.f}};
+		{
+			translation.x,
+			translation.y,
+			translation.z,
+			1.f
+		}
+	};
 }
 
-glm::mat3 TransformComponent::normalMatrix() {
+glm::mat3 TransformComponent::normalMatrix()
+{
 	const float c3 = glm::cos(rotation.z);
 	const float s3 = glm::sin(rotation.z);
 	const float c2 = glm::cos(rotation.x);
@@ -107,7 +96,7 @@ void	TransformComponent::updateNormalMatrix()
 
 ft_GameObject   ft_GameObject::makePointLight(float intensity, float radius, glm::vec3 color)
 {
-	ft_GameObject gameObj = ft_GameObject::createGameObject();
+	ft_GameObject	gameObj = ft_GameObject::createGameObject();
 	gameObj.color = color;
 	gameObj.transform.scale.x = radius;
 	gameObj.pointLight = std::make_unique<PointLightComponent>();

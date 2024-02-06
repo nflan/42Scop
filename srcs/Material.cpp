@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Material.cpp                                          :+:      :+:    :+:   */
+/*   Material.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -12,8 +12,7 @@
 
 #include "../incs/Material.hpp"
 
-ft_Material::ft_Material()
-{}
+ft_Material::ft_Material() {}
 
 ft_Material::ft_Material(std::string p): _file(p)
 {
@@ -46,9 +45,7 @@ void    ft_Material::parseFile()
 {
     std::ifstream in(this->_file, std::ios::in);
     if (!in)
-    {
         this->_file.clear();
-    }
     long long	i = -1;
     std::vector<Material>	mtl(1);
     std::string	line;
@@ -86,8 +83,6 @@ void    ft_Material::parseFile()
         this->_materials.insert(std::pair<std::string, Material>(mat._name, mat));
     for (std::pair<std::string, Material> print : this->_materials)
         printMaterial(print.second);
-    // for (std::map<std::string, Material>::iterator it = _materials.begin(); it != _materials.end(); it++)
-    //     printMaterial(it->second);
 }
 
 void	ft_Material::parseKaKdKsKe(std::istringstream rgb, glm::vec3& toFill)

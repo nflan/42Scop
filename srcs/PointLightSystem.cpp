@@ -24,7 +24,8 @@
 #include <map>
 #include <stdexcept>
 
-struct PointLightPushConstants {
+struct PointLightPushConstants
+{
     glm::vec4   position{};
     glm::vec4   color{};
     float       radius;
@@ -38,10 +39,10 @@ PointLightSystem::PointLightSystem(ft_Device& device, VkRenderPass renderPass, V
 
 PointLightSystem::~PointLightSystem()
 {
-  vkDestroyPipelineLayout(this->_device.device(), this->_pipelineLayout, nullptr);
+    vkDestroyPipelineLayout(this->_device.device(), this->_pipelineLayout, nullptr);
 }
 
-void PointLightSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout)
+void    PointLightSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout)
 {
     VkPushConstantRange pushConstantRange{};
     pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -50,7 +51,7 @@ void PointLightSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayou
 
     std::vector<VkDescriptorSetLayout>  descriptorSetLayouts{globalSetLayout};
 
-    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+    VkPipelineLayoutCreateInfo  pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
     pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
@@ -65,8 +66,8 @@ void    PointLightSystem::createPipeline(VkRenderPass renderPass)
 {
     assert(this->_pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
-    PipelineConfigInfo pipelineConfig{};
-    ft_Pipeline::defaultPipelineConfigInfo(pipelineConfig);//, this->_device);
+    PipelineConfigInfo  pipelineConfig{};
+    ft_Pipeline::defaultPipelineConfigInfo(pipelineConfig);
     ft_Pipeline::enableAlphaBlending(pipelineConfig);
     pipelineConfig.attributeDescriptions.clear();
     pipelineConfig.bindingDescriptions.clear();
@@ -82,9 +83,11 @@ void    PointLightSystem::createPipeline(VkRenderPass renderPass)
 
 void    PointLightSystem::update(FrameInfo& frameInfo, GlobalUbo& ubo)
 {
-    auto    rotateLight = glm::rotate(glm::mat4(1.f), .5f * frameInfo.frameTime, {0.f, -1.f, 0.f});
-    int lightIndex = 0;
-    for (auto& kv : frameInfo.gameObjects) {
+    glm::mat4   rotateLight = glm::rotate(glm::mat4(1.f), .5f * frameInfo.frameTime, {0.f, -1.f, 0.f});
+    int         lightIndex = 0;
+
+    for (auto& kv : frameInfo.gameObjects)
+    {
         auto& obj = kv.second;
         if (obj.pointLight == nullptr)
             continue;
@@ -107,7 +110,8 @@ void    PointLightSystem::render(FrameInfo& frameInfo)
 {
     // sort lights
     std::map<float, ft_GameObject::id_t> sorted;
-    for (auto& kv : frameInfo.gameObjects) {
+    for (auto& kv : frameInfo.gameObjects)
+    {
         auto& obj = kv.second;
         if (obj.pointLight == nullptr)
             continue;
@@ -131,9 +135,10 @@ void    PointLightSystem::render(FrameInfo& frameInfo)
         nullptr);
 
     // iterate through sorted lights in reverse order
-    for (auto it = sorted.rbegin(); it != sorted.rend(); ++it) {
+    for (std::map<float, ft_GameObject::id_t>::reverse_iterator it = sorted.rbegin(); it != sorted.rend(); ++it)
+    {
         // use game obj id to find light object
-        auto& obj = frameInfo.gameObjects.at(it->second);
+        ft_GameObject&  obj = frameInfo.gameObjects.at(it->second);
 
         PointLightPushConstants push{};
         push.position = glm::vec4(obj.transform.translation, 1.f);
@@ -147,6 +152,6 @@ void    PointLightSystem::render(FrameInfo& frameInfo)
             0,
             sizeof(PointLightPushConstants),
             &push);
-        vkCmdDraw(frameInfo.commandBuffer, 6, 1, 0, 0);
+        vkCmdDraw(frameInfo.commandBuffer, 1, 1, 0, 0);
     }
 }

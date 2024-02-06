@@ -19,22 +19,16 @@
 #include <functional>
 #include <cstdlib>
 
-#include "../incs/Mesh.hpp"
 #include "../incs/Display.hpp"
 
-// #include "../incs/Material.hpp"
-
-int main(int ac, char **av)
+int	main(int ac, char **av)
 {
-	// static_cast<void>(ac);
 	Display	app;
-	Mesh	mesh;
 
 	try
 	{
 		if (ac < 2 || ac > 3)
 			throw std::invalid_argument("Invalid number of args!");
-		// mesh.LoadObjModel(av[1]);
 		app.setFile(av[1]);
 		if (ac == 3)
 			app.setText(av[2]);
@@ -45,7 +39,6 @@ int main(int ac, char **av)
 		std::cerr << e.what() << std::endl;
 		return EXIT_FAILURE;
 	}
-
 	return EXIT_SUCCESS;
 }
 

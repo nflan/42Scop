@@ -33,16 +33,14 @@ class RenderSystem {
         ~RenderSystem();
 
         RenderSystem(const RenderSystem &) = delete;
-        RenderSystem &operator=(const RenderSystem &) = delete;
+        RenderSystem    &operator=(const RenderSystem &) = delete;
 
-        void    update(FrameInfo &frameInfo, GlobalUbo &ubo);
         void    update(ft_GameObject& model, GlobalUbo& ubo);
-        void    renderGameObjects(FrameInfo &frameInfo);
         void    renderGameObjects(FrameInfo& frameInfo, std::unique_ptr<ft_Buffer>* buffer, GlobalUbo& ubo);
 
     private:
-        void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
-        void createPipeline(VkRenderPass renderPass);
+        void    createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
+        void    createPipeline(VkRenderPass renderPass);
 
         ft_Device&                      _device;
         std::string                     _shader;

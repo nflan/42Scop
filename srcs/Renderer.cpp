@@ -39,9 +39,7 @@ void    ft_Renderer::recreateSwapChain()
     vkDeviceWaitIdle(this->_device.device());
 
     if (this->_swapChain == nullptr)
-    {
         this->_swapChain = std::make_unique<ft_SwapChain>(this->_device, extent);
-    }
     else
     {
         std::shared_ptr<ft_SwapChain> oldSwapChain = std::move(this->_swapChain);
@@ -90,13 +88,12 @@ VkCommandBuffer ft_Renderer::beginFrame()
 
     this->_isFrameStarted = true;
 
-    VkCommandBuffer_T*    commandBuffer = this->getCurrentCommandBuffer();
+    VkCommandBuffer_T*          commandBuffer = this->getCurrentCommandBuffer();
     VkCommandBufferBeginInfo    beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-    if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
+    if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
         throw std::runtime_error("failed to begin recording command buffer!");
-    }
     return commandBuffer;
 }
 
@@ -104,11 +101,11 @@ void ft_Renderer::endFrame()
 {
     assert(this->_isFrameStarted && "Can't call endFrame while frame is not in progress");
 
-    auto commandBuffer = getCurrentCommandBuffer();
+    VkCommandBuffer commandBuffer = getCurrentCommandBuffer();
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
         throw std::runtime_error("failed to record command buffer!");
 
-    auto result = this->_swapChain->submitCommandBuffers(&commandBuffer, &this->_currentImageIndex);
+    VkResult    result = this->_swapChain->submitCommandBuffers(&commandBuffer, &this->_currentImageIndex);
     
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || this->_window.wasWindowResize())
     {
@@ -144,19 +141,19 @@ void    ft_Renderer::beginSwapChainRenderPass(VkCommandBuffer commandBuffer)
 
     vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-    VkViewport viewport{};
+    VkViewport  viewport{};
     viewport.x = 0.f;
     viewport.y = 0.f;// pour inverse viewport, mettre la height (a faire au debut du projet ptete)
     viewport.width = static_cast<float>(this->_swapChain->getSwapChainExtent().width);
     viewport.height = static_cast<float>(this->_swapChain->getSwapChainExtent().height); // on peut inverser l'axe dans le viewport mais ca inverse tous les autres calculs et ca trigger les validations layers
     viewport.minDepth = 0.f;
     viewport.maxDepth = 1.f;
-    VkRect2D scissor{{0, 0}, this->_swapChain->getSwapChainExtent()};
+    VkRect2D    scissor{{0, 0}, this->_swapChain->getSwapChainExtent()};
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 }
 
-void ft_Renderer::endSwapChainRenderPass(VkCommandBuffer commandBuffer)
+void    ft_Renderer::endSwapChainRenderPass(VkCommandBuffer commandBuffer)
 {
     assert(this->_isFrameStarted && "Can't call endSwapChainRenderPass if frame is not in progress");
     assert(commandBuffer == getCurrentCommandBuffer() && "Can't end render pass on command buffer from a different frame");

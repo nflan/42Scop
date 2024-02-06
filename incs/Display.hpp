@@ -23,7 +23,6 @@
 
 #include <chrono>
 #include "tools.hpp"
-#include "Mesh.hpp"
 #include "Window.hpp"
 #include "Device.hpp"
 #include "Renderer.hpp"
@@ -74,9 +73,9 @@ class Display
 		void	transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
 
 		// Mesh						_mesh;
-		std::string					_file;
-		std::string					_textFile;
-		std::vector<std::string>	_textFiles;
+		std::string							_file;
+		std::string							_textFile;
+		std::vector<std::string>			_textFiles;
 
 		ft_Window							_window{WIDTH, HEIGHT, "FT_SCOP"};
 		ft_Device							_device{_window};

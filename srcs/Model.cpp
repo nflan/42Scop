@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include "../incs/Model.hpp"
-
 #include "../incs/tools.hpp"
 
 // libs
@@ -23,7 +22,8 @@
 #include <cstring>
 #include <unordered_map>
 
-namespace std {
+namespace std
+{
     template <>
     struct hash<Vertex> {
         size_t operator()(Vertex const &vertex) const {
@@ -34,83 +34,89 @@ namespace std {
     };
 }
 
-// ft_Model::ft_Model(ft_Device &device, const ft_Model::Builder &builder) : _device{device}
-// {
-//     createVertexBuffers(builder._vertices);
-//     createIndexBuffers(builder._indices);
-//     if (builder._mtlFile.size())
-//         createMaterial(builder._path + builder._mtlFile);
-// }
-
 ft_Model::ft_Model(ft_Device &device, std::string mtlFile, const std::vector<Vertex> &vertices, const std::vector<uint32_t> &indices, const Material &material) : _device{device}, _material(material), _mtlFile(mtlFile)
 {
     createVertexBuffers(vertices);
     createIndexBuffers(indices);
-    // if (builder._mtlFile.size())
-    //     createMaterial(builder._path + builder._mtlFile);
 }
 
 ft_Model::~ft_Model() {}
+
+float   ft_Model::calculateBoundingSize()
+{
+    // Calculate the differences along each axis
+    float deltaX = this->_maxVertice.x - this->_minVertice.x;
+    float deltaY = this->_maxVertice.y - this->_minVertice.y;
+    float deltaZ = this->_maxVertice.z - this->_minVertice.z;
+
+    // Calculate the bounding size (distance between max and min along each axis)
+    float boundingSize = glm::sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
+
+    return boundingSize;
+}
 
 std::vector<std::shared_ptr<ft_Model>> ft_Model::createModelFromFile(ft_Device &device, const std::string &filepath)
 {
     std::vector<std::shared_ptr<ft_Model>>  Models;
 
-    // Builder builder{};
-    // builder.loadModel(filepath);
     Loader  load;
     load.LoadFile(filepath);
-    for (const Meshou& mesh : load.LoadedMeshes)
+    for (const Mesh& mesh : load.LoadedMeshes)
     {
-        Models.emplace_back(make_unique<ft_Model>(device, load._mtlFile, mesh.Vertices, mesh.Indices, mesh.MeshMaterial));
+        Models.emplace_back(make_unique<ft_Model>(device, load._mtlFile, mesh._vertices, mesh._indices, mesh._meshMaterial));
+    }
+
+    glm::vec3   scale = glm::vec3(0.f);
+    glm::vec3   tmpCenter = glm::vec3(0.f);
+    float       maxBoundarySize = 0.f;
+
+    for (std::shared_ptr<ft_Model>& model : Models)
+    {
+        float   boundarySize = model->calculateBoundingSize();
+        tmpCenter += model->getCenterOfObj();
+        if (maxBoundarySize < boundarySize)
+        {
+            scale = model->getScaleObj();
+            maxBoundarySize = boundarySize;
+        }
+    }
+    for (std::shared_ptr<ft_Model>& model : Models)
+    {
+        model->setCenterOfObj(tmpCenter / glm::vec3(Models.size()));
+        model->setScaleObj(scale);
     }
     return Models;
-    // builder._vertices = load.LoadedMeshes[0].Vertices;
-    // builder._indices = load.LoadedMeshes[0].Indices;
-    // builder._file = filepath;
-    // return std::make_unique<ft_Model>(device, builder);
 }
-
-// void    ft_Model::createMaterial(const std::string& mtlFile)
-// {
-//     this->_mtlFile = mtlFile;
-//     this->_material = ft_Material(this->_mtlFile);
-//     if (!this->_material.getFile().size())
-//         this->_mtlFile.clear();
-// }
 
 void    ft_Model::createVertexBuffers(const std::vector<Vertex> &vertices)
 {
-    glm::vec3   min(vertices[0].position), max(vertices[0].position);
+    _minVertice = vertices[0].position;
+    _maxVertice = vertices[0].position;
     _centerOfObj = glm::vec3(0.f);
 
     for (const Vertex& vertex : vertices)
     {
-        min = glm::min(min, vertex.position);
-        max = glm::max(max, vertex.position);
+        _minVertice = glm::min(_minVertice, vertex.position);
+        _maxVertice = glm::max(_maxVertice, vertex.position);
         _centerOfObj += vertex.position;
     }
-    std::cerr << "vertex.size = " << vertices.size() << std::endl;
-    std::cout << "min.x + min.y + min.z" << " " << min.x << " " << min.y << " " << min.z << std::endl;
-    std::cout << "max.x + max.y + max.z" << " " << max.x << " " << max.y << " " << max.z << std::endl;
-    std::cout << min.x + min.y + min.z << " " << max.x + max.y + max.z << std::endl;
-    std::cout << glm::distance(min, max) << std::endl;
-    std::cout << static_cast<float>(8 / glm::distance(min, max)) << std::endl;
+    // std::cerr << "centerofobj.all = '" << _centerOfObj << std::endl;
+    // std::cerr << "vertex.size = " << vertices.size() << std::endl;
+    // std::cout << "min.x + min.y + min.z" << " " << min.x << " " << min.y << " " << min.z << std::endl;
+    // std::cout << "max.x + max.y + max.z" << " " << max.x << " " << max.y << " " << max.z << std::endl;
+    // std::cout << min.x + min.y + min.z << " " << max.x + max.y + max.z << std::endl;
+    // std::cout << glm::distance(min, max) << std::endl;
+    // std::cout << static_cast<float>(8.f / glm::distance(min, max)) << std::endl;
 
-    // glm::vec3 objectSize = max - min;
-    // float maxDimension = glm::max(objectSize.x, glm::max(objectSize.y, objectSize.z));
-    // _scaleObj = glm::vec3(8.f / maxDimension);
+    _objectSize = _maxVertice - _minVertice;
+    float maxDimension = glm::max(_objectSize.x, glm::max(_objectSize.y, _objectSize.z));
+    _scaleObj = glm::vec3(6.f / maxDimension);//change 6.f to set the scaling
 
-    _scaleObj = static_cast<float>(8 / glm::distance(min, max));
-
-    if (_scaleObj < 0)
-        _scaleObj *= -1;
-    std::cerr << "scale.x = " << _scaleObj << std::endl;
-    // _centerOfObj = _scaleObj * _centerOfObj;
     _centerOfObj /= static_cast<float>(vertices.size());
     this->_vertexCount = static_cast<uint64_t>(vertices.size());
 
     assert(this->_vertexCount >= 3 && "Vertex count must be at least 3");
+
     VkDeviceSize    bufferSize = sizeof(vertices[0]) * this->_vertexCount;
     uint32_t        vertexSize = sizeof(vertices[0]);
 
@@ -141,12 +147,10 @@ void    ft_Model::createIndexBuffers(const std::vector<uint32_t> &indices)
     this->_hasIndexBuffer = this->_indexCount > 0;
 
     if (!this->_hasIndexBuffer)
-    {
         return;
-    }
 
     VkDeviceSize    bufferSize = sizeof(indices[0]) * this->_indexCount;
-    uint32_t    indexSize = sizeof(indices[0]);
+    uint32_t        indexSize = sizeof(indices[0]);
 
     ft_Buffer   stagingBuffer{
         this->_device,
@@ -172,30 +176,24 @@ void    ft_Model::createIndexBuffers(const std::vector<uint32_t> &indices)
 void    ft_Model::draw(VkCommandBuffer commandBuffer)
 {
     if (this->_hasIndexBuffer)
-    {
         vkCmdDrawIndexed(commandBuffer, this->_indexCount, 1, 0, 0, 0);
-    }
     else
-    {
         vkCmdDraw(commandBuffer, this->_vertexCount, 1, 0, 0);
-    }
 }
 
 void    ft_Model::bind(VkCommandBuffer commandBuffer)
 {
-    VkBuffer buffers[] = {this->_vertexBuffer->getBuffer()};
-    VkDeviceSize offsets[] = {0};
-    vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
+    VkBuffer        &buffers = this->_vertexBuffer->getBuffer();
+    VkDeviceSize    offsets[] = {0};
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &buffers, offsets);
 
     if (this->_hasIndexBuffer)
-    {
         vkCmdBindIndexBuffer(commandBuffer, this->_indexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32);
-    }
 }
 
 std::vector<VkVertexInputBindingDescription>     Vertex::getBindingDescriptions()
 {
-    std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
+    std::vector<VkVertexInputBindingDescription>    bindingDescriptions(1);
     bindingDescriptions[0].binding = 0;
     bindingDescriptions[0].stride = sizeof(Vertex);
     bindingDescriptions[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
@@ -205,7 +203,7 @@ std::vector<VkVertexInputBindingDescription>     Vertex::getBindingDescriptions(
 
 std::vector<VkVertexInputAttributeDescription>   Vertex::getAttributeDescriptions()
 {
-    std::vector<VkVertexInputAttributeDescription> attributeDescriptions{};
+    std::vector<VkVertexInputAttributeDescription>  attributeDescriptions{};
 
     attributeDescriptions.push_back({0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position)});
     attributeDescriptions.push_back({1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color)});
@@ -213,151 +211,4 @@ std::vector<VkVertexInputAttributeDescription>   Vertex::getAttributeDescription
     attributeDescriptions.push_back({3, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)});
 
     return attributeDescriptions;
-}
-
-/*void    ft_Model::Builder::loadModel(const std::string &filepath)
-{
-    tinyobj::attrib_t attrib;
-    std::vector<tinyobj::shape_t> shapes;
-    std::vector<tinyobj::material_t> materials;
-    std::string warn, err;
-
-    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filepath.c_str())) {
-        throw std::runtime_error(warn + err);
-    }
-
-    vertices.clear();
-    indices.clear();
-
-    std::unordered_map<Vertex, uint32_t> uniqueVertices{};
-    for (const auto &shape : shapes) {
-        for (const auto &index : shape.mesh.indices) {
-        Vertex vertex{};
-
-        if (index.vertex_index >= 0) {
-            vertex.position = {
-                attrib.vertices[3 * index.vertex_index + 0],
-                attrib.vertices[3 * index.vertex_index + 1],
-                attrib.vertices[3 * index.vertex_index + 2],
-            };
-
-            vertex.color = {
-                attrib.colors[3 * index.vertex_index + 0],
-                attrib.colors[3 * index.vertex_index + 1],
-                attrib.colors[3 * index.vertex_index + 2],
-            };
-        }
-
-        if (index.normal_index >= 0) {
-            vertex.normal = {
-                attrib.normals[3 * index.normal_index + 0],
-                attrib.normals[3 * index.normal_index + 1],
-                attrib.normals[3 * index.normal_index + 2],
-            };
-        }
-
-        if (index.texcoord_index >= 0) {
-            vertex.uv = {
-                attrib.texcoords[2 * index.texcoord_index + 0],
-                attrib.texcoords[2 * index.texcoord_index + 1],
-            };
-        }
-
-        if (uniqueVertices.count(vertex) == 0) {
-            uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
-            vertices.push_back(vertex);
-        }
-        indices.push_back(uniqueVertices[vertex]);
-        }
-    }
-}*/
-
-// void	ft_Model::Builder::loadModel(const std::string &filepath)
-// {
-// 	tinyobj::attrib_t	attrib;
-//     std::vector<tinyobj::shape_t>	shapes;
-//     std::vector<tinyobj::material_t>	materials;
-//     std::string	warn, err;
-
-//     if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filepath.c_str()))
-//         throw std::runtime_error(warn + err);
-
-// 	std::unordered_map<Vertex, uint32_t> uniqueVertices{};
-
-// 	for (const auto& shape : shapes)
-// 	{
-// 		for (const auto& index : shape.mesh.indices)
-// 		{
-// 			Vertex vertex{};
-// 			vertex.position = {
-// 				attrib.vertices[3 * index.vertex_index + 0] * -1,
-// 				attrib.vertices[3 * index.vertex_index + 1] * -1,
-// 				attrib.vertices[3 * index.vertex_index + 2] * -1
-// 			};
-
-// 			vertex.uv = {
-// 				attrib.texcoords[2 * index.texcoord_index + 0],
-// 				1.f - attrib.texcoords[2 * index.texcoord_index + 1]//textures a l'envers parce que OBJ part d'en bas a gauche et Vulkan en haut a gauche
-// 			};
-
-// 			vertex.color = {1.f, 1.f, 1.f};
-
-// 			if (uniqueVertices.count(vertex) == 0)
-// 			{
-// 				uniqueVertices[vertex] = static_cast<uint32_t>(this->_vertices.size());
-// 				this->_vertices.push_back(vertex);
-// 			}
-
-// 			this->_indices.push_back(uniqueVertices[vertex]);
-// 		}
-// 	}
-// }
-
-void	ft_Model::Builder::loadModel(const std::string &filepath)
-{
-    Mesh    mesh;
-
-    mesh.loadObjModel(filepath);
-    this->_path = filepath.substr(0, filepath.find_last_of('/') + 1);
-    this->_mtlFile = mesh.getMtlFile();
-
-	this->_vertices.clear();
-    this->_indices.clear();
-	std::unordered_map<Vertex, uint32_t> uniqueVertices;
-    float y = 0.;
-
-	for (uint64_t i = 0; i < mesh.getFaceIndex().size(); i++)
-	{
-		Vertex  vertex{};
-        glm::vec3   vertices = mesh.getMeshVertices()[i];
-
-		vertex.position = -vertices; // on peut inverser l'axe dans le viewport mais ca inverse tous les autres calculs et ca trigger les validations layers
-        if (mesh.getNormCoord().size() > i)
-            vertex.normal = mesh.getNormCoord()[i];
-        else
-            vertex.normal = -vertices;
-		if (mesh.getTexCoord().size() > i)
-			vertex.uv = mesh.getTexCoord()[i];
-		else
-        {
-            // std::cerr << "allo" << std::endl;
-			vertex.uv = -vertices;
-        }
-        if (i % 3 == 0)
-            y += 0.1;
-        if (y >= .6)
-            y = 0.;
-        // std::cout << "y = " << y << " et i = " << i << std::endl;
-        vertex.color = glm::vec3(y);
-		// vertex.color = {static_cast <float> (rand()) / static_cast <float> (RAND_MAX), static_cast <float> (rand()) / static_cast <float> (RAND_MAX), static_cast <float> (rand()) / static_cast <float> (RAND_MAX)};
-
-		if (uniqueVertices.count(vertex) == 0)
-		{
-			uniqueVertices[vertex] = static_cast<uint64_t>(this->_vertices.size());
-			this->_vertices.push_back(vertex);
-		}
-		// this->_vertices.push_back(vertex);
-		// this->_indices.push_back(this->_indices.size());
-		this->_indices.push_back(uniqueVertices[vertex]);
-	}
 }

@@ -21,7 +21,7 @@
 #include <cmath>
 
 // local callback functions
-static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback( // les prototypes permettent de compiler sur tous les os
+static VKAPI_ATTR VkBool32 VKAPI_CALL	debugCallback( // les prototypes permettent de compiler sur tous les os
 		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 		VkDebugUtilsMessageTypeFlagsEXT messageType,
 		const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
@@ -78,10 +78,7 @@ VkResult	CreateDebugUtilsMessengerEXT(
 		return VK_ERROR_EXTENSION_NOT_PRESENT;
 }
 
-void DestroyDebugUtilsMessengerEXT(
-    VkInstance instance,
-    VkDebugUtilsMessengerEXT debugMessenger,
-    const VkAllocationCallbacks* pAllocator)
+void	DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator)
 {
 	auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
 	if (func != nullptr)
@@ -91,7 +88,6 @@ void DestroyDebugUtilsMessengerEXT(
 // class member functions
 ft_Device::ft_Device(ft_Window &window): _window{window}
 {
-	// _mipLevels = 1;
     createInstance();
     setupDebugMessenger();
     createSurface();
@@ -112,7 +108,7 @@ ft_Device::~ft_Device()
 	vkDestroyInstance(this->_instance, nullptr);
 }
 
-void ft_Device::createInstance()
+void	ft_Device::createInstance()
 {
 	if (enableValidationLayers && !checkValidationLayerSupport())
 		throw std::runtime_error("validation layers requested, but not available!");
@@ -141,7 +137,8 @@ void ft_Device::createInstance()
 
 		populateDebugMessengerCreateInfo(debugCreateInfo);
 		createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*) &debugCreateInfo;
-	} else
+	}
+	else
 	{
 		createInfo.enabledLayerCount = 0;
 		createInfo.pNext = nullptr;
@@ -155,7 +152,7 @@ void ft_Device::createInstance()
   	hasGflwRequiredInstanceExtensions();
 }
 
-void ft_Device::pickPhysicalDevice()
+void	ft_Device::pickPhysicalDevice()
 {
 	uint32_t deviceCount = 0;
 	vkEnumeratePhysicalDevices(this->_instance, &deviceCount, nullptr);
@@ -165,7 +162,7 @@ void ft_Device::pickPhysicalDevice()
 	std::vector<VkPhysicalDevice> devices(deviceCount);
 	vkEnumeratePhysicalDevices(this->_instance, &deviceCount, devices.data());
 
-	//selection des cg
+	//Select Graphic Card
 
 	for (const auto& device : devices)
 	{
@@ -173,7 +170,6 @@ void ft_Device::pickPhysicalDevice()
 		{
 			this->_physicalDevice = device;
 			this->_msaaSamples = getMaxUsableSampleCount(VK_SAMPLE_COUNT_8_BIT);
-			std::cerr << "msaasamples = " << this->_msaaSamples << std::endl;
 			break;
 		}
 	}
@@ -181,17 +177,17 @@ void ft_Device::pickPhysicalDevice()
 	// L'utilisation d'une map permet de les trier automatiquement de manière ascendante
 	std::multimap<int, VkPhysicalDevice>	candidates;
 
-	for (const auto& device : devices) {
+	for (const auto& device : devices)
+	{
 		int score = rateDeviceSuitability(device);
 		candidates.insert(std::make_pair(score, device));
 	}
 
 	// Voyons si la meilleure possède les fonctionnalités dont nous ne pouvons nous passer
-	if (candidates.rbegin()->first > 0) {
+	if (candidates.rbegin()->first > 0)
 		this->_physicalDevice = candidates.rbegin()->second;
-	} else {
+	else
 		throw std::runtime_error("failed to find a suitable GPU!");
-	}
 }
 
 VkSampleCountFlagBits	ft_Device::getMaxUsableSampleCount(VkSampleCountFlags requestedSampleCount)
@@ -257,7 +253,7 @@ int	ft_Device::rateDeviceSuitability(VkPhysicalDevice device)
 	return score;
 }
 
-void ft_Device::createLogicalDevice()
+void	ft_Device::createLogicalDevice()
 {
 	QueueFamilyIndices	indices = findQueueFamilies(this->_physicalDevice);
 
@@ -293,17 +289,15 @@ void ft_Device::createLogicalDevice()
 	if (enableValidationLayers) {
 		createInfo.enabledLayerCount = static_cast<uint32_t>(this->_validationLayers.size());
 		createInfo.ppEnabledLayerNames = this->_validationLayers.data();
-	} else {
+	} else
 		createInfo.enabledLayerCount = 0;
-	}
-	if (vkCreateDevice(this->_physicalDevice, &createInfo, nullptr, &this->_device_) != VK_SUCCESS) {
+	if (vkCreateDevice(this->_physicalDevice, &createInfo, nullptr, &this->_device_) != VK_SUCCESS)
 		throw std::runtime_error("failed to create logical device!");
-	}
 	vkGetDeviceQueue(this->_device_, indices.graphicsFamily, 0, &this->_graphicsQueue_); //0 est l'index, qu'une queue ici donc juste 0
 	vkGetDeviceQueue(this->_device_, indices.presentFamily, 0, &this->_presentQueue_);
 }
 
-void ft_Device::createCommandPool()
+void	ft_Device::createCommandPool()
 {
     QueueFamilyIndices queueFamilyIndices = findPhysicalQueueFamilies();
 
@@ -314,17 +308,16 @@ void ft_Device::createCommandPool()
         VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
         //VK_COMMAND_POOL_CREATE_TRANSIENT_BIT : informe que les command buffers sont ré-enregistrés très souvent, ce qui peut inciter Vulkan (et donc le driver) à ne pas utiliser le même type d'allocation
         //VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT : permet aux command buffers d'être ré-enregistrés individuellement, ce que les autres configurations ne permettent pas
-    if (vkCreateCommandPool(this->_device_, &poolInfo, nullptr, &this->_commandPool) != VK_SUCCESS) {
+    if (vkCreateCommandPool(this->_device_, &poolInfo, nullptr, &this->_commandPool) != VK_SUCCESS)
         throw std::runtime_error("failed to create command pool!");
-    }
 }
 
-void ft_Device::createSurface()
+void	ft_Device::createSurface()
 {
     this->_window.createWindowSurface(this->_instance, &this->_surface_);
 }
 
-bool ft_Device::isDeviceSuitable(VkPhysicalDevice device)
+bool	ft_Device::isDeviceSuitable(VkPhysicalDevice device)
 {
 	bool	extensionsSupported = checkDeviceExtensionSupport(device);
 
@@ -427,45 +420,45 @@ void    ft_Device::hasGflwRequiredInstanceExtensions()
 
 	// std::cout << "required extensions:" << std::endl;
 	auto requiredExtensions = getRequiredExtensions();
-	for (const auto &required : requiredExtensions) {
+	for (const auto &required : requiredExtensions)
+	{
 		std::cout << "\t" << required << std::endl;
-		if (available.find(required) == available.end()) {
-		throw std::runtime_error("Missing required glfw extension");
-		}
+		if (available.find(required) == available.end())
+			throw std::runtime_error("Missing required glfw extension");
 	}
 }
 
 bool    ft_Device::checkDeviceExtensionSupport(VkPhysicalDevice device)
 {
-  uint32_t extensionCount;
-  vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+	uint32_t	extensionCount;
+	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
 
-  std::vector<VkExtensionProperties>    availableExtensions(extensionCount);
-  vkEnumerateDeviceExtensionProperties(
-      device,
-      nullptr,
-      &extensionCount,
-      availableExtensions.data());
+	std::vector<VkExtensionProperties>    availableExtensions(extensionCount);
+	vkEnumerateDeviceExtensionProperties(
+		device,
+		nullptr,
+		&extensionCount,
+		availableExtensions.data());
 
-  std::set<std::string> requiredExtensions(this->_deviceExtensions.begin(), this->_deviceExtensions.end());
+	std::set<std::string>	requiredExtensions(this->_deviceExtensions.begin(), this->_deviceExtensions.end());
 
-  for (const auto &extension : availableExtensions)
-    requiredExtensions.erase(extension.extensionName);
+	for (const auto &extension : availableExtensions)
+		requiredExtensions.erase(extension.extensionName);
 
-  return requiredExtensions.empty();
+	return requiredExtensions.empty();
 }
 
-QueueFamilyIndices  ft_Device::findQueueFamilies(VkPhysicalDevice device)
+QueueFamilyIndices	ft_Device::findQueueFamilies(VkPhysicalDevice device)
 {
-    QueueFamilyIndices indices;
+    QueueFamilyIndices	indices;
+    uint32_t			queueFamilyCount = 0;
+    
+	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
 
-    uint32_t queueFamilyCount = 0;
-    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-
-    std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+    std::vector<VkQueueFamilyProperties>	queueFamilies(queueFamilyCount);
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
-    int i = 0;
+    uint32_t	i = 0;
     for (const auto &queueFamily : queueFamilies)
     {
         if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
@@ -489,7 +482,7 @@ QueueFamilyIndices  ft_Device::findQueueFamilies(VkPhysicalDevice device)
     return indices;
 }
 
-SwapChainSupportDetails ft_Device::querySwapChainSupport(VkPhysicalDevice device)
+SwapChainSupportDetails	ft_Device::querySwapChainSupport(VkPhysicalDevice device)
 {
 	SwapChainSupportDetails	details;
 
@@ -534,7 +527,6 @@ uint32_t    ft_Device::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags
 {
 	VkPhysicalDeviceMemoryProperties	memProperties;
 	//on recupere les types de memoire de la CG
-	//on ne va pas le faire mais on peut choisir celle qui est la plus performante !
 	vkGetPhysicalDeviceMemoryProperties(this->_physicalDevice, &memProperties);
 
 	//on cherche un type de memoire qui correspond au buffer
@@ -549,8 +541,7 @@ VkFormat	ft_Device::findDepthFormat()
 	return findSupportedFormat(
         {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
         VK_IMAGE_TILING_OPTIMAL,
-        VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
-    );
+        VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 }
 
 void    ft_Device::createBuffer(
@@ -560,20 +551,19 @@ void    ft_Device::createBuffer(
     VkBuffer &buffer,
     VkDeviceMemory &bufferMemory)
 {
-	VkBufferCreateInfo bufferInfo{};
+	VkBufferCreateInfo	bufferInfo{};
 	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	bufferInfo.size = size;
 	bufferInfo.usage = usage;
 	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-	if (vkCreateBuffer(this->_device_, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+	if (vkCreateBuffer(this->_device_, &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
         throw std::runtime_error("failed to create vertex buffer!");
-	}
 
-	VkMemoryRequirements memRequirements;
+	VkMemoryRequirements	memRequirements;
 	vkGetBufferMemoryRequirements(this->_device_, buffer, &memRequirements);
 
-	VkMemoryAllocateInfo allocInfo{};
+	VkMemoryAllocateInfo	allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	allocInfo.allocationSize = memRequirements.size;
 	allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
@@ -587,7 +577,7 @@ void    ft_Device::createBuffer(
 	 */
 }
 
-VkCommandBuffer ft_Device::beginSingleTimeCommands()
+VkCommandBuffer	ft_Device::beginSingleTimeCommands()
 {
     VkCommandBufferAllocateInfo	allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -595,10 +585,10 @@ VkCommandBuffer ft_Device::beginSingleTimeCommands()
     allocInfo.commandPool = this->_commandPool;
     allocInfo.commandBufferCount = 1;
 
-    VkCommandBuffer commandBuffer;
+    VkCommandBuffer	commandBuffer;
     vkAllocateCommandBuffers(this->_device_, &allocInfo, &commandBuffer);
 
-    VkCommandBufferBeginInfo beginInfo{};
+    VkCommandBufferBeginInfo	beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
@@ -624,9 +614,9 @@ void	ft_Device::endSingleTimeCommands(VkCommandBuffer commandBuffer)
 
 void    ft_Device::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
 {
-    VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+    VkCommandBuffer	commandBuffer = beginSingleTimeCommands();
 
-    VkBufferCopy copyRegion{};
+    VkBufferCopy	copyRegion{};
     copyRegion.srcOffset = 0;  // Optional
     copyRegion.dstOffset = 0;  // Optional
     copyRegion.size = size;
@@ -671,10 +661,10 @@ void    ft_Device::createImageWithInfo(
     if (vkCreateImage(this->device(), &imageInfo, nullptr, &image) != VK_SUCCESS)
         throw std::runtime_error("failed to create image!");
 
-    VkMemoryRequirements memRequirements;
+    VkMemoryRequirements	memRequirements;
     vkGetImageMemoryRequirements(this->_device_, image, &memRequirements);
 
-    VkMemoryAllocateInfo allocInfo{};
+    VkMemoryAllocateInfo	allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
     allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);

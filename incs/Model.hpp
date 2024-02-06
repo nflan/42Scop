@@ -15,7 +15,6 @@
 
 #include "Buffer.hpp"
 #include "Device.hpp"
-#include "Mesh.hpp"
 #include "Material.hpp"
 #include "Loader.hpp"
 // libs
@@ -37,7 +36,7 @@ class ft_Model {
             std::string             _path;
             std::string             _file;
 
-            void    loadModel(const std::string &filepath);
+            void                    loadModel(const std::string &filepath);
         };
 
         // ft_Model(ft_Device &device, const ft_Model::Builder &builder);
@@ -45,21 +44,26 @@ class ft_Model {
         ~ft_Model();
 
         ft_Model(const ft_Model &) = delete;
-        ft_Model &operator=(const ft_Model &) = delete;
+        ft_Model    &operator=(const ft_Model &) = delete;
 
         static std::vector<std::shared_ptr<ft_Model>>   createModelFromFile(ft_Device &device, const std::string &filepath);
         glm::vec3                                       getCenterOfObj( void ) { return _centerOfObj; };
-        float                                           getScaleObj( void ) { return _scaleObj; };
+        glm::vec3                                       getScaleObj( void ) { return _scaleObj; };
+        glm::vec3                                       getMaxVertice( void ) { return _maxVertice; };
+        glm::vec3                                       getMinVertice( void ) { return _minVertice; };
+        glm::vec3                                       getObjectSize( void ) { return _objectSize; };
         std::string                                     getMtlFile() { return _mtlFile; };
         const Material&                                 getMaterial() { return _material; };
+        void                                            setCenterOfObj(glm::vec3 c) { _centerOfObj = c; }
+        void                                            setScaleObj(glm::vec3 s) { _scaleObj = s; }
 
-
-        void    bind(VkCommandBuffer commandBuffer);
-        void    draw(VkCommandBuffer commandBuffer);
+        float                                           calculateBoundingSize();
+        void                                            bind(VkCommandBuffer commandBuffer);
+        void                                            draw(VkCommandBuffer commandBuffer);
 
     private:
-        void    createVertexBuffers(const std::vector<Vertex> &vertices);
-        void    createIndexBuffers(const std::vector<uint32_t> &indices);
+        void                        createVertexBuffers(const std::vector<Vertex> &vertices);
+        void                        createIndexBuffers(const std::vector<uint32_t> &indices);
         // void    createMaterial(const std::string& mtlFile);
 
         ft_Device&                  _device;
@@ -71,7 +75,10 @@ class ft_Model {
         std::unique_ptr<ft_Buffer>  _indexBuffer;
         uint32_t                    _indexCount;
         glm::vec3                   _centerOfObj;
-        float                      _scaleObj;
+        glm::vec3                   _scaleObj;
+        glm::vec3                   _maxVertice;
+        glm::vec3                   _minVertice;
+        glm::vec3                   _objectSize;
         std::string                 _mtlFile;
         const Material              _material;
 };

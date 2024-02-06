@@ -32,11 +32,11 @@
  *
  * @return VkResult of the buffer mapping call
  */
-VkDeviceSize    ft_Buffer::getAlignment(VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment) {
-  if (minOffsetAlignment > 0) {
-    return (instanceSize + minOffsetAlignment - 1) & ~(minOffsetAlignment - 1);
-  }
-  return instanceSize;
+VkDeviceSize    ft_Buffer::getAlignment(VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment)
+{
+    if (minOffsetAlignment > 0)
+        return (instanceSize + minOffsetAlignment - 1) & ~(minOffsetAlignment - 1);
+    return instanceSize;
 }
 
 ft_Buffer::ft_Buffer(ft_Device &device, VkDeviceSize instanceSize, uint32_t instanceCount, VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize minOffsetAlignment):
@@ -105,9 +105,7 @@ void    ft_Buffer::writeToBuffer(void *data, VkDeviceSize size, VkDeviceSize off
     assert(this->_mapped && "Cannot copy to unmapped buffer");
 
     if (size == VK_WHOLE_SIZE)
-    {
         memcpy(this->_mapped, data, this->_bufferSize);
-    }
     else
     {
         char *memOffset = (char *) this->_mapped;

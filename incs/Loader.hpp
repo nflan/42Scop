@@ -4,7 +4,6 @@
 #include <vector>
 #include <string>
 #include "Material.hpp"
-#include "Mesh.hpp"
 #include "Vertex.hpp"
 
 class Loader
@@ -30,7 +29,7 @@ class Loader
 
         std::string             _mtlFile;
         // Loaded Mesh Objects
-        std::vector<Meshou>         LoadedMeshes;
+        std::vector<Mesh>         LoadedMeshes;
         // Loaded Vertex Objects
         std::vector<Vertex>         LoadedVertices;
         // Loaded Index Positions

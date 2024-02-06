@@ -204,18 +204,18 @@
 // 		// Variable Set Constructor
 // 		Mesh(std::vector<Vertex>& _Vertices, std::vector<unsigned int>& _Indices)
 // 		{
-// 			Vertices = _Vertices;
-// 			Indices = _Indices;
+// 			_vertices = _Vertices;
+// 			_indices = _Indices;
 // 		}
 // 		// Mesh Name
-// 		std::string MeshName;
+// 		std::string _meshName;
 // 		// Vertex List
-// 		std::vector<Vertex> Vertices;
+// 		std::vector<Vertex> _vertices;
 // 		// Index List
-// 		std::vector<unsigned int> Indices;
+// 		std::vector<unsigned int> _indices;
 
 // 		// Material
-// 		Material MeshMaterial;
+// 		Material _meshMaterial;
 // 	};
 
 // 	// Namespace: Math
@@ -451,8 +451,8 @@
 // 			std::vector<Vector2> TCoords;
 // 			std::vector<Vector3> Normals;
 
-// 			std::vector<Vertex> Vertices;
-// 			std::vector<unsigned int> Indices;
+// 			std::vector<Vertex> _vertices;
+// 			std::vector<unsigned int> _indices;
 
 // 			std::vector<std::string> MeshMatNames;
 
@@ -479,7 +479,7 @@
 // 							<< "\t| vertices > " << Positions.size()
 // 							<< "\t| texcoords > " << TCoords.size()
 // 							<< "\t| normals > " << Normals.size()
-// 							<< "\t| triangles > " << (Vertices.size() / 3)
+// 							<< "\t| triangles > " << (_vertices.size() / 3)
 // 							<< (!MeshMatNames.empty() ? "\t| material: " + MeshMatNames.back() : "");
 // 					}
 // 				}
@@ -505,18 +505,18 @@
 // 					{
 // 						// Generate the mesh to put into the array
 
-// 						if (!Indices.empty() && !Vertices.empty())
+// 						if (!_indices.empty() && !_vertices.empty())
 // 						{
 // 							// Create Mesh
-// 							tempMesh = Mesh(Vertices, Indices);
-// 							tempMesh.MeshName = meshname;
+// 							tempMesh = Mesh(_vertices, _indices);
+// 							tempMesh._meshName = meshname;
 
 // 							// Insert Mesh
 // 							LoadedMeshes.push_back(tempMesh);
 
 // 							// Cleanup
-// 							Vertices.clear();
-// 							Indices.clear();
+// 							_vertices.clear();
+// 							_indices.clear();
 // 							meshname.clear();
 
 // 							meshname = algorithm::tail(curline);
@@ -583,10 +583,10 @@
 // 					std::vector<Vertex> vVerts;
 // 					GenVerticesFromRawOBJ(vVerts, Positions, TCoords, Normals, curline);
 
-// 					// Add Vertices
+// 					// Add _vertices
 // 					for (int i = 0; i < int(vVerts.size()); i++)
 // 					{
-// 						Vertices.push_back(vVerts[i]);
+// 						_vertices.push_back(vVerts[i]);
 
 // 						LoadedVertices.push_back(vVerts[i]);
 // 					}
@@ -595,11 +595,11 @@
 
 // 					VertexTriangluation(iIndices, vVerts);
 
-// 					// Add Indices
+// 					// Add _indices
 // 					for (int i = 0; i < int(iIndices.size()); i++)
 // 					{
-// 						unsigned int indnum = (unsigned int)((Vertices.size()) - vVerts.size()) + iIndices[i];
-// 						Indices.push_back(indnum);
+// 						unsigned int indnum = (unsigned int)((_vertices.size()) - vVerts.size()) + iIndices[i];
+// 						_indices.push_back(indnum);
 
 // 						indnum = (unsigned int)((LoadedVertices.size()) - vVerts.size()) + iIndices[i];
 // 						LoadedIndices.push_back(indnum);
@@ -612,17 +612,17 @@
 // 					MeshMatNames.push_back(algorithm::tail(curline));
 
 // 					// Create new Mesh, if Material changes within a group
-// 					if (!Indices.empty() && !Vertices.empty())
+// 					if (!_indices.empty() && !_vertices.empty())
 // 					{
 // 						// Create Mesh
-// 						tempMesh = Mesh(Vertices, Indices);
-// 						tempMesh.MeshName = meshname;
+// 						tempMesh = Mesh(_vertices, _indices);
+// 						tempMesh._meshName = meshname;
 // 						int i = 2;
 // 						while(1) {
-// 							tempMesh.MeshName = meshname + "_" + std::to_string(i);
+// 							tempMesh._meshName = meshname + "_" + std::to_string(i);
 
 // 							for (auto &m : LoadedMeshes)
-// 								if (m.MeshName == tempMesh.MeshName)
+// 								if (m._meshName == tempMesh._meshName)
 // 									continue;
 // 							break;
 // 						}
@@ -631,8 +631,8 @@
 // 						LoadedMeshes.push_back(tempMesh);
 
 // 						// Cleanup
-// 						Vertices.clear();
-// 						Indices.clear();
+// 						_vertices.clear();
+// 						_indices.clear();
 // 					}
 
 // 					#ifdef OBJL_CONSOLE_OUTPUT
@@ -676,11 +676,11 @@
 
 // 			// Deal with last mesh
 
-// 			if (!Indices.empty() && !Vertices.empty())
+// 			if (!_indices.empty() && !_vertices.empty())
 // 			{
 // 				// Create Mesh
-// 				tempMesh = Mesh(Vertices, Indices);
-// 				tempMesh.MeshName = meshname;
+// 				tempMesh = Mesh(_vertices, _indices);
+// 				tempMesh._meshName = meshname;
 
 // 				// Insert Mesh
 // 				LoadedMeshes.push_back(tempMesh);
@@ -699,7 +699,7 @@
 // 				{
 // 					if (LoadedMaterials[j].name == matname)
 // 					{
-// 						LoadedMeshes[i].MeshMaterial = LoadedMaterials[j];
+// 						LoadedMeshes[i]._meshMaterial = LoadedMaterials[j];
 // 						break;
 // 					}
 // 				}

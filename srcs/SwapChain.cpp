@@ -46,37 +46,38 @@ void ft_SwapChain::init()
 
 ft_SwapChain::~ft_SwapChain()
 {
-    for (auto imageView : this->_swapChainImageViews) {
+    for (VkImageView imageView : this->_swapChainImageViews)
         vkDestroyImageView(this->_device.device(), imageView, nullptr);
-    }
     this->_swapChainImageViews.clear();
 
-    if (this->_swapChain != nullptr) {
+    if (this->_swapChain != nullptr)
+    {
         vkDestroySwapchainKHR(this->_device.device(), this->_swapChain, nullptr);
         this->_swapChain = nullptr;
     }
 
-    for (int i = 0; i < this->_depthImages.size(); i++) {
+    for (std::size_t i = 0; i < this->_depthImages.size(); i++)
+    {
         vkDestroyImageView(this->_device.device(), this->_depthImageViews[i], nullptr);
         vkDestroyImage(this->_device.device(), this->_depthImages[i], nullptr);
         vkFreeMemory(this->_device.device(), this->_depthImageMemorys[i], nullptr);
     }
 
-    for (int i = 0; i < this->_colorImages.size(); i++)
+    for (std::size_t i = 0; i < this->_colorImages.size(); i++)
     {
     	vkDestroyImageView(this->_device.device(), this->_colorImageViews[i], nullptr);
         vkDestroyImage(this->_device.device(), this->_colorImages[i], nullptr);
         vkFreeMemory(this->_device.device(), this->_colorImageMemorys[i], nullptr);
     }
 
-    for (auto framebuffer : this->_swapChainFramebuffers) {
+    for (VkFramebuffer framebuffer : this->_swapChainFramebuffers)
         vkDestroyFramebuffer(this->_device.device(), framebuffer, nullptr);
-    }
 
     vkDestroyRenderPass(this->_device.device(), this->_renderPass, nullptr);
 
     // cleanup synchronization objects
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+    for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
         vkDestroySemaphore(this->_device.device(), this->_renderFinishedSemaphores[i], nullptr);
         vkDestroySemaphore(this->_device.device(), this->_imageAvailableSemaphores[i], nullptr);
         vkDestroyFence(this->_device.device(), this->_inFlightFences[i], nullptr);
@@ -113,7 +114,7 @@ VkResult    ft_SwapChain::submitCommandBuffers(const VkCommandBuffer *buffers, u
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
     VkSemaphore waitSemaphores[] = { this->_imageAvailableSemaphores[this->_currentFrame]};
-    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    VkPipelineStageFlags    waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores;
     submitInfo.pWaitDstStageMask = waitStages;
@@ -141,7 +142,7 @@ VkResult    ft_SwapChain::submitCommandBuffers(const VkCommandBuffer *buffers, u
 
     presentInfo.pImageIndices = imageIndex;
 
-    auto result = vkQueuePresentKHR(this->_device.presentQueue(), &presentInfo);
+    VkResult    result = vkQueuePresentKHR(this->_device.presentQueue(), &presentInfo);
 
     this->_currentFrame = (this->_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
@@ -174,7 +175,7 @@ void    ft_SwapChain::createSwapChain()
 	 * Le champ de bits imageUsage spécifie le type d'opérations que nous appliquerons aux images de la swap chain. Dans ce tutoriel nous effectuerons un rendu directement sur les images, nous les utiliserons donc comme color attachement. Vous voudrez peut-être travailler sur une image séparée pour pouvoir appliquer des effets en post-processing. Dans ce cas vous devrez utiliser une valeur comme VK_IMAGE_USAGE_TRANSFER_DST_BIT à la place et utiliser une opération de transfert de mémoire pour placer le résultat final dans une image de la swap chain.
 	*/
     QueueFamilyIndices  indices = this->_device.findPhysicalQueueFamilies();
-    uint32_t queueFamilyIndices[] = {indices.graphicsFamily, indices.presentFamily};
+    uint32_t            queueFamilyIndices[] = {indices.graphicsFamily, indices.presentFamily};
 
 	if (indices.graphicsFamily != indices.presentFamily)
 	{
@@ -213,7 +214,7 @@ void    ft_SwapChain::createSwapChain()
 
 VkImageView ft_SwapChain::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels)
 {
-    VkImageViewCreateInfo viewInfo{};
+    VkImageViewCreateInfo   viewInfo{};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewInfo.image = image;
     viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
@@ -224,7 +225,7 @@ VkImageView ft_SwapChain::createImageView(VkImage image, VkFormat format, VkImag
     viewInfo.subresourceRange.baseArrayLayer = 0;
     viewInfo.subresourceRange.layerCount = 1;
 
-    VkImageView	imageView;
+    VkImageView imageView;
     if (vkCreateImageView(this->_device.device(), &viewInfo, nullptr, &imageView) != VK_SUCCESS)
         throw std::runtime_error("échec de la creation de la vue sur une image!");
 
@@ -242,7 +243,6 @@ void    ft_SwapChain::createImageViews()
 void    ft_SwapChain::createRenderPass()
 {
     //ATTACHEMENTS
-    std::cout << "samples = " << this->_device.getMsaaSamples() << std::endl;
     //Color Attachment
     VkAttachmentDescription colorAttachment = {};
     colorAttachment.format = this->_swapChainImageFormat;
@@ -276,7 +276,7 @@ void    ft_SwapChain::createRenderPass()
     colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 	//SUBPASSES ET REFERENCES AUX ATTACHEMENTS
-	VkAttachmentReference colorAttachmentRef{};
+	VkAttachmentReference  colorAttachmentRef{};
 	colorAttachmentRef.attachment = 0;
 	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     
@@ -284,11 +284,11 @@ void    ft_SwapChain::createRenderPass()
     depthAttachmentRef.attachment = 1;
     depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-	VkAttachmentReference colorAttachmentResolveRef{};
+	VkAttachmentReference   colorAttachmentResolveRef{};
     colorAttachmentResolveRef.attachment = 2;
     colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-    VkSubpassDescription subpass = {};
+    VkSubpassDescription    subpass = {};
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subpass.colorAttachmentCount = 1;
     subpass.pColorAttachments = &colorAttachmentRef;
@@ -316,22 +316,22 @@ void    ft_SwapChain::createRenderPass()
     renderPassInfo.dependencyCount = 1;
     renderPassInfo.pDependencies = &dependency;
 
-    if (vkCreateRenderPass(this->_device.device(), &renderPassInfo, nullptr, &this->_renderPass) != VK_SUCCESS) {
+    if (vkCreateRenderPass(this->_device.device(), &renderPassInfo, nullptr, &this->_renderPass) != VK_SUCCESS)
         throw std::runtime_error("failed to create render pass!");
-    }
 }
 
 void    ft_SwapChain::createFramebuffers()
 {
     this->_swapChainFramebuffers.resize(_swapChainImageViews.size());
-    for (size_t i = 0; i < _swapChainImageViews.size(); i++) {
-		std::array<VkImageView, 3> attachments = {
+    for (std::size_t i = 0; i < _swapChainImageViews.size(); i++)
+    {
+		std::array<VkImageView, 3>  attachments = {
 			this->_colorImageViews[0],
     		this->_depthImageViews[0],
     		this->_swapChainImageViews[i]
 		};
 
-        VkExtent2D swapChainExtent = getSwapChainExtent();
+        VkExtent2D              swapChainExtent = getSwapChainExtent();
         VkFramebufferCreateInfo framebufferInfo{};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         framebufferInfo.renderPass = this->_renderPass;
@@ -342,7 +342,7 @@ void    ft_SwapChain::createFramebuffers()
 		framebufferInfo.layers = 1; //car une seule couche dans la swap chain
 
         if (vkCreateFramebuffer(this->_device.device(), &framebufferInfo, nullptr, &this->_swapChainFramebuffers[i]) != VK_SUCCESS)
-        throw std::runtime_error("failed to create framebuffer!");
+            throw std::runtime_error("failed to create framebuffer!");
     }
 }
 
@@ -370,7 +370,7 @@ void    ft_SwapChain::createImage(uint32_t width, uint32_t height, uint32_t mipL
 	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     imageInfo.samples = numSamples;
 	imageInfo.flags = 0; // Optionnel
-	//Ces image étendues sont des images dont seule une partie est stockée dans la mémoire. Voici une exemple d'utilisation : si vous utilisiez une image 3D pour représenter un terrain à l'aide de voxels, vous pourriez utiliser cette fonctionnalité pour éviter d'utiliser de la mémoire qui au final ne contiendrait que de l'air. Nous ne verrons pas cette fonctionnalité dans ce tutoriel, donnez à flags la valeur 0.
+	//Ces image étendues sont des images dont seule une partie est stockée dans la mémoire. Voici une exemple d'utilisation : si vous utilisiez une image 3D pour représenter un terrain à l'aide de voxels, vous pourriez utiliser cette fonctionnalité pour éviter d'utiliser de la mémoire qui au final ne contiendrait que de l'air.
 
     if (vkCreateImage(this->_device.device(), &imageInfo, nullptr, &image) != VK_SUCCESS)
         throw std::runtime_error("echec de la creation d'une image!");
@@ -452,7 +452,7 @@ void    ft_SwapChain::createSyncObjects()
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
 		if (vkCreateSemaphore(this->_device.device(), &semaphoreInfo, nullptr, &this->_imageAvailableSemaphores[i]) != VK_SUCCESS
             || vkCreateSemaphore(this->_device.device(), &semaphoreInfo, nullptr, &this->_renderFinishedSemaphores[i]) != VK_SUCCESS
@@ -463,7 +463,7 @@ void    ft_SwapChain::createSyncObjects()
 
 VkSurfaceFormatKHR  ft_SwapChain::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats)
 {
-	for (const auto& availableFormat : availableFormats)
+	for (const VkSurfaceFormatKHR& availableFormat : availableFormats)
 		if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
 			return availableFormat;
 	//si ca foire, on pourrait tester d'autres formats un peu moins bien mais dans un soucis de simplicite, on prend le premier venu
@@ -472,44 +472,19 @@ VkSurfaceFormatKHR  ft_SwapChain::chooseSwapSurfaceFormat(const std::vector<VkSu
 
 VkPresentModeKHR    ft_SwapChain::chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes)
 {
-    for (const auto &availablePresentMode : availablePresentModes)
-    {
+    for (const VkPresentModeKHR &availablePresentMode : availablePresentModes)
         if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
-        {
-            // std::cout << "Present mode: Mailbox" << std::endl;
             return availablePresentMode;
-        }
-    }
 
-    // for (const auto &availablePresentMode : availablePresentModes) {
-    //   if (availablePresentMode == VK_PRESENT_MODE_IMMEDIATE_KHR) {
-    //     std::cout << "Present mode: Immediate" << std::endl;
-    //     return availablePresentMode;
-    //   }
-    // }
-
-    // std::cout << "Present mode: V-Sync" << std::endl;
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D ft_SwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities)
+VkExtent2D  ft_SwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities)
 {
     if (capabilities.currentExtent.width != std::numeric_limits<uint64_t>::max())
         return capabilities.currentExtent;
     else
     {
-        /*
-        		int	width, height;
-		glfwGetFramebufferSize(this->_window.getWindow(), &width, &height);
-
-		VkExtent2D actualExtent = {
-			static_cast<uint32_t>(width),
-			static_cast<uint32_t>(height)
-		};
-
-		actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-		actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height); //clamp comme en css pour la taille min et max
-        */
         VkExtent2D actualExtent = this->_windowExtent;
         actualExtent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
         actualExtent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));
@@ -518,7 +493,7 @@ VkExtent2D ft_SwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabi
     }
 }
 
-VkFormat ft_SwapChain::findDepthFormat()
+VkFormat    ft_SwapChain::findDepthFormat()
 {
     return this->_device.findSupportedFormat(
         {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},

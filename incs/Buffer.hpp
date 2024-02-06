@@ -36,7 +36,7 @@ class ft_Buffer {
         VkDescriptorBufferInfo descriptorInfoForIndex(int index);
         VkResult invalidateIndex(int index);
 
-        VkBuffer getBuffer() const { return _buffer; }
+        VkBuffer& getBuffer() { return _buffer; }
         void* getMappedMemory() const { return _mapped; }
         uint32_t getInstanceCount() const { return _instanceCount; }
         VkDeviceSize getInstanceSize() const { return _instanceSize; }

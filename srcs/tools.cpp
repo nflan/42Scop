@@ -26,5 +26,11 @@ void	printMaterial(Material print)
 	std::cout << "Ni = '" << print._ni << "'" << std::endl;
 	std::cout << "d = '" << print._d << "'" << std::endl;
 	if (print._mapKa.size())
-	std::cout << "mapKa = '" << print._mapKa << "'" << std::endl;
+		std::cout << "mapKa = '" << print._mapKa << "'" << std::endl;
+}
+
+std::ostream &  operator<<(std::ostream& o, glm::vec3 vec)
+{
+    o << vec.x << "," << vec.y << "," << vec.z << "'";
+    return o;
 }

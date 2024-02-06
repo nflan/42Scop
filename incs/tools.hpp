@@ -20,18 +20,19 @@
 #include <string>
 #include <iomanip>
 #include <iostream>
+#include "Vertex.hpp"
 
 #define ROTATION 0.0005f
 
-extern bool QUIT;
-extern bool ROBJ;
-extern short	WAY;
-extern float    ROTX;
-extern float    ROTY;
-extern float    ROTZ;
+extern bool         QUIT;
+extern bool         ROBJ;
+extern short	    WAY;
+extern float        ROTX;
+extern float        ROTY;
+extern float        ROTZ;
+extern glm::mat4    ROTATE;
 
 namespace std {
-
 // from: https://stackoverflow.com/a/57595105
     template <typename T, typename... Rest>
     void hashCombine(std::size_t& seed, const T& v, const Rest&... rest)
@@ -39,7 +40,6 @@ namespace std {
         seed ^= std::hash<T>{}(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
         (hashCombine(seed, rest), ...);
     };
-
 }
 
 struct  Material
@@ -47,14 +47,14 @@ struct  Material
     Material()
     {
         _name;
-        _ka = glm::vec3(1.f);
-        _kd = glm::vec3(1.f);
+        _ka = glm::vec3(0.f);
+        _kd = glm::vec3(0.f);
         _ks = glm::vec3(0.f);
         _ke = glm::vec3(0.f);
         _illum = 1;
-        _ns = 512.f;
-        _ni = 0.08f;
-        _d = 1.0f;
+        _ns = 0.f;
+        _ni = 0.f;
+        _d = 0.f;
     }
     std::string         _name;//name
     glm::vec3           _ka;//ambient color
@@ -73,6 +73,27 @@ struct  Material
     std::string         _mapBump;//names a file containing a Bump Map, which should just be an ASCII dump of RGB values
 };
 
+
+struct Mesh
+{
+    // Default Constructor
+    Mesh() {}
+    // Variable Set Constructor
+    Mesh(std::vector<Vertex>& _Vertices, std::vector<unsigned int>& _Indices)
+    {
+        _vertices = _Vertices;
+        _indices = _Indices;
+    }
+    // Mesh Name
+    std::string                 _meshName;
+    // Vertex List
+    std::vector<Vertex>         _vertices;
+    // Index List
+    std::vector<unsigned int>   _indices;
+    // Material
+    Material                    _meshMaterial;
+};
+
 struct  Texture {
 	VkImage			                    _image;
 	VkImageView		                    _imageView;
@@ -81,6 +102,8 @@ struct  Texture {
 	uint32_t		                    _mipLevels;
 };
 
-void    printMaterial(Material);
+void            printMaterial(Material);
+
+std::ostream &  operator<<(std::ostream& o, glm::vec3 vec);
 
 #endif
