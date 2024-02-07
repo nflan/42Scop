@@ -22,12 +22,10 @@
 	VK_KHR_xcb_surface
 	VK_EXT_debug_utils
 
-- find materials in: resources/box_stack.mtl
-resources/box_stack.mtl
+- find materials in: resources/42.mtl
+resources/42.mtl
 
-- mTop_cTop	| vertices > 0	| texcoords > 0	| normals > 0	| triangles > 0- mTop_cTop	| vertices > 8	| texcoords > 4	| normals > 6	| triangles > 0	| material: mat_top
-- mMid_cMid	| vertices > 8	| texcoords > 4	| normals > 6	| triangles > 0	| material: mat_top- mMid_cMid	| vertices > 16	| texcoords > 10	| normals > 12	| triangles > 0	| material: mat_mid
-- mBot_cBot	| vertices > 16	| texcoords > 10	| normals > 12	| triangles > 0	| material: mat_mid- mBot_cBot	| vertices > 24	| texcoords > 14	| normals > 18	| triangles > 0	| material: mat_bot
+- Cube	| vertices > 0	| texcoords > 0	| normals > 0	| triangles > 0- Cube	| vertices > 42	| texcoords > 0	| normals > 0	| triangles > 0	| material: Material
 	blit.srcSubresource.mipLevel = 0
 	blit.srcSubresource.mipLevel = 1
 	blit.srcSubresource.mipLevel = 2
