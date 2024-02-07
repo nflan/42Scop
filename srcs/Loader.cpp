@@ -228,17 +228,10 @@ bool Loader::LoadFile(const std::string& Path)
             std::string pathtomat = "";
 
             if (temp.size() != 1)
-            {
                 for (int i = 0; i < temp.size() - 1; i++)
-                {
                     pathtomat += temp[i] + "/";
-                }
-            }
             while (!isalpha(curline[curline.size() - 1]))
-            {
-                std::cout << "hola" << std::endl;
                 curline.pop_back();
-            }
             pathtomat += tools::ft_tail(curline);
             #ifdef OBJL_CONSOLE_OUTPUT
             std::cout << std::endl << "- find materials in: " << pathtomat << std::endl;
@@ -254,20 +247,22 @@ bool Loader::LoadFile(const std::string& Path)
     #endif
 
     // Deal with last mesh
-
     if (!_indices.empty() && !_vertices.empty())
     { 
-        float       y = 0.f;
         uint64_t    i = 0;
-
+        float       y = 0.f;
         for (Vertex& v : _vertices)
         {
+            std::cerr << "i = " << i << std::endl;
+            std::cerr << "y = " << y << std::endl;
             if (i % 3 == 0)
-                y += 0.1;
-            if (y >= .6)
-                y = 0.;
-            i++;
+                y += .2;
+            if (y >= 1.2)
+                y = 0.f;
+            std::cerr << "y = " << y << std::endl;
+            // v.color = {static_cast <float> (rand()) / static_cast <float> (RAND_MAX), static_cast <float> (rand()) / static_cast <float> (RAND_MAX), static_cast <float> (rand()) / static_cast <float> (RAND_MAX)};
             v.color = glm::vec3(y);
+            i++;
         }
         // Create Mesh
         tempMesh = Mesh(_vertices, _indices);
@@ -280,7 +275,7 @@ bool Loader::LoadFile(const std::string& Path)
     file.close();
 
     // Set Materials for each Mesh
-    for (int i = 0; i < MeshMatNames.size(); i++)
+    for (size_t i = 0; i < MeshMatNames.size(); i++)
     {
         std::string matname = MeshMatNames[i];
 
@@ -297,13 +292,9 @@ bool Loader::LoadFile(const std::string& Path)
     }
 
     if (LoadedMeshes.empty() && LoadedVertices.empty() && LoadedIndices.empty())
-    {
         return false;
-    }
     else
-    {
         return true;
-    }
 }
 
 // Generate vertices from a list of positions, 
@@ -409,11 +400,11 @@ void    Loader::GenVerticesFromRawOBJ(std::vector<Vertex>& oVerts,
         glm::vec3 A = oVerts[0].position - oVerts[1].position;
         glm::vec3 B = oVerts[2].position - oVerts[1].position;
 
-        glm::vec3 normal = tools::ft_CrossV3(B, A);
+        glm::vec3 normal = tools::ft_CrossV3(A, B);
 
         for (size_t i = 0; i < oVerts.size(); i++)
         {
-            oVerts[i].normal = normal;
+            oVerts[i].normal = -normal;
         }
     }
 }
@@ -450,13 +441,9 @@ void    Loader::VertexTriangluation(std::vector<unsigned int>& oIndices,
             // pPrev = the previous vertex in the list
             Vertex pPrev;
             if (i == 0)
-            {
                 pPrev = tVerts[tVerts.size() - 1];
-            }
             else
-            {
                 pPrev = tVerts[i - 1];
-            }
 
             // pCur = the current vertex;
             Vertex pCur = tVerts[i];
@@ -464,13 +451,9 @@ void    Loader::VertexTriangluation(std::vector<unsigned int>& oIndices,
             // pNext = the next vertex in the list
             Vertex pNext;
             if (i == tVerts.size() - 1)
-            {
                 pNext = tVerts[0];
-            }
             else
-            {
                 pNext = tVerts[i + 1];
-            }
 
             // Check to see if there are only 3 verts left
             // if so this is the last triangle

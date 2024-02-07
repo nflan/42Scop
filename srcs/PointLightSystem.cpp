@@ -95,7 +95,7 @@ void    PointLightSystem::update(FrameInfo& frameInfo, GlobalUbo& ubo)
         assert(lightIndex < MAX_LIGHTS && "Point lights exceed maximum specified");
 
         // update light position
-        obj.transform.translation = glm::vec3(rotateLight * glm::vec4(obj.transform.translation, 1.0));
+        obj.transform.translation = glm::vec3(rotateLight * glm::vec4(obj.transform.translation, 1.f));
 
         // copy light to ubo
         ubo.pointLights[lightIndex].position = glm::vec4(obj.transform.translation, 1.f);
@@ -152,6 +152,6 @@ void    PointLightSystem::render(FrameInfo& frameInfo)
             0,
             sizeof(PointLightPushConstants),
             &push);
-        vkCmdDraw(frameInfo.commandBuffer, 1, 1, 0, 0);
+        vkCmdDraw(frameInfo.commandBuffer, 6, 1, 0, 0);
     }
 }

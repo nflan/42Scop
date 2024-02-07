@@ -170,7 +170,7 @@ void	Display::run()
 			this->_renderer.beginSwapChainRenderPass(commandBuffer);
 			
 			this->_renderSystems[RENDER]->renderGameObjects(frameInfo, &this->_buffers[frameIndex], ubo);
-			// this->_pointLightSystems[RENDER]->render(frameInfo);
+			this->_pointLightSystems[RENDER]->render(frameInfo);
 
 			this->_renderer.endSwapChainRenderPass(commandBuffer);
 			this->_renderer.endFrame();
@@ -358,7 +358,7 @@ void	Display::createRenderSystems()
 void	Display::loadGameObjects()
 {
   	std::vector<std::shared_ptr<ft_Model>>	Model = ft_Model::createModelFromFile(this->_device, this->_file);
-	for (uint64_t i = 0; i < Model.size(); i++)
+	for (size_t i = 0; i < Model.size(); i++)
 	{
 		ft_GameObject	gameObj = ft_GameObject::createGameObject();
 		gameObj.model = Model[i];
@@ -371,14 +371,14 @@ void	Display::loadGameObjects()
 
 	for (int i = 0; i < MAX_LIGHTS; i++)
 	{
-		ft_GameObject	pointLight = ft_GameObject::makePointLight(.1f);
+		ft_GameObject	pointLight = ft_GameObject::makePointLight(.03f);
 		pointLight.color = lightColors[i];
 		
 		glm::mat4	rotateLight = glm::rotate(
 			glm::mat4(1.5f),
 			(i * glm::two_pi<float>()) / lightColors.size(),
 			{0.f, -1.f, 0.f});
-		pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-2.f, 0.f, -2.f, 1.f));
+		pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-1.f, -1.f, -2.f, 1.f));
 		this->_gameObjects.emplace(pointLight.getId(), std::move(pointLight));
   	}
 }

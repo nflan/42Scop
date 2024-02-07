@@ -110,7 +110,7 @@ void    ft_Model::createVertexBuffers(const std::vector<Vertex> &vertices)
 
     _objectSize = _maxVertice - _minVertice;
     float maxDimension = glm::max(_objectSize.x, glm::max(_objectSize.y, _objectSize.z));
-    _scaleObj = glm::vec3(6.f / maxDimension);//change 6.f to set the scaling
+    _scaleObj = glm::vec3(5.f / maxDimension);//change 6.f to set the scaling
 
     _centerOfObj /= static_cast<float>(vertices.size());
     this->_vertexCount = static_cast<uint64_t>(vertices.size());
