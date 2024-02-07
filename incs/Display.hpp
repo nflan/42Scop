@@ -22,14 +22,17 @@
 #include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/gtc/matrix_transform.hpp>
 
 #include <chrono>
-#include <iostream>
 #include "tools.hpp"
-#include "QueueFamilyIndices.hpp"
-#include "SwapChainSupportDetails.hpp"
+#include "Window.hpp"
+#include "Device.hpp"
+#include "Renderer.hpp"
+#include "GameObject.hpp"
+#include "PointLightSystem.hpp"
+#include "RenderSystem.hpp"
+#include "Descriptors.hpp"
 #include "UniformBufferObject.hpp"
-#include "Vertex.hpp"
-#include <vector>
-#include <iostream>
+#include "KeyboardMovementController.hpp"
+#include <filesystem>
 #include <stdexcept>
 #include <functional>
 #include <fstream>
@@ -37,26 +40,9 @@
 #include <unordered_map>
 #include <set>
 #include <cstdlib>
-#include <cstring>
 
 const uint32_t	WIDTH = 800;
 const uint32_t	HEIGHT = 600;
-
-const std::string	MODEL_PATH = "models/viking_room.obj";
-const std::string	TEXTURE_PATH = "textures/viking_room.png";
-
-const std::vector<const char*> deviceExtensions = {
-	VK_KHR_SWAPCHAIN_EXTENSION_NAME
-};
-
-const std::vector<const char*> validationLayers = {
-	"VK_LAYER_KHRONOS_validation"
-};
-#ifdef NDEBUG
-constexpr bool enableValidationLayers = false;
-#else
-constexpr bool enableValidationLayers = true;
-#endif
 
 class Display
 {
@@ -66,143 +52,54 @@ class Display
 		Display &	operator=( const Display& o );
 		~Display( void );
 
+		void	setFile(const char* file);
+		void	setText(const char* file);
 		void	run( void );
-		bool	framebufferResized = false;
 	private:
-		void	initWindow( void ); // initWindow
-		void	initVulkan( void ); // initImg
-		void	mainLoop( void ); // boucle
-		void	cleanup( void ); // clean
-		void	createInstance( void ); // create instance vulkan
-		bool	checkValidationLayerSupport( void ); //check layer (protections)
-		std::vector<const char*>	getRequiredExtensions(); // recup extensions debug
-		void	setupDebugMessenger( void ); // debug
-		void	populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
-		void	pickPhysicalDevice(); // recuperations de toutes les cg
-		bool	isDeviceSuitable(VkPhysicalDevice device); // voir si la cg correspond a ce qu'on va faire
-		int		rateDeviceSuitability(VkPhysicalDevice device); // score en fonction des fonctionnalites de la cg
-		QueueFamilyIndices	findQueueFamilies(VkPhysicalDevice device); // trouver la famille de queue "graphique"
-		void	createLogicalDevice();
-		void	createSurface( void ); // creation de la surface de fenetre multiplateforme
-		bool	checkDeviceExtensionSupport(VkPhysicalDevice device);
-		SwapChainSupportDetails	querySwapChainSupport(VkPhysicalDevice device);
-		VkSurfaceFormatKHR	chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-		VkPresentModeKHR	chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
-		VkExtent2D	chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities); // choisir le format de l'image, souvent taille de la fenetre, le width et height sont limites par cette derniere, mais s'ils sont en uint32 max, alors on peut choisir ce qu'on desire
-		void	createSwapChain(); //recup les informations des precedentes fonctions sur la swap
-		void	createImageViews();
+  		void	loadGameObjects();
+		void	loadTextures();
+		void	getText();
+		void	getTextInDir();
+		void	addMaterials();
+		void	createTextureImage(const char *);
+		void	createTextureImageView(Texture&);
+		void	createTextureSampler(Texture&);
+		void	createBuffers();
 		void	createDescriptorSetLayout();
-		void	createGraphicsPipeline(); //https://vulkan-tutorial.com/fr/Dessiner_un_Display/Pipeline_graphique_basique/Introduction
-		VkShaderModule	createShaderModule(const std::vector<char>& code); //avant d'envoyer les infos des shaders dans la pipeline
-		void	createRenderPass();//https://vulkan-tutorial.com/fr/Dessiner_un_Display/Pipeline_graphique_basique/Render_pass
-		void	createFramebuffers();
-		void	createCommandPool();
-		void	createCommandBuffers();
-		void	drawFrame();
-		void	createSyncObjects();
-		void	recreateSwapChain();
-		void	cleanupSwapChain();
-		void	createVertexBuffer();
-		void	createIndexBuffer();
-		void	createUniformBuffers();
-		void 	updateUniformBuffer(uint32_t currentImage);
-		void	createDescriptorPool();
 		void	createDescriptorSets();
-		uint32_t	findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-		void 	createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-		void 	copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-
-		//images mais a voir pour changer plus tard
-		void	createTextureImage();
-		void	createImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
-		VkCommandBuffer	beginSingleTimeCommands();
-		void	endSingleTimeCommands(VkCommandBuffer commandBuffer);
-		void	transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
-		void	copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
-		void	createTextureImageView();
-		VkImageView	createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipl);
-		void	createTextureSampler();
-		void	createDepthResources();
-		VkFormat	findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
-		VkFormat	findDepthFormat();
-		bool	hasStencilComponent(VkFormat format);
-		void	loadModel();
+		void	refreshDescriptorSets();
+		void	createRenderSystems();
 		void	generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
-		VkSampleCountFlagBits	getMaxUsableSampleCount(VkSampleCountFlags requestedSampleCount);
-		void	createColorResources();
+		void	transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
 
-		GLFWwindow*					_window;
+		// Mesh						_mesh;
+		std::string							_file;
+		std::string							_textFile;
+		std::vector<std::string>			_textFiles;
 
-		VkInstance					_instance;
-		VkDebugUtilsMessengerEXT	_debugMessenger;
-		VkSurfaceKHR				_surface;
+		ft_Window							_window{WIDTH, HEIGHT, "FT_SCOP"};
+		ft_Device							_device{_window};
+		ft_Renderer							_renderer{_window, _device};
+		std::unique_ptr<ft_DescriptorPool>	_globalPool{};
+		std::unique_ptr<ft_DescriptorPool>	_globalPoolText{};
+		std::unique_ptr<ft_DescriptorPool>	_changePoolText{};
+		ft_GameObject::Map					_gameObjects;
+		std::vector<Texture>				_loadedTextures;
+		// std::map<std::string, ft_Material>	_materials;
+		unsigned int						_currText;
 
-		VkPhysicalDevice			_physicalDevice = VK_NULL_HANDLE; // auto detruit a la fin de l'instance
-		VkDevice					_device; // specifier ce dont nous allons avoir besoin pour logical device
+		std::vector<std::unique_ptr<ft_Buffer>>		_buffers;
 
-		VkQueue						_graphicsQueue; // auto detruit au destroy de vkdevice
-		VkQueue						_presentQueue;
+		std::vector<std::unique_ptr<RenderSystem>>		_renderSystems;
+		std::vector<std::unique_ptr<PointLightSystem>>	_pointLightSystems;
+		std::vector<std::unique_ptr<ft_DescriptorSetLayout>>	_globalDescriptorSetLayouts;
 
-		VkSwapchainKHR				_swapChain;
-		std::vector<VkImage>		_swapChainImages; // images de la swap chain (auto del avec la swapchain)
-		VkFormat					_swapChainImageFormat;
-		VkExtent2D					_swapChainExtent;
-		std::vector<VkImageView>	_swapChainImageViews;
-		//FRAMEBUFFERS
-		std::vector<VkFramebuffer>	_swapChainFramebuffers;
-
-		//RENDER PASS
-		VkRenderPass				_renderPass;
-		VkDescriptorSetLayout 		_descriptorSetLayout;
-		VkPipelineLayout			_pipelineLayout;
-		VkPipeline					_graphicsPipeline;
-
-		//COMMAND POOLS
-		VkCommandPool				_commandPool;
-
-		//VertexBuffers
-		std::vector<Vertex>			_vertices;
-		std::vector<uint32_t>		_indices;
-		VkBuffer					_vertexBuffer;
-		VkDeviceMemory				_vertexBufferMemory;
-		VkBuffer 					_indexBuffer;
-		VkDeviceMemory 				_indexBufferMemory;
-
-		std::vector<VkBuffer> 		_uniformBuffers;
-		std::vector<VkDeviceMemory>	_uniformBuffersMemory;
-
-		VkDescriptorPool 			_descriptorPool;
+		//DESCRIPTORS
+		VkDescriptorPool				_descriptorPool;
+		VkDescriptorPool				_descriptorPoolWithoutTexture;
 		std::vector<VkDescriptorSet>	_descriptorSets;
-
-		//ALLOCATION DES COMMAND BUFFERS
-		std::vector<VkCommandBuffer>	_commandBuffers;
-
-		//SEMAPHORES
-		std::vector<VkSemaphore>	_imageAvailableSemaphores;
-		std::vector<VkSemaphore>	_renderFinishedSemaphores;
-		std::vector<VkFence>		_inFlightFences;//les fences permettent au programme d'attendre l'exécution complète d'une opération. Nous allons créer une fence pour chaque frame
-		std::vector<VkFence>		_imagesInFlight;
-		size_t						_currentFrame = 0;
-
-		//textures d'image (pixels -> texels)
-		uint32_t					_mipLevels;
-		VkImage						_textureImage;
-		VkDeviceMemory				_textureImageMemory;
-		//reference a la vue pour la texture
-		VkImageView					_textureImageView;
-		VkSampler					_textureSampler;
-
-		//Image de profondeur et view
-		VkImage						_depthImage;
-		VkDeviceMemory				_depthImageMemory;
-		VkImageView					_depthImageView;
-
-		//Multisampling -> anti-aliasing
-		VkSampleCountFlagBits		_msaaSamples = VK_SAMPLE_COUNT_1_BIT;//set a 1 car le minimum, comme ne pas s'en servir
-		VkImage						_colorImage;
-		VkDeviceMemory				_colorImageMemory;
-		VkImageView					_colorImageView;
-
+		std::vector<VkDescriptorSet>	_changeDescriptorSets;
+		std::vector<VkDescriptorSet>	_descriptorSetsWithoutTexture;
 };
 
 #endif

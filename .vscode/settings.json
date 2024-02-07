@@ -55,6 +55,10 @@
         "chrono": "cpp",
         "ctime": "cpp",
         "ratio": "cpp",
-        "sstream": "cpp"
-    }
+        "sstream": "cpp",
+        "unordered_set": "cpp",
+        "codecvt": "cpp",
+        "iomanip": "cpp"
+    },
+    "C_Cpp.default.cppStandard": "c++20"
 }

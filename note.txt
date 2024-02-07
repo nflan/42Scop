@@ -4,8 +4,8 @@ possibilite d'ameliorer les performances:
 - 
 
 Dans shader.frag:
-- dans le main pour la couleur et pas les textures -> outColor = vec4(fragTexCoord, 0.0, 1.0);
-- couleur + texture : outColor = vec4(fragColor * texture(texSampler, fragTexCoord).rgb, 1.0);
+- dans le main pour la couleur et pas les textures -> outColor = vec4(fragTexCoord, 0.f, 1.f);
+- couleur + texture : outColor = vec4(fragColor * texture(texSampler, fragTexCoord).rgb, 1.f);
 
 Multisampling:
 - Utile pour reduire l'aliasing (pixels blancs autour des images car triangle passe pas par le centre)

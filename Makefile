@@ -19,38 +19,60 @@ OBJB_DIR =		obj_bonus
 SRC_DIR =		srcs
 SRCB_DIR =		srcs_bonus
 
-INC =			$(addsuffix .hpp, $(addprefix $(INC_DIR), scop Display Vertex QueueFamilyIndices SwapChainSupportDetails tools))
+GLSLC =			/mnt/nfs/homes/nflan/sgoinfre/bin/glslc
+
+INC =			$(addsuffix .hpp, $(addprefix $(INC_DIR), Buffer Camera Descriptors Device Display FrameInfo GameObject KeyboardMovementController Loader Material Model Pipeline PointLightSystem Renderer RenderSystem SwapChain tools UniformBufferObject Window))
 
 SRC =			$(SRC_FT:%=$(SRC_DIR)/%.cpp)
 SRCB =			$(SRCB_FT:%=$(SRCB_DIR)/%.cpp)
 
-OBJ =			$(SRC:$(SRC_DIR)%.c=$(OBJ_DIR)%.o)
-OBJB =			$(SRCB:$(SRCB_DIR)%.c=$(OBJB_DIR)%.o)
+OBJ =			$(SRC:$(SRC_DIR)%.cpp=$(OBJ_DIR)%.o)
+OBJB =			$(SRCB:$(SRCB_DIR)%.cpp=$(OBJB_DIR)%.o)
 
 CXX =	g++ $(CXXFLAGS)
 
 RM =	rm -fr
 
-CXXFLAGS =	-std=c++20 -O3# -DNDEBUG
+CXXFLAGS =	-std=c++20 -O3 -g3# -DNDEBUG
 
-GLM_INCLUDE_PATH = /mnt/nfs/homes/nflan/sgoinfre/bin/glm
-STB_INCLUDE_PATH = /mnt/nfs/homes/nflan/sgoinfre/bin/stb
-OBJLOADER_INCLUDE_PATH = /mnt/nfs/homes/nflan/sgoinfre/bin/tinyobjloader
+GLM_INCLUDE_PATH = /home/nflan/bin/glm
 
-LDFLAGS =	-lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi -I$(GLM_INCLUDE_PATH) -I$(STB_INCLUDE_PATH) -I$(OBJLOADER_INCLUDE_PATH)
+LDFLAGS =	-lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi -I$(GLM_INCLUDE_PATH)
 
 # VulkanTest:	main.cpp
 # g++ $(CXXFLAGS) -o VulkanTest main.cpp $(LDFLAGS)
 
-.c.o:
+.cpp.o:
 	$(CXX) -c $< -o $(<:.cpp=.o)
 
 #HOW TO LIST .c 
 #	ls -l | awk '{print $9}' | grep -E ".c$"| sed "s/\.c/ \\\/g" | sed '$s/\\$//g'
 
-SRC_FT =	scop Display Vertex
+SRC_FT =	Buffer \
+			Camera \
+			Descriptors \
+			Device \
+			Display \
+			GameObject \
+			KeyboardMovementController \
+			Loader \
+			Material \
+			Model \
+			Pipeline \
+			PointLightSystem \
+			tools \
+			Renderer \
+			RenderSystem \
+			scop \
+			SwapChain \
+			Window 
 
 SRCB_FT =
+
+vertSources = $(shell find shaders -type f -name "*.vert")
+vertObjFiles = $(patsubst %.vert, %.vert.spv, $(vertSources))
+fragSources = $(shell find shaders -type f -name "*.frag")
+fragObjFiles = $(patsubst %.frag, %.frag.spv, $(fragSources))
 
 all: $(NAME)
 
@@ -59,11 +81,19 @@ $(OBJ_DIR):
 
 $(OBJ) : $(INC) | $(OBJ_DIR)
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CXX) -c $< -o $@
+
+$(NAME): $(vertObjFiles) $(fragObjFiles)
 
 $(NAME): $(INC) $(OBJ_DIR) $(SRC) $(OBJ)
 	$(CXX) $(OBJ) $(LDFLAGS) -o $@
+
+%.vert.spv: %.vert
+	${GLSLC} $< -o $@
+
+%.frag.spv: %.frag
+	${GLSLC} $< -o $@
 
 bonus: $(NAMEB)
 

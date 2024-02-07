@@ -21,12 +21,17 @@
 
 #include "../incs/Display.hpp"
 
-int main()
+int	main(int ac, char **av)
 {
 	Display	app;
 
 	try
 	{
+		if (ac < 2 || ac > 3)
+			throw std::invalid_argument("Invalid number of args!");
+		app.setFile(av[1]);
+		if (ac == 3)
+			app.setText(av[2]);
 		app.run();
 	} 
 	catch (const std::exception& e)
@@ -34,7 +39,6 @@ int main()
 		std::cerr << e.what() << std::endl;
 		return EXIT_FAILURE;
 	}
-
 	return EXIT_SUCCESS;
 }
 
