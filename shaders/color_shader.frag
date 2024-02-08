@@ -68,12 +68,9 @@ void main()
     vec3 finalDiffuseColor = ubo.kd * fragColor;  // Use Kd from MTL file for diffuse color
     vec3 finalSpecularColor = ubo.ks * fragColor;  // Use Ks from MTL file for specular color
 
-    if (ubo.illum == 2)
+    if (ubo.illum != 1)
         outColor = vec4((diffuseLight * finalDiffuseColor + specularLight * finalSpecularColor) + ubo.ke, ubo.d);
     else
         outColor = vec4((diffuseLight * finalDiffuseColor) + ubo.ke, ubo.d);
 
-    //float tr = 1.0f - ubo.d;
-    //outColor = vec4((diffuseLight * ubo.kd + specularLight * ubo.ks) * fragColor + ubo.ke, tr);
-	//outColor = vec4(diffuseLight * fragColor + specularLight * fragColor, ubo.d);
 }

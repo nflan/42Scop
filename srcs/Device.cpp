@@ -60,7 +60,9 @@ objectCount: Le nombre d'objets dans le tableau précédent
 	/*
 	   Finalement, le paramètre pUserData est un pointeur sur une donnée quelconque que vous pouvez spécifier à la création de la fonction de rappel.
 	   */
-	std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+	#ifdef DEBUG
+		std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+	#endif
 	// l'idee est de savoir si l'erreur nous oblige a stopper la fenetre, elle teste surtout les layers donc is ok
 	return VK_FALSE;
 }
@@ -411,18 +413,25 @@ void    ft_Device::hasGflwRequiredInstanceExtensions()
 	std::vector<VkExtensionProperties> extensions(extensionCount);
 	vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
 
-	//   std::cout << "available extensions:" << std::endl;
+    #ifdef DEBUG
+	  std::cout << "available extensions:" << std::endl;
+    #endif
 	std::unordered_set<std::string> available;
 	for (const auto &extension : extensions) {
-		std::cout << "\t" << extension.extensionName << std::endl;
+		#ifdef DEBUG
+			std::cout << "\t" << extension.extensionName << std::endl;
+    	#endif
 		available.insert(extension.extensionName);
 	}
-
-	// std::cout << "required extensions:" << std::endl;
+    #ifdef DEBUG
+		std::cout << "required extensions:" << std::endl;
+    #endif
 	auto requiredExtensions = getRequiredExtensions();
 	for (const auto &required : requiredExtensions)
 	{
-		std::cout << "\t" << required << std::endl;
+		#ifdef DEBUG
+			std::cout << "\t" << required << std::endl;
+    	#endif
 		if (available.find(required) == available.end())
 			throw std::runtime_error("Missing required glfw extension");
 	}

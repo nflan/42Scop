@@ -61,7 +61,7 @@ std::vector<std::shared_ptr<ft_Model>> ft_Model::createModelFromFile(ft_Device &
 
     Loader  load;
     load.LoadFile(filepath);
-    for (const Mesh& mesh : load.LoadedMeshes)
+    for (const Mesh& mesh : load._loadedMeshes)
     {
         Models.emplace_back(make_unique<ft_Model>(device, load._mtlFile, mesh._vertices, mesh._indices, mesh._meshMaterial));
     }
@@ -100,13 +100,6 @@ void    ft_Model::createVertexBuffers(const std::vector<Vertex> &vertices)
         _maxVertice = glm::max(_maxVertice, vertex.position);
         _centerOfObj += vertex.position;
     }
-    // std::cerr << "centerofobj.all = '" << _centerOfObj << std::endl;
-    // std::cerr << "vertex.size = " << vertices.size() << std::endl;
-    // std::cout << "min.x + min.y + min.z" << " " << min.x << " " << min.y << " " << min.z << std::endl;
-    // std::cout << "max.x + max.y + max.z" << " " << max.x << " " << max.y << " " << max.z << std::endl;
-    // std::cout << min.x + min.y + min.z << " " << max.x + max.y + max.z << std::endl;
-    // std::cout << glm::distance(min, max) << std::endl;
-    // std::cout << static_cast<float>(8.f / glm::distance(min, max)) << std::endl;
 
     _objectSize = _maxVertice - _minVertice;
     float maxDimension = glm::max(_objectSize.x, glm::max(_objectSize.y, _objectSize.z));
@@ -115,6 +108,7 @@ void    ft_Model::createVertexBuffers(const std::vector<Vertex> &vertices)
     _centerOfObj /= static_cast<float>(vertices.size());
     this->_vertexCount = static_cast<uint64_t>(vertices.size());
 
+    
     assert(this->_vertexCount >= 3 && "Vertex count must be at least 3");
 
     VkDeviceSize    bufferSize = sizeof(vertices[0]) * this->_vertexCount;

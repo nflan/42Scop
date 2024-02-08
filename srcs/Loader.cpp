@@ -14,6 +14,13 @@
 
 #define OBJL_CONSOLE_OUTPUT
 
+Loader::Loader(){}
+
+Loader::~Loader()
+{
+    _loadedMeshes.clear();
+}
+
 bool Loader::LoadFile(const std::string& Path)
 {
     // If the file is not an .obj file return false
@@ -25,44 +32,44 @@ bool Loader::LoadFile(const std::string& Path)
     if (!file)
 		throw std::runtime_error("Failed to open: '" + Path + "'!");
 
-    LoadedMeshes.clear();
-    LoadedVertices.clear();
-    LoadedIndices.clear();
+    _loadedMeshes.clear();
+    _loadedVertices.clear();
+    _loadedIndices.clear();
 
-    std::vector<glm::vec3> Positions;
-    std::vector<glm::vec2> TCoords;
-    std::vector<glm::vec3> Normals;
+    std::vector<glm::vec3>      positions;
+    std::vector<glm::vec2>      tCoords;
+    std::vector<glm::vec3>      normals;
 
-    std::vector<Vertex> _vertices;
-    std::vector<unsigned int> _indices;
+    std::vector<Vertex>         vertices;
+    std::vector<unsigned int>   indices;
 
-    std::vector<std::string> MeshMatNames;
+    std::vector<std::string>    meshMatNames;
 
-    bool listening = false;
-    std::string meshname;
+    bool                        listening = false;
+    std::string                 meshname;
 
-    Mesh tempMesh;
+    Mesh                        tempMesh;
+    std::string                 curline;
 
-    #ifdef OBJL_CONSOLE_OUTPUT
-    const unsigned int outputEveryNth = 1000;
-    unsigned int outputIndicator = outputEveryNth;
+    #ifdef DEBUG
+        const unsigned int outputEveryNth = 1000;
+        unsigned int outputIndicator = outputEveryNth;
     #endif
-
-    std::string curline;
+    
     while (std::getline(file, curline))
     {
-        #ifdef OBJL_CONSOLE_OUTPUT
+        #ifdef DEBUG
         if ((outputIndicator = ((outputIndicator + 1) % outputEveryNth)) == 1)
         {
             if (!meshname.empty())
             {
                 std::cout
                     << "\r- " << meshname
-                    << "\t| vertices > " << Positions.size()
-                    << "\t| texcoords > " << TCoords.size()
-                    << "\t| normals > " << Normals.size()
-                    << "\t| triangles > " << (_vertices.size() / 3)
-                    << (!MeshMatNames.empty() ? "\t| material: " + MeshMatNames.back() : "");
+                    << "\t| vertices > " << positions.size()
+                    << "\t| texcoords > " << tCoords.size()
+                    << "\t| normals > " << normals.size()
+                    << "\t| triangles > " << (vertices.size() / 3)
+                    << (!meshMatNames.empty() ? "\t| material: " + meshMatNames.back() : "");
             }
         }
         #endif
@@ -83,18 +90,18 @@ bool Loader::LoadFile(const std::string& Path)
             {
                 // Generate the mesh to put into the array
 
-                if (!_indices.empty() && !_vertices.empty())
+                if (!indices.empty() && !vertices.empty())
                 {
                     // Create Mesh
-                    tempMesh = Mesh(_vertices, _indices);
+                    tempMesh = Mesh(vertices, indices);
                     tempMesh._meshName = meshname;
 
                     // Insert Mesh
-                    LoadedMeshes.push_back(tempMesh);
+                    _loadedMeshes.push_back(tempMesh);
 
                     // Cleanup
-                    _vertices.clear();
-                    _indices.clear();
+                    vertices.clear();
+                    indices.clear();
                     meshname.clear();
 
                     meshname = tools::ft_tail(curline);
@@ -102,18 +109,13 @@ bool Loader::LoadFile(const std::string& Path)
                 else
                 {
                     if (tools::ft_firstToken(curline) == "o" || tools::ft_firstToken(curline) == "g")
-                    {
                         meshname = tools::ft_tail(curline);
-                    }
                     else
-                    {
                         meshname = "unnamed";
-                    }
                 }
             }
-            #ifdef OBJL_CONSOLE_OUTPUT
-            std::cout << std::endl;
-            outputIndicator = 0;
+            #ifdef DEBUG
+                std::cout << std::endl;
             #endif
         }
         // Generate a Vertex position
@@ -127,7 +129,7 @@ bool Loader::LoadFile(const std::string& Path)
             vpos.y = std::stof(spos[1]);
             vpos.z = std::stof(spos[2]);
 
-            Positions.push_back(vpos);
+            positions.push_back(vpos);
         }
         // Generate a Vertex Texture Coordinate
         if (tools::ft_firstToken(curline) == "vt")
@@ -139,7 +141,7 @@ bool Loader::LoadFile(const std::string& Path)
             vtex.x = std::stof(stex[0]);
             vtex.y = std::stof(stex[1]);
 
-            TCoords.push_back(vtex);
+            tCoords.push_back(vtex);
         }
         // Generate a Vertex normal;
         if (tools::ft_firstToken(curline) == "vn")
@@ -152,69 +154,66 @@ bool Loader::LoadFile(const std::string& Path)
             vnor.y = std::stof(snor[1]);
             vnor.z = std::stof(snor[2]);
 
-            Normals.push_back(vnor);
+            normals.push_back(vnor);
         }
         // Generate a Face (vertices & indices)
         if (tools::ft_firstToken(curline) == "f")
         {
             // Generate the vertices
             std::vector<Vertex> vVerts;
-            GenVerticesFromRawOBJ(vVerts, Positions, TCoords, Normals, curline);
+            GenVerticesFromRawOBJ(vVerts, positions, tCoords, normals, curline);
 
-            // Add _vertices
+            // Add vertices
             for (uint64_t i = 0; i < vVerts.size(); i++)
             {
-                _vertices.push_back(vVerts[i]);
+                vertices.push_back(vVerts[i]);
 
-                LoadedVertices.push_back(vVerts[i]);
+                _loadedVertices.push_back(vVerts[i]);
             }
 
             std::vector<unsigned int> iIndices;
 
             VertexTriangluation(iIndices, vVerts);
 
-            // Add _indices
+            // Add indices
             for (uint64_t i = 0; i < iIndices.size(); i++)
             {
-                uint64_t indnum = (_vertices.size()) - vVerts.size() + iIndices[i];
-                _indices.push_back(indnum);
+                uint64_t indnum = (vertices.size()) - vVerts.size() + iIndices[i];
+                indices.push_back(indnum);
 
-                indnum = (LoadedVertices.size()) - vVerts.size() + iIndices[i];
-                LoadedIndices.push_back(indnum);
+                indnum = (_loadedVertices.size()) - vVerts.size() + iIndices[i];
+                _loadedIndices.push_back(indnum);
             }
         }
         // Get Mesh Material Name
         if (tools::ft_firstToken(curline) == "usemtl")
         {
-            MeshMatNames.push_back(tools::ft_tail(curline));
+            meshMatNames.push_back(tools::ft_tail(curline));
 
             // Create new Mesh, if Material changes within a group
-            if (!_indices.empty() && !_vertices.empty())
+            if (!indices.empty() && !vertices.empty())
             {
                 // Create Mesh
-                tempMesh = Mesh(_vertices, _indices);
+                tempMesh = Mesh(vertices, indices);
                 tempMesh._meshName = meshname;
                 int i = 2;
                 while(1) {
                     tempMesh._meshName = meshname + "_" + std::to_string(i);
 
-                    for (auto &m : LoadedMeshes)
+                    for (Mesh &m : _loadedMeshes)
                         if (m._meshName == tempMesh._meshName)
                             continue;
                     break;
                 }
 
                 // Insert Mesh
-                LoadedMeshes.push_back(tempMesh);
+                _loadedMeshes.push_back(tempMesh);
 
                 // Cleanup
-                _vertices.clear();
-                _indices.clear();
+                vertices.clear();
+                indices.clear();
             }
 
-            #ifdef OBJL_CONSOLE_OUTPUT
-            outputIndicator = 0;
-            #endif
         }
         // Load Materials
         if (tools::ft_firstToken(curline) == "mtllib")
@@ -233,65 +232,64 @@ bool Loader::LoadFile(const std::string& Path)
             while (!isalpha(curline[curline.size() - 1]))
                 curline.pop_back();
             pathtomat += tools::ft_tail(curline);
-            #ifdef OBJL_CONSOLE_OUTPUT
-            std::cout << std::endl << "- find materials in: " << pathtomat << std::endl;
+            #ifdef DEBUG
+                std::cout << std::endl << "- find materials in: " << pathtomat << std::endl;
             #endif
             // Load Materials
             LoadMaterials(pathtomat);
-            std::cout << _mtlFile << std::endl;
+            #ifdef DEBUG
+                std::cout << _mtlFile << std::endl;
+            #endif
         }
     }
 
-    #ifdef OBJL_CONSOLE_OUTPUT
-    std::cout << std::endl;
+    #ifdef DEBUG
+        std::cout << std::endl;
     #endif
 
     // Deal with last mesh
-    if (!_indices.empty() && !_vertices.empty())
+    if (!indices.empty() && !vertices.empty())
     { 
         uint64_t    i = 0;
-        float       y = 0.f;
-        for (Vertex& v : _vertices)
+        float       y = .2f;
+        for (Vertex& v : vertices)
         {
-            std::cerr << "i = " << i << std::endl;
-            std::cerr << "y = " << y << std::endl;
             if (i % 3 == 0)
-                y += .2;
-            if (y >= 1.2)
+                y += .1f;
+            if (y >= 0.6f)
                 y = 0.f;
-            std::cerr << "y = " << y << std::endl;
             // v.color = {static_cast <float> (rand()) / static_cast <float> (RAND_MAX), static_cast <float> (rand()) / static_cast <float> (RAND_MAX), static_cast <float> (rand()) / static_cast <float> (RAND_MAX)};
             v.color = glm::vec3(y);
             i++;
         }
         // Create Mesh
-        tempMesh = Mesh(_vertices, _indices);
+        tempMesh = Mesh(vertices, indices);
         tempMesh._meshName = meshname;
 
         // Insert Mesh
-        LoadedMeshes.push_back(tempMesh);
+        _loadedMeshes.push_back(tempMesh);
     }
 
     file.close();
 
     // Set Materials for each Mesh
-    for (size_t i = 0; i < MeshMatNames.size(); i++)
+    for (size_t i = 0; i < meshMatNames.size(); i++)
     {
-        std::string matname = MeshMatNames[i];
+        std::string matname = meshMatNames[i];
 
         // Find corresponding material name in loaded materials
         // when found copy material variables into mesh material
-        for (int j = 0; j < LoadedMaterials.size(); j++)
+        for (int j = 0; j < _loadedMaterials.size(); j++)
         {
-            if (LoadedMaterials[j]._name == matname)
+            if (_loadedMaterials[j]._name == matname)
             {
-                LoadedMeshes[i]._meshMaterial = LoadedMaterials[j];
+                _loadedMeshes[i]._meshMaterial = _loadedMaterials[j];
                 break;
             }
         }
     }
 
-    if (LoadedMeshes.empty() && LoadedVertices.empty() && LoadedIndices.empty())
+    if (_loadedMeshes.empty() && _loadedVertices.empty() && _loadedIndices.empty())
         return false;
     else
         return true;
@@ -300,9 +298,9 @@ bool Loader::LoadFile(const std::string& Path)
 // Generate vertices from a list of positions, 
 //	tcoords, normals and a face line
 void    Loader::GenVerticesFromRawOBJ(std::vector<Vertex>& oVerts,
-    const std::vector<glm::vec3>& iPositions,
-    const std::vector<glm::vec2>& iTCoords,
-    const std::vector<glm::vec3>& iNormals,
+    const std::vector<glm::vec3>& ipositions,
+    const std::vector<glm::vec2>& itCoords,
+    const std::vector<glm::vec3>& inormals,
     std::string icurline)
 {
     std::vector<std::string> sface, svert;
@@ -315,7 +313,6 @@ void    Loader::GenVerticesFromRawOBJ(std::vector<Vertex>& oVerts,
     // For every given vertex do this
     for (uint64_t i = 0; i < sface.size(); i++)
     {
-        // See What type the vertex is.
         int vtype = 0;
 
         tools::ft_split(sface[i], svert, "/");
@@ -355,33 +352,41 @@ void    Loader::GenVerticesFromRawOBJ(std::vector<Vertex>& oVerts,
         {
             case 1: // P
             {
-                vVert.position = tools::ft_getElement(iPositions, svert[0]);
-                vVert.uv = glm::vec2(tools::ft_getElement(iPositions, svert[0]).x, 1.f - tools::ft_getElement(iPositions, svert[0]).y);
+                vVert.position = tools::ft_getElement(ipositions, svert[0]);
+                vVert.uv = glm::vec2(.0f);
+                // vVert.uv = glm::vec2(tools::ft_getElement(ipositions, svert[0]).x, 1.f - tools::ft_getElement(ipositions, svert[0]).y);
                 noNormal = true;
                 oVerts.push_back(vVert);
                 break;
             }
             case 2: // P/T
             {
-                vVert.position = tools::ft_getElement(iPositions, svert[0]);
-                vVert.uv = glm::vec2(tools::ft_getElement(iTCoords, svert[1]).x, 1.f - tools::ft_getElement(iTCoords, svert[1]).y);
+                vVert.position = tools::ft_getElement(ipositions, svert[0]);
+                if (svert[1].size() && itCoords.size())
+                    vVert.uv = glm::vec2(tools::ft_getElement(itCoords, svert[1]).x, 1.f - tools::ft_getElement(itCoords, svert[1]).y);
+                else
+                    vVert.uv = glm::vec2(.0f);
                 noNormal = true;
                 oVerts.push_back(vVert);
                 break;
             }
             case 3: // P//N
             {
-                vVert.position = tools::ft_getElement(iPositions, svert[0]);
-                vVert.uv = glm::vec2(tools::ft_getElement(iPositions, svert[0]).x, 1.f - tools::ft_getElement(iPositions, svert[0]).y);
-                vVert.normal = tools::ft_getElement(iNormals, svert[2]);
+                vVert.position = tools::ft_getElement(ipositions, svert[0]);
+                vVert.uv = glm::vec2(.0f);
+                // vVert.uv = glm::vec2(tools::ft_getElement(ipositions, svert[0]).x, 1.f - tools::ft_getElement(ipositions, svert[0]).y);
+                vVert.normal = tools::ft_getElement(inormals, svert[2]);
                 oVerts.push_back(vVert);
                 break;
             }
             case 4: // P/T/N
             {
-                vVert.position = tools::ft_getElement(iPositions, svert[0]);
-                vVert.uv = glm::vec2(tools::ft_getElement(iTCoords, svert[1]).x, 1.f - tools::ft_getElement(iTCoords, svert[1]).y);
-                vVert.normal = tools::ft_getElement(iNormals, svert[2]);
+                vVert.position = tools::ft_getElement(ipositions, svert[0]);
+                if (svert[1].size() && itCoords.size())
+                    vVert.uv = glm::vec2(tools::ft_getElement(itCoords, svert[1]).x, 1.f - tools::ft_getElement(itCoords, svert[1]).y);
+                else
+                    vVert.uv = glm::vec2(.0f);
+                vVert.normal = tools::ft_getElement(inormals, svert[2]);
                 oVerts.push_back(vVert);
                 break;
             }
@@ -403,10 +408,25 @@ void    Loader::GenVerticesFromRawOBJ(std::vector<Vertex>& oVerts,
         glm::vec3 normal = tools::ft_CrossV3(A, B);
 
         for (size_t i = 0; i < oVerts.size(); i++)
-        {
             oVerts[i].normal = -normal;
-        }
     }
+    // if (oVerts[0].uv == glm::vec2(0,0))
+    // {
+    //     glm::vec3   center(0.f);
+    //     size_t      i = 0;
+    //     for (; i < oVerts.size(); i++)
+    //         center += oVerts[i].position;
+    //     center /= i;
+    //     for (Vertex& vertice : oVerts)
+    //     {
+    //         glm::vec3 direction = normalize(vertice.position - center);
+    //         float u = 0.5 + atan2(direction.z, direction.x) / M_PI;
+    //         float v = 0.5 - asin(direction.y) / M_PI;
+        
+    //     // Assign UV coordinates to vertex
+    //         vertice.uv = glm::vec2(u, v);
+    //     }
+    // }
 }
 
 // Triangulate a list of vertices into a face by printing
@@ -573,25 +593,16 @@ void    Loader::VertexTriangluation(std::vector<unsigned int>& oIndices,
 // Load Materials from .mtl file
 bool    Loader::LoadMaterials(std::string path)
 {
-    // If the file is not a material file return false
     if (path.substr(path.find_last_of('.'), path.size()) != ".mtl")
-    {
-        std::cerr << "False path: " << path << std::endl;
-        return false;
-    }
+        return ((std::cerr << "False path: " << path << std::endl), false);
 
     std::ifstream file(path);
 
-    // If the file is not found return false
     if (!file.is_open())
-    {
-        std::cerr << "File not open" << std::endl;
-        return false;
-    }
+        return ((std::cerr << "File '" << path << "' not open. Taking default materials." << std::endl), false);
 
-    Material tempMaterial;
-
-    bool listening = false;
+    Material    tempMaterial;
+    bool        listening = false;
 
     // Go through each line looking for material variables
     std::string curline;
@@ -605,38 +616,30 @@ bool    Loader::LoadMaterials(std::string path)
                 listening = true;
 
                 if (curline.size() > 7)
-                {
                     tempMaterial._name = tools::ft_tail(curline);
-                }
                 else
-                {
                     tempMaterial._name = "none";
-                }
             }
             else
             {
                 // Generate the material
 
                 // Push Back loaded Material
-                LoadedMaterials.push_back(tempMaterial);
+                _loadedMaterials.push_back(tempMaterial);
 
                 // Clear Loaded Material
                 tempMaterial = Material();
 
                 if (curline.size() > 7)
-                {
                     tempMaterial._name = tools::ft_tail(curline);
-                }
                 else
-                {
                     tempMaterial._name = "none";
-                }
             }
         }
         // Ambient Color
-        if (tools::ft_firstToken(curline) == "Ka")
+        else if (tools::ft_firstToken(curline) == "Ka")
         {
-            std::vector<std::string> temp;
+            std::vector<std::string>    temp;
             tools::ft_split(tools::ft_tail(curline), temp, " ");
 
             if (temp.size() != 3)
@@ -647,9 +650,9 @@ bool    Loader::LoadMaterials(std::string path)
             tempMaterial._ka.z = std::stof(temp[2]);
         }
         // Diffuse Color
-        if (tools::ft_firstToken(curline) == "Kd")
+        else if (tools::ft_firstToken(curline) == "Kd")
         {
-            std::vector<std::string> temp;
+            std::vector<std::string>    temp;
             tools::ft_split(tools::ft_tail(curline), temp, " ");
 
             if (temp.size() != 3)
@@ -660,9 +663,9 @@ bool    Loader::LoadMaterials(std::string path)
             tempMaterial._kd.z = std::stof(temp[2]);
         }
         // Specular Color
-        if (tools::ft_firstToken(curline) == "Ks")
+        else if (tools::ft_firstToken(curline) == "Ks")
         {
-            std::vector<std::string> temp;
+            std::vector<std::string>    temp;
             tools::ft_split(tools::ft_tail(curline), temp, " ");
 
             if (temp.size() != 3)
@@ -672,9 +675,9 @@ bool    Loader::LoadMaterials(std::string path)
             tempMaterial._ks.y = std::stof(temp[1]);
             tempMaterial._ks.z = std::stof(temp[2]);
         }
-        if (tools::ft_firstToken(curline) == "Ke")
+        else if (tools::ft_firstToken(curline) == "Ke")
         {
-            std::vector<std::string> temp;
+            std::vector<std::string>    temp;
             tools::ft_split(tools::ft_tail(curline), temp, " ");
 
             if (temp.size() != 3)
@@ -685,71 +688,51 @@ bool    Loader::LoadMaterials(std::string path)
             tempMaterial._ke.z = std::stof(temp[2]);
         }
         // Specular Exponent
-        if (tools::ft_firstToken(curline) == "Ns")
-        {
+        else if (tools::ft_firstToken(curline) == "Ns")
             tempMaterial._ns = std::stof(tools::ft_tail(curline));
-        }
         // Optical Density
-        if (tools::ft_firstToken(curline) == "Ni")
-        {
+        else if (tools::ft_firstToken(curline) == "Ni")
             tempMaterial._ni = std::stof(tools::ft_tail(curline));
-        }
         // Dissolve
-        if (tools::ft_firstToken(curline) == "d")
-        {
+        else if (tools::ft_firstToken(curline) == "d")
             tempMaterial._d = std::stof(tools::ft_tail(curline));
-        }
         // Illumination
-        if (tools::ft_firstToken(curline) == "illum")
-        {
+        else if (tools::ft_firstToken(curline) == "illum")
             tempMaterial._illum = std::stoi(tools::ft_tail(curline));
-        }
         // Ambient Texture Map
-        if (tools::ft_firstToken(curline) == "map_Ka")
-        {
+        else if (tools::ft_firstToken(curline) == "map_Ka")
             tempMaterial._mapKa = tools::ft_tail(curline);
-        }
         // Diffuse Texture Map
-        if (tools::ft_firstToken(curline) == "map_Kd")
-        {
+        else if (tools::ft_firstToken(curline) == "map_Kd")
             tempMaterial._mapKd = tools::ft_tail(curline);
-        }
         // Specular Texture Map
-        if (tools::ft_firstToken(curline) == "map_Ks")
-        {
+        else if (tools::ft_firstToken(curline) == "map_Ks")
             tempMaterial._mapKs = tools::ft_tail(curline);
-        }
         // Specular Hightlight Map
-        if (tools::ft_firstToken(curline) == "map_Ns")
-        {
+        else if (tools::ft_firstToken(curline) == "map_Ns")
             tempMaterial._mapNs = tools::ft_tail(curline);
-        }
         // Alpha Texture Map
-        if (tools::ft_firstToken(curline) == "map_d")
-        {
+        else if (tools::ft_firstToken(curline) == "map_d")
             tempMaterial._mapD = tools::ft_tail(curline);
-        }
         // Bump Map
-        if (tools::ft_firstToken(curline) == "map_Bump" || tools::ft_firstToken(curline) == "map_bump" || tools::ft_firstToken(curline) == "bump")
-        {
+        else if (tools::ft_firstToken(curline) == "map_Bump" || tools::ft_firstToken(curline) == "map_bump" || tools::ft_firstToken(curline) == "bump")
             tempMaterial._mapBump = tools::ft_tail(curline);
-        }
     }
 
     // Deal with last material
 
     // Push Back loaded Material
-    LoadedMaterials.push_back(tempMaterial);
+    _loadedMaterials.push_back(tempMaterial);
 
     // Test to see if anything was loaded
     // If not return false
-    if (LoadedMaterials.empty())
+    if (_loadedMaterials.empty())
         return false;
     // If so return true
     else
     {
         this->_mtlFile = path;
-        return (true);
+        return true;
     }
 }
 
@@ -888,13 +871,9 @@ namespace tools {
         size_t tail_start = in.find_first_not_of(" \t", space_start);
         size_t tail_end = in.find_last_not_of(" \t");
         if (tail_start != std::string::npos && tail_end != std::string::npos)
-        {
             return in.substr(tail_start, tail_end - tail_start + 1);
-        }
         else if (tail_start != std::string::npos)
-        {
             return in.substr(tail_start);
-        }
         return "";
     }
 
@@ -906,13 +885,9 @@ namespace tools {
             size_t token_start = in.find_first_not_of(" \t");
             size_t token_end = in.find_first_of(" \t", token_start);
             if (token_start != std::string::npos && token_end != std::string::npos)
-            {
                 return in.substr(token_start, token_end - token_start);
-            }
             else if (token_start != std::string::npos)
-            {
                 return in.substr(token_start);
-            }
         }
         return "";
     }

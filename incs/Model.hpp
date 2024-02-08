@@ -15,7 +15,6 @@
 
 #include "Buffer.hpp"
 #include "Device.hpp"
-#include "Material.hpp"
 #include "Loader.hpp"
 // libs
 #define GLM_FORCE_RADIANS
@@ -64,8 +63,6 @@ class ft_Model {
     private:
         void                        createVertexBuffers(const std::vector<Vertex> &vertices);
         void                        createIndexBuffers(const std::vector<uint32_t> &indices);
-        // void    createMaterial(const std::string& mtlFile);
-
         ft_Device&                  _device;
 
         std::unique_ptr<ft_Buffer>  _vertexBuffer;

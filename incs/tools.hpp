@@ -18,6 +18,7 @@
 #include <GLFW/glfw3.h>
 #include <vector>
 #include <string>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include "Vertex.hpp"
@@ -46,7 +47,6 @@ struct  Material
 {
     Material()
     {
-        _name;
         _ka = glm::vec3(0.f);
         _kd = glm::vec3(0.f);
         _ks = glm::vec3(0.f);

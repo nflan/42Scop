@@ -32,8 +32,8 @@ struct GlobalUbo {
     alignas(16) glm::mat4   view{1.f};
     alignas(16) glm::mat4   inverseView{1.f};
     alignas(16) glm::vec3   ka{1.f, 1.f, 1.f}; // ambient color
-    alignas(16) glm::vec3   kd{1.f, 1.f, 1.f}; // diffuse color
-    alignas(16) glm::vec3   ks{0.f, 0.f, 0.f}; // specular color
+    alignas(16) glm::vec3   kd{.5f, .5f, .5f}; // diffuse color
+    alignas(16) glm::vec3   ks{.5f, .5f, .5f}; // specular color
     alignas(16) glm::vec3   ke{0.f, 0.f, 0.f}; // emissive color
     alignas(16) PointLight  pointLights[MAX_LIGHTS];
     alignas(4) float       ni{.08f}; //intensity

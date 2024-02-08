@@ -31,7 +31,7 @@ struct QueueFamilyIndices {
     bool isComplete() { return graphicsFamilyHasValue && presentFamilyHasValue; }
 };
 
-#ifdef NDEBUG
+#ifdef DEBUG
     const bool enableValidationLayers = false;
 #else
     const bool enableValidationLayers = true;

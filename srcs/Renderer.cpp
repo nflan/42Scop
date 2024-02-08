@@ -38,16 +38,15 @@ void    ft_Renderer::recreateSwapChain()
 
     vkDeviceWaitIdle(this->_device.device());
 
-    if (this->_swapChain == nullptr)
-        this->_swapChain = std::make_unique<ft_SwapChain>(this->_device, extent);
-    else
-    {
-        std::shared_ptr<ft_SwapChain> oldSwapChain = std::move(this->_swapChain);
-        this->_swapChain = std::make_unique<ft_SwapChain>(this->_device, extent, oldSwapChain);
+    if (this->_swapChain) {
+        std::unique_ptr<ft_SwapChain> newSwapChain = std::make_unique<ft_SwapChain>(this->_device, extent);
 
-        if (!oldSwapChain->compareSwapFormats(*this->_swapChain.get()))
+        if (!newSwapChain->compareSwapFormats(*this->_swapChain.get()))
             throw std::runtime_error("Swap chain image(or depth) format has changed!");
+        this->_swapChain.swap(newSwapChain);
+        return ;
     }
+    this->_swapChain = std::make_unique<ft_SwapChain>(this->_device, extent);
 }
 
 void    ft_Renderer::createCommandBuffers()
@@ -116,7 +115,9 @@ void ft_Renderer::endFrame()
         throw std::runtime_error("failed to present swap chain image!");
 
     this->_isFrameStarted = false;
-    this->_currentFrameIndex = (this->_currentFrameIndex + 1) % this->getSwapChain().imageCount();
+    this->_currentFrameIndex += 1;
+    if (this->_currentFrameIndex >= this->getSwapChain().imageCount())
+        this->_currentFrameIndex = 0;
 }
 
 void    ft_Renderer::beginSwapChainRenderPass(VkCommandBuffer commandBuffer)
@@ -143,9 +144,9 @@ void    ft_Renderer::beginSwapChainRenderPass(VkCommandBuffer commandBuffer)
 
     VkViewport  viewport{};
     viewport.x = 0.f;
-    viewport.y = 0.f;// pour inverse viewport, mettre la height (a faire au debut du projet ptete)
+    viewport.y = 0.f;
     viewport.width = static_cast<float>(this->_swapChain->getSwapChainExtent().width);
-    viewport.height = static_cast<float>(this->_swapChain->getSwapChainExtent().height); // on peut inverser l'axe dans le viewport mais ca inverse tous les autres calculs et ca trigger les validations layers
+    viewport.height = static_cast<float>(this->_swapChain->getSwapChainExtent().height);
     viewport.minDepth = 0.f;
     viewport.maxDepth = 1.f;
     VkRect2D    scissor{{0, 0}, this->_swapChain->getSwapChainExtent()};

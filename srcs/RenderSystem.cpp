@@ -72,20 +72,23 @@ void    RenderSystem::createPipeline(VkRenderPass renderPass)
 
 void    RenderSystem::update(ft_GameObject& model, GlobalUbo& ubo)
 {
-    // std::cerr << "UBO before : " << std::endl;
-    // std::cerr << "- ka = " << ubo.ka.x << "," << ubo.ka.y << "," << ubo.ka.z << std::endl;
-    // std::cerr << "- kd = " << ubo.kd.x << "," << ubo.kd.y << "," << ubo.kd.z << std::endl;
-    // std::cerr << "- ks = " << ubo.ks.x << "," << ubo.ks.y << "," << ubo.ks.z << std::endl;
-    // std::cerr << "- ke = " << ubo.ke.x << "," << ubo.ke.y << "," << ubo.ke.z << std::endl;
-    // std::cerr << "- illum = " << ubo.illum << std::endl;
-    // std::cerr << "- ns = " << ubo.ns << std::endl;
-    // std::cerr << "- ni = " << ubo.ni << std::endl;
-    // std::cerr << "- d = " << ubo.d << std::endl;
+    #ifdef DEBUG
+        std::cerr << "UBO before : " << std::endl;
+        std::cerr << "- ka = " << ubo.ka.x << "," << ubo.ka.y << "," << ubo.ka.z << std::endl;
+        std::cerr << "- kd = " << ubo.kd.x << "," << ubo.kd.y << "," << ubo.kd.z << std::endl;
+        std::cerr << "- ks = " << ubo.ks.x << "," << ubo.ks.y << "," << ubo.ks.z << std::endl;
+        std::cerr << "- ke = " << ubo.ke.x << "," << ubo.ke.y << "," << ubo.ke.z << std::endl;
+        std::cerr << "- illum = " << ubo.illum << std::endl;
+        std::cerr << "- ns = " << ubo.ns << std::endl;
+        std::cerr << "- ni = " << ubo.ni << std::endl;
+        std::cerr << "- d = " << ubo.d << std::endl;
+	#endif
     if (model.model->getMtlFile().size())
     {
-        // std::cout << "mtlfile = " << model.model->getMtlFile() << std::endl;
+        #ifdef DEBUG
+            std::cout << "mtlfile = " << model.model->getMtlFile() << std::endl;
+        #endif
         Material    light = model.model->getMaterial();
-        // std::cerr << "MTL NAME = " << light._name << std::endl;
         ubo.ka = light._ka;
         ubo.kd = light._kd;
         ubo.ks = light._ks;
@@ -95,27 +98,24 @@ void    RenderSystem::update(ft_GameObject& model, GlobalUbo& ubo)
         ubo.ns = light._ns;
         ubo.d = light._d;
     }
-    // std::cerr << "UBO after : " << std::endl;
-    // std::cerr << "- ka = " << ubo.ka.x << "," << ubo.ka.y << "," << ubo.ka.z << std::endl;
-    // std::cerr << "- kd = " << ubo.kd.x << "," << ubo.kd.y << "," << ubo.kd.z << std::endl;
-    // std::cerr << "- ks = " << ubo.ks.x << "," << ubo.ks.y << "," << ubo.ks.z << std::endl;
-    // std::cerr << "- ke = " << ubo.ke.x << "," << ubo.ke.y << "," << ubo.ke.z << std::endl;
-    // std::cerr << "- illum = " << ubo.illum << std::endl;
-    // std::cerr << "- ns = " << ubo.ns << std::endl;
-    // std::cerr << "- ni = " << ubo.ni << std::endl;
-    // std::cerr << "- d = " << ubo.d << std::endl;
-    // std::cerr << "Size of GlobalUbo: " << sizeof(GlobalUbo) << std::endl;
-    // std::cerr << "Alignment of GlobalUbo: " << alignof(GlobalUbo) << std::endl;
+    #ifdef DEBUG
+        std::cerr << "UBO after : " << std::endl;
+        std::cerr << "- ka = " << ubo.ka.x << "," << ubo.ka.y << "," << ubo.ka.z << std::endl;
+        std::cerr << "- kd = " << ubo.kd.x << "," << ubo.kd.y << "," << ubo.kd.z << std::endl;
+        std::cerr << "- ks = " << ubo.ks.x << "," << ubo.ks.y << "," << ubo.ks.z << std::endl;
+        std::cerr << "- ke = " << ubo.ke.x << "," << ubo.ke.y << "," << ubo.ke.z << std::endl;
+        std::cerr << "- illum = " << ubo.illum << std::endl;
+        std::cerr << "- ns = " << ubo.ns << std::endl;
+        std::cerr << "- ni = " << ubo.ni << std::endl;
+        std::cerr << "- d = " << ubo.d << std::endl;
+        std::cerr << "Size of GlobalUbo: " << sizeof(GlobalUbo) << std::endl;
+        std::cerr << "Alignment of GlobalUbo: " << alignof(GlobalUbo) << std::endl;
+	#endif
 }
-
-       #include <unistd.h>
-       #include <strings.h>
-
 
 void    RenderSystem::renderGameObjects(FrameInfo& frameInfo, std::unique_ptr<ft_Buffer>* buffer, GlobalUbo& ubo)
 {
     this->_pipeline->bind(frameInfo.commandBuffer);
-    int i = 0;
 
     vkCmdBindDescriptorSets(
         frameInfo.commandBuffer,
@@ -132,9 +132,7 @@ void    RenderSystem::renderGameObjects(FrameInfo& frameInfo, std::unique_ptr<ft
         ft_GameObject   &obj = kv.second;
         if (obj.model == nullptr)
             continue;
-        i++;
         update(obj, ubo);
-        // bzero(buffer->get()->getBuffer(), buffer->get()->getBufferSize());
         buffer->get()->writeToBuffer(&ubo);
         buffer->get()->flush();
 

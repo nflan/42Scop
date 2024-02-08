@@ -19,6 +19,7 @@
 #include <vulkan/vulkan.h>
 
 // std lib headers
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>

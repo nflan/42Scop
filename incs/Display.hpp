@@ -30,7 +30,6 @@
 #include "PointLightSystem.hpp"
 #include "RenderSystem.hpp"
 #include "Descriptors.hpp"
-#include "UniformBufferObject.hpp"
 #include "KeyboardMovementController.hpp"
 #include <filesystem>
 #include <stdexcept>

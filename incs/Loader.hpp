@@ -1,23 +1,29 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Loader.hpp                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nflan <marvin@42.fr>                       +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/02/08 18:49:03 by nflan             #+#    #+#             */
+/*   Updated: 2024/02/08 18:49:04 by nflan            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef LOADER_HPP
 #define LOADER_HPP
 
 #include <vector>
 #include <string>
-#include "Material.hpp"
+#include "tools.hpp"
 #include "Vertex.hpp"
 
 class Loader
 {
 	public:
 		// Default Constructor
-		Loader()
-		{
-            _mtlFile;
-		}
-		~Loader()
-		{
-			LoadedMeshes.clear();
-		}
+		Loader();
+		~Loader();
 
 		// Load a file into the loader
 		//
@@ -28,14 +34,10 @@ class Loader
         bool    LoadFile(const std::string& Path);
 
         std::string             _mtlFile;
-        // Loaded Mesh Objects
-        std::vector<Mesh>         LoadedMeshes;
-        // Loaded Vertex Objects
-        std::vector<Vertex>         LoadedVertices;
-        // Loaded Index Positions
-        std::vector<uint32_t>       LoadedIndices;
-        // Loaded Material Objects
-        std::vector<Material>       LoadedMaterials;
+        std::vector<Mesh>       _loadedMeshes; // Loaded Mesh Objects
+        std::vector<Vertex>     _loadedVertices; // Loaded Vertex Objects
+        std::vector<uint32_t>   _loadedIndices; // Loaded Index Positions
+        std::vector<Material>   _loadedMaterials; // Loaded Material Objects
     private:
     	// Generate vertices from a list of positions, 
 		//	tcoords, normals and a face line

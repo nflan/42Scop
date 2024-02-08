@@ -29,7 +29,6 @@ ft_SwapChain::ft_SwapChain(ft_Device &deviceRef, VkExtent2D extent): _device{dev
 ft_SwapChain::ft_SwapChain(ft_Device &deviceRef, VkExtent2D extent, std::shared_ptr<ft_SwapChain> previous): _device{deviceRef}, _windowExtent{extent}, _oldSwapChain{previous}
 {
     init();
-    _oldSwapChain = nullptr;
 }
 
 void ft_SwapChain::init()
@@ -110,43 +109,34 @@ VkResult    ft_SwapChain::submitCommandBuffers(const VkCommandBuffer *buffers, u
         vkWaitForFences(this->_device.device(), 1, &this->_imagesInFlight[*imageIndex], VK_TRUE, UINT64_MAX);
     this->_imagesInFlight[*imageIndex] = this->_inFlightFences[this->_currentFrame];
 
-    VkSubmitInfo    submitInfo = {};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
     VkSemaphore waitSemaphores[] = { this->_imageAvailableSemaphores[this->_currentFrame]};
     VkPipelineStageFlags    waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-    submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = waitSemaphores;
-    submitInfo.pWaitDstStageMask = waitStages;
-
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = buffers;
-
     VkSemaphore signalSemaphores[] = {this->_renderFinishedSemaphores[this->_currentFrame]};
-    submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = signalSemaphores;
+    VkSubmitInfo    submitInfo {.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+                                .waitSemaphoreCount = 1,
+                                .pWaitSemaphores = waitSemaphores,
+                                .pWaitDstStageMask = waitStages,
+                                .commandBufferCount = 1,
+                                .pCommandBuffers = buffers,
+                                .signalSemaphoreCount = 1,
+                                .pSignalSemaphores = signalSemaphores};
 
     vkResetFences(this->_device.device(), 1, &this->_inFlightFences[this->_currentFrame]);
     if (vkQueueSubmit(this->_device.graphicsQueue(), 1, &submitInfo, this->_inFlightFences[this->_currentFrame]) != VK_SUCCESS)
         throw std::runtime_error("failed to submit draw command buffer!");
 
-    VkPresentInfoKHR    presentInfo = {};
-    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-
-    presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = signalSemaphores;
-
     VkSwapchainKHR  swapChains[] = {this->_swapChain};
-    presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = swapChains;
+    VkPresentInfoKHR    presentInfo {.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+                                     .waitSemaphoreCount = 1,
+                                     .pWaitSemaphores = signalSemaphores,
+                                     .swapchainCount = 1,
+                                     .pSwapchains = swapChains,
+                                     .pImageIndices = imageIndex};
+    this->_currentFrame += 1;
+    if (this->_currentFrame >= MAX_FRAMES_IN_FLIGHT)
+        this->_currentFrame = 0;
 
-    presentInfo.pImageIndices = imageIndex;
-
-    VkResult    result = vkQueuePresentKHR(this->_device.presentQueue(), &presentInfo);
-
-    this->_currentFrame = (this->_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-
-    return result;
+    return vkQueuePresentKHR(this->_device.presentQueue(), &presentInfo);
 }
 
 void    ft_SwapChain::createSwapChain()
@@ -190,7 +180,7 @@ void    ft_SwapChain::createSwapChain()
 		createInfo.pQueueFamilyIndices = nullptr; // Optionnel
 	}
 
-	createInfo.preTransform = swapChainSupport.capabilities.currentTransform; // si on veut transform genre rotate ou symetrie verticale TODO
+	createInfo.preTransform = swapChainSupport.capabilities.currentTransform; // si on veut transform genre rotate ou symetrie verticale
 	createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR; //si on veut que la fenetre influe sur les couleurs de l'image (generalement non, comme ici)
 	createInfo.presentMode = presentMode; // meilleures performances avec clipped = vk_true
 	createInfo.clipped = VK_TRUE; //pas afficher pixels derrieres
@@ -413,29 +403,6 @@ void	ft_SwapChain::createColorResources()
 
     createImage(swapChainExtent.width, swapChainExtent.height, 1, this->_device.getMsaaSamples(), colorFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, _colorImages[0], _colorImageMemorys[0]);
     _colorImageViews[0] = createImageView(_colorImages[0], colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
-
-
-    // for (int i = 0; i < this->_colorImages.size(); i++)
-    // {
-    //     VkImageCreateInfo	imageInfo{};
-    //     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    //     imageInfo.imageType = VK_IMAGE_TYPE_2D;
-    //     imageInfo.extent.width = swapChainExtent.width;
-    //     imageInfo.extent.height = swapChainExtent.height;
-    //     imageInfo.extent.depth = 1;
-    //     imageInfo.mipLevels = 1;
-    //     imageInfo.arrayLayers = 1;
-    //     imageInfo.format = colorFormat; //meme que dans celles dans le buffer
-    //     imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-    //     imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    //     imageInfo.usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-    //     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    //     imageInfo.samples = this->_device.getMsaaSamples();
-    //     imageInfo.flags = 0; // Optionnel
-
-    //     this->_device.createImageWithInfo(imageInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, this->_colorImages[i], this->_colorImageMemorys[i]);
-	//     this->_colorImageViews[i] = this->createImageView(this->_colorImages[i], colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, this->_device.getMipLevels());
-    // }
 }
 
 void    ft_SwapChain::createSyncObjects()
@@ -463,11 +430,13 @@ void    ft_SwapChain::createSyncObjects()
 
 VkSurfaceFormatKHR  ft_SwapChain::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats)
 {
-	for (const VkSurfaceFormatKHR& availableFormat : availableFormats)
-		if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
-			return availableFormat;
-	//si ca foire, on pourrait tester d'autres formats un peu moins bien mais dans un soucis de simplicite, on prend le premier venu
-	return availableFormats[0];
+    std::vector<VkSurfaceFormatKHR>::const_iterator it = std::find_if(availableFormats.begin(), availableFormats.end(), [](const VkSurfaceFormatKHR& cur) -> bool {
+        if (cur.format == VK_FORMAT_B8G8R8A8_SRGB && cur.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+            return true;
+        return false; 
+    });
+    //si ca foire, on pourrait tester d'autres formats un peu moins bien mais dans un soucis de simplicite, on prend le premier venu
+    return (it == availableFormats.end() ? availableFormats[0] : *it);
 }
 
 VkPresentModeKHR    ft_SwapChain::chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes)
@@ -481,16 +450,13 @@ VkPresentModeKHR    ft_SwapChain::chooseSwapPresentMode(const std::vector<VkPres
 
 VkExtent2D  ft_SwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities)
 {
-    if (capabilities.currentExtent.width != std::numeric_limits<uint64_t>::max())
+    if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
         return capabilities.currentExtent;
-    else
-    {
-        VkExtent2D actualExtent = this->_windowExtent;
-        actualExtent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
-        actualExtent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));
+    VkExtent2D actualExtent = this->_windowExtent;
+    actualExtent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
+    actualExtent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));
 
-        return actualExtent;
-    }
+    return actualExtent;
 }
 
 VkFormat    ft_SwapChain::findDepthFormat()

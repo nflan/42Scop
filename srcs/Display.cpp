@@ -130,6 +130,7 @@ void	Display::run()
 	ft_GameObject								viewerObject = ft_GameObject::createGameObject();
 	KeyboardMovementController					cameraController(glm::vec3(0,0,-10.f));
 	std::chrono::_V2::system_clock::time_point	currentTime = std::chrono::high_resolution_clock::now();
+	std::chrono::_V2::system_clock::time_point	newTime;
 
 	viewerObject.transform.translation.z = -10.f;
 	
@@ -138,7 +139,7 @@ void	Display::run()
 		glfwSetKeyCallback(this->_window.getWindow(), key_callback);
 		glfwPollEvents();
 
-		std::chrono::_V2::system_clock::time_point	newTime = std::chrono::high_resolution_clock::now();
+		newTime = std::chrono::high_resolution_clock::now();
 		float	frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
 		currentTime = newTime;
 
@@ -176,7 +177,8 @@ void	Display::run()
 			this->_renderer.endFrame();
 			if (ISTEXT)
 			{
-				NBTEXT %= this->_loadedTextures.size();
+				if (NBTEXT >= this->_loadedTextures.size())
+					NBTEXT = 0;
 				if (this->_loadedTextures.size() > 1 && NBTEXT != this->_currText)
 				{
 					refreshDescriptorSets();
@@ -249,8 +251,12 @@ void	Display::getTextInDir()
 		else
 			std::cerr << "Can't use this: '" << _textFile << "/" << entry.path().filename() << "' for texture." << std::endl;
 	}
-	for (std::string t : _textFiles)
-		std::cerr << "t = '" << t << "'" << std::endl;
+	#ifdef DEBUG
+	{
+		for (std::string t : _textFiles)
+			std::cerr << "t = '" << t << "'" << std::endl;
+	}
+	#endif
 }
 
 void	Display::createBuffers()
@@ -504,8 +510,8 @@ void	Display::createTextureSampler(Texture &loadedTexture)
 	samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
 	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 	samplerInfo.mipLodBias = 0.f;//Lod -> Level of Details
-	samplerInfo.minLod = 0.f; //static_cast<float>(this->_device.getMipLevels() / 2);//minimum de details (rend flou de pres)
-    samplerInfo.maxLod = VK_LOD_CLAMP_NONE;//static_cast<float>(this->_device.getMipLevels());//maximum de details
+	samplerInfo.minLod = 0.f;// static_cast<float>(loadedTexture._mipLevels / 2);//minimum de details (rend flou de pres)
+    samplerInfo.maxLod = VK_LOD_CLAMP_NONE;//static_cast<float>(loadedTexture._mipLevels);//maximum de details
 
 	if (vkCreateSampler(this->_device.device(), &samplerInfo, nullptr, &loadedTexture._sampler) != VK_SUCCESS)
         throw std::runtime_error("Fail to create Sampler for texture!");
@@ -555,7 +561,9 @@ void	Display::generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWi
 		blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
 		blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		blit.srcSubresource.mipLevel = i - 1;
-		std::cout << "\tblit.srcSubresource.mipLevel = " <<  blit.srcSubresource.mipLevel << std::endl;
+		#ifdef DEBUG
+			std::cout << "\tblit.srcSubresource.mipLevel = " <<  blit.srcSubresource.mipLevel << std::endl;
+    	#endif
 
 		blit.srcSubresource.baseArrayLayer = 0;
 		blit.srcSubresource.layerCount = 1;

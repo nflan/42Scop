@@ -10,43 +10,31 @@
 # **************************************************************************** #
 
 NAME =	scop
-NAMEB =	scop_bonus
 
 INC_DIR =		incs/
-INCB_DIR =		incs_bonus/
 OBJ_DIR =		obj
-OBJB_DIR =		obj_bonus
 SRC_DIR =		srcs
-SRCB_DIR =		srcs_bonus
 
 GLSLC =			/mnt/nfs/homes/nflan/sgoinfre/bin/glslc
 
-INC =			$(addsuffix .hpp, $(addprefix $(INC_DIR), Buffer Camera Descriptors Device Display FrameInfo GameObject KeyboardMovementController Loader Material Model Pipeline PointLightSystem Renderer RenderSystem SwapChain tools UniformBufferObject Window))
+INC =			$(addsuffix .hpp, $(addprefix $(INC_DIR), Buffer Camera Descriptors Device Display FrameInfo GameObject KeyboardMovementController Loader Model Pipeline PointLightSystem Renderer RenderSystem SwapChain tools Window))
 
 SRC =			$(SRC_FT:%=$(SRC_DIR)/%.cpp)
-SRCB =			$(SRCB_FT:%=$(SRCB_DIR)/%.cpp)
 
 OBJ =			$(SRC:$(SRC_DIR)%.cpp=$(OBJ_DIR)%.o)
-OBJB =			$(SRCB:$(SRCB_DIR)%.cpp=$(OBJB_DIR)%.o)
 
 CXX =	g++ $(CXXFLAGS)
 
 RM =	rm -fr
 
-CXXFLAGS =	-std=c++20 -O3 -g3# -DNDEBUG
+CXXFLAGS =	-std=c++20 -O3 -g3# -DDEBUG
 
 GLM_INCLUDE_PATH = /home/nflan/bin/glm
 
 LDFLAGS =	-lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi -I$(GLM_INCLUDE_PATH)
 
-# VulkanTest:	main.cpp
-# g++ $(CXXFLAGS) -o VulkanTest main.cpp $(LDFLAGS)
-
 .cpp.o:
 	$(CXX) -c $< -o $(<:.cpp=.o)
-
-#HOW TO LIST .c 
-#	ls -l | awk '{print $9}' | grep -E ".c$"| sed "s/\.c/ \\\/g" | sed '$s/\\$//g'
 
 SRC_FT =	Buffer \
 			Camera \
@@ -56,7 +44,6 @@ SRC_FT =	Buffer \
 			GameObject \
 			KeyboardMovementController \
 			Loader \
-			Material \
 			Model \
 			Pipeline \
 			PointLightSystem \
@@ -66,8 +53,6 @@ SRC_FT =	Buffer \
 			scop \
 			SwapChain \
 			Window 
-
-SRCB_FT =
 
 vertSources = $(shell find shaders -type f -name "*.vert")
 vertObjFiles = $(patsubst %.vert, %.vert.spv, $(vertSources))
@@ -95,18 +80,8 @@ $(NAME): $(INC) $(OBJ_DIR) $(SRC) $(OBJ)
 %.frag.spv: %.frag
 	${GLSLC} $< -o $@
 
-bonus: $(NAMEB)
-
 $(OBJB_DIR):
 	mkdir -p $@
-
-$(OBJB) : $(INCB) | $(OBJB_DIR)
-
-$(OBJB_DIR)/%.o: $(SRCB_DIR)/%.c
-	$(CXX) -c $< -o $@
-
-$(NAMEB): $(OBJB_DIR) $(SRCB) $(OBJB)
-	$(CXX) $(OBJB) -o $(LDFLAGS) $@
 
 clean:
 	@$(RM) $(OBJ_DIR)
@@ -148,5 +123,5 @@ coffee: all clean
 	@echo "\0033[1;32m\033[3C                    Take Your Coffee"
 	$(call print_aligned_coffee)
 
-.SECONDARY: $(OBJ) $(OBJ_DIR) $(OBJB) $(OBJB_DIR)
-.PHONY: all clean fclean re coffee bonus
+.SECONDARY: $(OBJ) $(OBJ_DIR)
+.PHONY: all clean fclean re coffee
