@@ -17,7 +17,20 @@
 #include "FrameInfo.hpp"
 #include "Pipeline.hpp"
 
+// libs
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
+#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/gtc/constants.hpp>
+
+#ifndef DEBUG
+#define NDEBUG
+#endif
 // std
+#include <array>
+#include <cassert>
+#include <map>
+#include <stdexcept>
 #include <memory>
 #include <vector>
 

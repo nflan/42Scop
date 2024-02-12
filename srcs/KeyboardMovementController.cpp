@@ -12,8 +12,6 @@
 
 #include "../incs/KeyboardMovementController.hpp"
 
-#include <limits>
-
 void    KeyboardMovementController::moveInPlaneXZ(GLFWwindow* window, float dt, ft_GameObject& gameObject)
 {
     glm::vec3   rotate{0};

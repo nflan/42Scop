@@ -19,10 +19,18 @@
 // libs
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#define GLM_ENABLE_EXPERIMENTAL
+#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/gtx/hash.hpp>
 #include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
 #include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/gtc/constants.hpp>
 
 // std
+#ifndef DEBUG
+#define NDEBUG
+#endif
+#include <cassert>
+#include <cstring>
+#include <unordered_map>
 #include <memory>
 #include <vector>
 

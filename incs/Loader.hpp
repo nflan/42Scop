@@ -25,12 +25,6 @@ class Loader
 		Loader();
 		~Loader();
 
-		// Load a file into the loader
-		//
-		// If file is loaded return true
-		//
-		// If the file is unable to be found
-		// or unable to be loaded return false
         bool    LoadFile(const std::string& Path);
 
         std::string             _mtlFile;

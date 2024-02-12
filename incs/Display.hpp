@@ -14,10 +14,10 @@
 #define DISPLAY_HPP
 
 #define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define GLM_ENABLE_EXPERIMENTAL
 #include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/gtx/hash.hpp>
-#include <GLFW/glfw3.h>
 #include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
 #include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/gtc/matrix_transform.hpp>
 
@@ -39,6 +39,7 @@
 #include <unordered_map>
 #include <set>
 #include <cstdlib>
+#include <iostream>
 
 const uint32_t	WIDTH = 800;
 const uint32_t	HEIGHT = 600;
@@ -71,7 +72,6 @@ class Display
 		void	generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
 		void	transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
 
-		// Mesh						_mesh;
 		std::string							_file;
 		std::string							_textFile;
 		std::vector<std::string>			_textFiles;

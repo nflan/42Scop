@@ -17,6 +17,13 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
 
+// std
+#ifndef DEBUG
+#define NDEBUG
+#endif
+#include <cassert>
+#include <limits>
+
 class ft_Camera {
     public:
         void    setOrthographicProjection(float left, float right, float top, float bottom, float near, float far);

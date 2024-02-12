@@ -13,6 +13,13 @@
 #ifndef BUFFER_HPP
 #define BUFFER_HPP
 
+#ifndef DEBUG
+#define NDEBUG
+#endif
+#include <iostream>
+#include <cassert>
+#include <cstring>
+
 #include "Device.hpp"
 
 class ft_Buffer {

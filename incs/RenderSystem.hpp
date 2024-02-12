@@ -25,6 +25,12 @@
 #include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
 
 // std
+#ifndef DEBUG
+#define NDEBUG
+#endif
+#include <array>
+#include <cassert>
+#include <stdexcept>
 #include <memory>
 
 class RenderSystem {

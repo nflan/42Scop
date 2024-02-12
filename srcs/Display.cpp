@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "../incs/Display.hpp"
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "/mnt/nfs/homes/nflan/sgoinfre/bin/stb/stb_image.h"
 
@@ -161,10 +162,9 @@ void	Display::run()
 				RENDER == 1 && ISTEXT ? _descriptorSets[frameIndex] : _descriptorSetsWithoutTexture[frameIndex],
 				this->_gameObjects};
 			
-			GlobalUbo	ubo{};
-			ubo.projection = camera.getProjection();
-			ubo.view = camera.getView();
-			ubo.inverseView = camera.getInverseView();
+			GlobalUbo	ubo{.projection = camera.getProjection(),
+							.view = camera.getView(),
+							.inverseView = camera.getInverseView()};
 			this->_pointLightSystems[RENDER]->update(frameInfo, ubo);
 
 			// render
@@ -208,13 +208,15 @@ void	Display::getText()
 {
 	if (std::filesystem::exists(this->_textFile))
 	{
-		if (std::filesystem::is_directory(this->_textFile))
+		if (std::filesystem::is_directory(this->_textFile)) {
 			getTextInDir();
-		else if (std::filesystem::is_regular_file(this->_textFile))
+		}
+		else if (std::filesystem::is_regular_file(this->_textFile)) {
 			this->_textFiles.push_back(this->_textFile);
-	}
-	else
+		}
+	} else {
 		throw std::invalid_argument("Wrong path: " + this->_textFile);
+	}
 }
 
 void	Display::getTextInDir()
@@ -229,11 +231,12 @@ void	Display::getTextInDir()
 			bool	add = 0;
 			std::string	file(entry.path().filename());
 			std::string	extFile(file.c_str(), file.find_last_of('.') + 1, file.size() - (file.find_last_of('.') + 1));
-			for (std::string authorizedExt : ext)
-				if (authorizedExt == extFile)
+			for (std::string authorizedExt : ext) {
+				if (authorizedExt == extFile) {
 					add = !add;
-			if (!add)
-			{
+				}
+			}
+			if (!add) {
 				std::cerr << "This extension is not usable: " << extFile << ". Try with those one ";
 				for (std::string authorizedExt : ext)
 				{
@@ -244,12 +247,12 @@ void	Display::getTextInDir()
 						std::cerr << ".";
 				}
 				std::cerr << std::endl; 
-			}
-			else
+			} else {
 				this->_textFiles.push_back(_textFile + "/" + file);
-		}
-		else
+			}
+		} else {
 			std::cerr << "Can't use this: '" << _textFile << "/" << entry.path().filename() << "' for texture." << std::endl;
+		}
 	}
 	#ifdef DEBUG
 	{
@@ -262,8 +265,7 @@ void	Display::getTextInDir()
 void	Display::createBuffers()
 {
 	this->_buffers.resize(this->_renderer.getSwapChain().imageCount());
-	for (size_t i = 0; i < this->_renderer.getSwapChain().imageCount(); i++)
-	{
+	for (size_t i = 0; i < this->_renderer.getSwapChain().imageCount(); i++) {
 		std::unique_ptr<ft_Buffer> buffer = std::make_unique<ft_Buffer>(
 			this->_device,
 			sizeof(GlobalUbo),
@@ -284,8 +286,7 @@ void	Display::createDescriptorSetLayout()
 
 	this->_globalDescriptorSetLayouts.push_back(std::move(colorSetLayout));
 	
-	if (this->_loadedTextures.size())
-	{
+	if (this->_loadedTextures.size()) {
 		builder->addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
 		std::unique_ptr<ft_DescriptorSetLayout>	textureSetLayout = builder->build();
 		this->_globalDescriptorSetLayouts.push_back(std::move(textureSetLayout));
@@ -299,14 +300,12 @@ void	Display::createDescriptorSets()
 	_descriptorSets.resize(this->_renderer.getSwapChain().imageCount());
 	_changeDescriptorSets.resize(this->_renderer.getSwapChain().imageCount());
 
-	for (uint64_t i = 0; i < this->_renderer.getSwapChain().imageCount(); i++)
-	{
+	for (uint64_t i = 0; i < this->_renderer.getSwapChain().imageCount(); i++) {
 		VkDescriptorBufferInfo bufferInfo = _buffers[i]->descriptorInfo();
 		ft_DescriptorWriter(*_globalDescriptorSetLayouts[0], *_globalPool)
 			.writeBuffer(0, &bufferInfo)
 			.build(_descriptorSetsWithoutTexture[i]);
-		if (this->_loadedTextures.size())
-		{
+		if (this->_loadedTextures.size()) {
 			VkDescriptorImageInfo imageInfo{};
 			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 			imageInfo.imageView = this->_loadedTextures[0]._imageView;
@@ -324,8 +323,7 @@ void	Display::refreshDescriptorSets()
 	VkCommandBuffer	commandBuffer = this->_device.beginSingleTimeCommands();
 	this->_device.endSingleTimeCommands(commandBuffer);
 
-	for (uint64_t i = 0; i < this->_renderer.getSwapChain().imageCount(); i++)
-	{
+	for (uint64_t i = 0; i < this->_renderer.getSwapChain().imageCount(); i++) {
 		VkDescriptorBufferInfo bufferInfo = _buffers[i]->descriptorInfo();
 		VkDescriptorImageInfo imageInfo{};
 		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -344,8 +342,7 @@ void	Display::refreshDescriptorSets()
 
 void	Display::createRenderSystems()
 {
-	for (uint64_t i = 0; i < this->_globalDescriptorSetLayouts.size(); i++)
-	{
+	for (uint64_t i = 0; i < this->_globalDescriptorSetLayouts.size(); i++) {
 		_renderSystems.emplace_back(std::make_unique<RenderSystem>(
 			this->_device,
 			this->_renderer.getSwapChainRenderPass(),
@@ -364,8 +361,7 @@ void	Display::createRenderSystems()
 void	Display::loadGameObjects()
 {
   	std::vector<std::shared_ptr<ft_Model>>	Model = ft_Model::createModelFromFile(this->_device, this->_file);
-	for (size_t i = 0; i < Model.size(); i++)
-	{
+	for (size_t i = 0; i < Model.size(); i++) {
 		ft_GameObject	gameObj = ft_GameObject::createGameObject();
 		gameObj.model = Model[i];
 		this->_gameObjects.emplace(gameObj.getId(), std::move(gameObj));
@@ -375,8 +371,7 @@ void	Display::loadGameObjects()
 		{1.f, 1.f, 1.f}
   	};//add light color if needed
 
-	for (int i = 0; i < MAX_LIGHTS; i++)
-	{
+	for (int i = 0; i < MAX_LIGHTS; i++) {
 		ft_GameObject	pointLight = ft_GameObject::makePointLight(.03f);
 		pointLight.color = lightColors[i];
 		
@@ -434,40 +429,33 @@ void	Display::transitionImageLayout(VkImage image, VkFormat format, VkImageLayou
 {
     VkCommandBuffer	commandBuffer = this->_device.beginSingleTimeCommands();
 
-	VkImageMemoryBarrier	barrier{};
-	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	barrier.oldLayout = oldLayout;
-	barrier.newLayout = newLayout;
-	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.image = image;
-	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	barrier.subresourceRange.baseMipLevel = 0;
-	barrier.subresourceRange.levelCount = mipLevels;
-	barrier.subresourceRange.baseArrayLayer = 0;
-	barrier.subresourceRange.layerCount = 1;
+	VkImageMemoryBarrier	barrier{.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+									.srcAccessMask = 0,
+									.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
+									.oldLayout = oldLayout,
+									.newLayout = newLayout,
+									.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+									.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+									.image = image,
+									.subresourceRange{.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+														.baseMipLevel = 0,
+														.levelCount = mipLevels,
+														.baseArrayLayer = 0,
+														.layerCount = 1}};
 
     VkPipelineStageFlags sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-    VkPipelineStageFlags destinationStage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+    VkPipelineStageFlags destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 
-	if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-	{
-		barrier.srcAccessMask = 0;
-		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
 
-		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-		destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-	}
-	else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-	{
 		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
 		sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 		destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-	}
-	else
+	} else if (oldLayout != VK_IMAGE_LAYOUT_UNDEFINED && newLayout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
 		throw std::invalid_argument("Unsupported layout transition!");
+	}
 
 	vkCmdPipelineBarrier(
 		commandBuffer,
@@ -486,14 +474,23 @@ void	Display::createTextureSampler(Texture &loadedTexture)
 	VkPhysicalDeviceProperties properties{};
 	vkGetPhysicalDeviceProperties(this->_device.getPhysicalDevice(), &properties);
 
-	VkSamplerCreateInfo	samplerInfo{}; //permet d'indiquer les filtres et les transformations à appliquer.
-	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-	samplerInfo.magFilter = VK_FILTER_LINEAR; //interpoler texels magnifies
-	samplerInfo.minFilter = VK_FILTER_LINEAR; //interpoler texels minifies
+	VkSamplerCreateInfo	samplerInfo{.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,//permet d'indiquer les filtres et les transformations à appliquer.
+									.magFilter = VK_FILTER_LINEAR,//interpoler texels magnifies
+									.minFilter = VK_FILTER_LINEAR,//interpoler texels minifies
+									.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
+									.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+									.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+									.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+									.mipLodBias = 0.f,//Lod -> Level of Details
+									.anisotropyEnable = VK_TRUE,//we can desable it if the user's gc don't manage
+									.maxAnisotropy = properties.limits.maxSamplerAnisotropy,//and use 1.f
+									.compareEnable = VK_FALSE,
+									.compareOp = VK_COMPARE_OP_ALWAYS,
+									.minLod = 0.f,// static_cast<float>(loadedTexture._mipLevels / 2);//minimum de details (rend flou de pres)
+									.maxLod = VK_LOD_CLAMP_NONE,//static_cast<float>(loadedTexture._mipLevels);//maximum de details
+									.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,//si l'image est plus petite que la fenetre, couleur du reste mais que black white or transparent
+									.unnormalizedCoordinates = VK_FALSE};// Le champ unnomalizedCoordinates indique le système de coordonnées que vous voulez utiliser pour accéder aux texels de l'image. Avec VK_TRUE, vous pouvez utiliser des coordonnées dans [0, texWidth) et [0, texHeight). Sinon, les valeurs sont accédées avec des coordonnées dans [0, 1). Dans la plupart des cas les coordonnées sont utilisées normalisées car cela permet d'utiliser un même shader pour des textures de résolution différentes.
 
-	samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-	samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 	/*
 	VK_SAMPLER_ADDRESS_MODE_REPEAT : répète la texture
 	VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT : répète en inversant les coordonnées pour réaliser un effet miroir
@@ -501,17 +498,6 @@ void	Display::createTextureSampler(Texture &loadedTexture)
 	VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE : prend la couleur de l'opposé du plus proche côté de l'image
 	VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER : utilise une couleur fixée
 	*/
-	samplerInfo.anisotropyEnable = VK_TRUE; ///on pourrait le desactiver si l'utilisateur n'a pas une cg qui peut le faire
-	samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy; // et passer ca a 1.f si l'utilisateur n'a pas une cg qui peut le faire
-	samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK; //si l'image est plus petite que la fenetre, couleur du reste mais que black white or transparent
-	samplerInfo.unnormalizedCoordinates = VK_FALSE;
-	// Le champ unnomalizedCoordinates indique le système de coordonnées que vous voulez utiliser pour accéder aux texels de l'image. Avec VK_TRUE, vous pouvez utiliser des coordonnées dans [0, texWidth) et [0, texHeight). Sinon, les valeurs sont accédées avec des coordonnées dans [0, 1). Dans la plupart des cas les coordonnées sont utilisées normalisées car cela permet d'utiliser un même shader pour des textures de résolution différentes.
-	samplerInfo.compareEnable = VK_FALSE;
-	samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-	samplerInfo.mipLodBias = 0.f;//Lod -> Level of Details
-	samplerInfo.minLod = 0.f;// static_cast<float>(loadedTexture._mipLevels / 2);//minimum de details (rend flou de pres)
-    samplerInfo.maxLod = VK_LOD_CLAMP_NONE;//static_cast<float>(loadedTexture._mipLevels);//maximum de details
 
 	if (vkCreateSampler(this->_device.device(), &samplerInfo, nullptr, &loadedTexture._sampler) != VK_SUCCESS)
         throw std::runtime_error("Fail to create Sampler for texture!");
@@ -529,17 +515,17 @@ void	Display::generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWi
 
 	VkCommandBuffer	commandBuffer = this->_device.beginSingleTimeCommands();
 
-    VkImageMemoryBarrier barrier{};
-    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    barrier.image = image;
-    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    barrier.subresourceRange.baseArrayLayer = 0;
-    barrier.subresourceRange.layerCount = 1;
-    barrier.subresourceRange.levelCount = 1;
+    VkImageMemoryBarrier barrier{.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+									.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+									.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+									.image = image,
+									.subresourceRange{.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+														.levelCount = 1,
+														.baseArrayLayer = 0,
+														.layerCount = 1}
+								};
 
-	int32_t mipWidth = texWidth;
+	int32_t	mipWidth = texWidth;
 	int32_t mipHeight = texHeight;
 
 	for (uint32_t i = 1; i < mipLevels; i++)
@@ -556,24 +542,27 @@ void	Display::generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWi
 			0, nullptr,
 			1, &barrier);
 		
-		VkImageBlit blit{};
-		blit.srcOffsets[0] = { 0, 0, 0 };
-		blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
-		blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		blit.srcSubresource.mipLevel = i - 1;
-		#ifdef DEBUG
-			std::cout << "\tblit.srcSubresource.mipLevel = " <<  blit.srcSubresource.mipLevel << std::endl;
-    	#endif
 
-		blit.srcSubresource.baseArrayLayer = 0;
-		blit.srcSubresource.layerCount = 1;
-		blit.dstOffsets[0] = { 0, 0, 0 };
-		blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
-		blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		blit.dstSubresource.mipLevel = i;
-		blit.dstSubresource.baseArrayLayer = 0;
-		blit.dstSubresource.layerCount = 1;
-		
+// typedef struct VkImageBlit {
+//     VkImageSubresourceLayers    srcSubresource;
+    // VkOffset3D                  srcOffsets[2];
+//     VkImageSubresourceLayers    dstSubresource;
+//     VkOffset3D                  dstOffsets[2];
+// } VkImageBlit;
+
+
+		VkImageBlit blit{.srcSubresource{.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+											.mipLevel = i - 1,
+											.baseArrayLayer = 0,
+											.layerCount = 1},
+							.srcOffsets = {{0, 0, 0}, {mipWidth, mipHeight, 1}},
+							.dstSubresource{.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+											.mipLevel = i,
+											.baseArrayLayer = 0,
+											.layerCount = 1},
+							.dstOffsets = {{0, 0, 0}, {mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1}}
+		};
+
 		vkCmdBlitImage(commandBuffer,
 			image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 			image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,//Graphic Queue mandatory

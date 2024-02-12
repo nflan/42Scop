@@ -12,18 +12,6 @@
 
 #include "../incs/PointLightSystem.hpp"
 
-// libs
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
-#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/gtc/constants.hpp>
-
-// std
-#include <array>
-#include <cassert>
-#include <map>
-#include <stdexcept>
-
 struct PointLightPushConstants
 {
     glm::vec4   position{};
@@ -44,19 +32,17 @@ PointLightSystem::~PointLightSystem()
 
 void    PointLightSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout)
 {
-    VkPushConstantRange pushConstantRange{};
-    pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-    pushConstantRange.offset = 0;
-    pushConstantRange.size = sizeof(PointLightPushConstants);
+    VkPushConstantRange pushConstantRange{.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                                            .offset = 0,
+                                            .size = sizeof(PointLightPushConstants)};
 
     std::vector<VkDescriptorSetLayout>  descriptorSetLayouts{globalSetLayout};
 
-    VkPipelineLayoutCreateInfo  pipelineLayoutInfo{};
-    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
-    pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
-    pipelineLayoutInfo.pushConstantRangeCount = 1;
-    pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+    VkPipelineLayoutCreateInfo  pipelineLayoutInfo{.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+                                                    .setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size()),
+                                                    .pSetLayouts = descriptorSetLayouts.data(),
+                                                    .pushConstantRangeCount = 1,
+                                                    .pPushConstantRanges = &pushConstantRange};
     
     if (vkCreatePipelineLayout(this->_device.device(), &pipelineLayoutInfo, nullptr, &this->_pipelineLayout) != VK_SUCCESS)
         throw std::runtime_error("failed to create pipeline layout!");
@@ -86,9 +72,9 @@ void    PointLightSystem::update(FrameInfo& frameInfo, GlobalUbo& ubo)
     glm::mat4   rotateLight = glm::rotate(glm::mat4(1.f), .5f * frameInfo.frameTime, {0.f, -1.f, 0.f});
     int         lightIndex = 0;
 
-    for (auto& kv : frameInfo.gameObjects)
+    for (std::pair<const ft_GameObject::id_t, ft_GameObject>& kv : frameInfo.gameObjects)
     {
-        auto& obj = kv.second;
+        ft_GameObject& obj = kv.second;
         if (obj.pointLight == nullptr)
             continue;
 
@@ -110,9 +96,8 @@ void    PointLightSystem::render(FrameInfo& frameInfo)
 {
     // sort lights
     std::map<float, ft_GameObject::id_t> sorted;
-    for (auto& kv : frameInfo.gameObjects)
-    {
-        auto& obj = kv.second;
+    for (std::pair<const ft_GameObject::id_t, ft_GameObject>& kv : frameInfo.gameObjects) {
+        ft_GameObject& obj = kv.second;
         if (obj.pointLight == nullptr)
             continue;
 
@@ -135,16 +120,13 @@ void    PointLightSystem::render(FrameInfo& frameInfo)
         nullptr);
 
     // iterate through sorted lights in reverse order
-    for (std::map<float, ft_GameObject::id_t>::reverse_iterator it = sorted.rbegin(); it != sorted.rend(); ++it)
-    {
+    for (std::map<float, ft_GameObject::id_t>::reverse_iterator it = sorted.rbegin(); it != sorted.rend(); ++it) {
         // use game obj id to find light object
         ft_GameObject&  obj = frameInfo.gameObjects.at(it->second);
 
-        PointLightPushConstants push{};
-        push.position = glm::vec4(obj.transform.translation, 1.f);
-        push.color = glm::vec4(obj.color, obj.pointLight->lightIntensity);
-        push.radius = obj.transform.scale.x;
-
+        PointLightPushConstants push{.position = glm::vec4(obj.transform.translation, 1.f),
+                                        .color = glm::vec4(obj.color, obj.pointLight->lightIntensity),
+                                        .radius = obj.transform.scale.x};
         vkCmdPushConstants(
             frameInfo.commandBuffer,
             this->_pipelineLayout,

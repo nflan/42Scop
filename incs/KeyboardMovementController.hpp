@@ -15,6 +15,7 @@
 
 #include "GameObject.hpp"
 #include "Window.hpp"
+#include <limits>
 #include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/glm.hpp>
 
 class   KeyboardMovementController {

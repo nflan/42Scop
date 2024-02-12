@@ -17,6 +17,13 @@
 #include "Model.hpp"
 
 // std
+#ifndef DEBUG
+#define NDEBUG
+#endif
+#include <cassert>
+#include <fstream>
+#include <iostream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 

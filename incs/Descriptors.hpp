@@ -16,11 +16,17 @@
 #include "Device.hpp"
 #include "SwapChain.hpp"
 
+#ifndef DEBUG
+#define NDEBUG
+#endif
 // std
 #include <memory>
 #include <unordered_map>
 #include <vector>
 #include <array>
+#include <cassert>
+#include <iostream>
+#include <stdexcept>
 
 class ft_DescriptorSetLayout {
 	public:

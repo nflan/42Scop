@@ -16,6 +16,12 @@
 #include "Window.hpp"
 #include <vector>
 #include <string>
+#include <cstring>
+#include <iostream>
+#include <set>
+#include <unordered_set>
+#include <map>
+#include <cmath>
 
 struct SwapChainSupportDetails {
     VkSurfaceCapabilitiesKHR capabilities;
@@ -32,9 +38,9 @@ struct QueueFamilyIndices {
 };
 
 #ifdef DEBUG
-    const bool enableValidationLayers = false;
-#else
     const bool enableValidationLayers = true;
+#else
+    const bool enableValidationLayers = false;
 #endif
 
 class ft_Device {

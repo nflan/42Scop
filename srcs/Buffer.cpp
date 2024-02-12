@@ -19,9 +19,6 @@
  * https://github.com/SaschaWillems/Vulkan/blob/master/base/VulkanBuffer.h
  */
 
-// std
-#include <cassert>
-#include <cstring>
 
 /**
  * Returns the minimum instance size required to be compatible with devices minOffsetAlignment
@@ -96,19 +93,16 @@ void    ft_Buffer::unmap()
  * @param offset (Optional) Byte offset from beginning of mapped region
  *
  */
-
-#include <iostream>
-
+#include <memory>
 
 void    ft_Buffer::writeToBuffer(void *data, VkDeviceSize size, VkDeviceSize offset)
 {
     assert(this->_mapped && "Cannot copy to unmapped buffer");
 
-    if (size == VK_WHOLE_SIZE)
+    if (size == VK_WHOLE_SIZE) {
         memcpy(this->_mapped, data, this->_bufferSize);
-    else
-    {
-        char *memOffset = (char *) this->_mapped;
+    } else {
+        char *memOffset = static_cast<char*>(this->_mapped);
         memOffset += offset;
         memcpy(memOffset, data, size);
     }
@@ -127,11 +121,10 @@ void    ft_Buffer::writeToBuffer(void *data, VkDeviceSize size, VkDeviceSize off
  */
 VkResult    ft_Buffer::flush(VkDeviceSize size, VkDeviceSize offset)
 {
-    VkMappedMemoryRange mappedRange = {};
-    mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-    mappedRange.memory = this->_memory;
-    mappedRange.offset = offset;
-    mappedRange.size = size;
+    VkMappedMemoryRange mappedRange = {.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE,
+                                        .memory = this->_memory,
+                                        .offset = offset,
+                                        .size = size};
     return vkFlushMappedMemoryRanges(this->_device.device(), 1, &mappedRange);
 }
 
@@ -148,11 +141,10 @@ VkResult    ft_Buffer::flush(VkDeviceSize size, VkDeviceSize offset)
  */
 VkResult    ft_Buffer::invalidate(VkDeviceSize size, VkDeviceSize offset)
 {
-    VkMappedMemoryRange mappedRange = {};
-    mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-    mappedRange.memory = this->_memory;
-    mappedRange.offset = offset;
-    mappedRange.size = size;
+    VkMappedMemoryRange mappedRange = {.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE,
+                                        .memory = this->_memory,
+                                        .offset = offset,
+                                        .size = size};
     return vkInvalidateMappedMemoryRanges(this->_device.device(), 1, &mappedRange);
 }
 

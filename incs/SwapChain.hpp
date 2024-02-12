@@ -23,6 +23,12 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <array>
+#include <cstdlib>
+#include <iostream>
+#include <limits>
+#include <set>
+#include <stdexcept>
 
 class ft_SwapChain {
     public:

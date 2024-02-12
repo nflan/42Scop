@@ -12,8 +12,6 @@
 
 #include "../incs/Window.hpp"
 
-#include <stdexcept>
-
 ft_Window::ft_Window(int w, int h, std::string name) : _width{w}, _height{h}, _windowName{name}
 {
   initWindow();
@@ -38,8 +36,9 @@ void ft_Window::initWindow()
 
 void ft_Window::createWindowSurface(VkInstance instance, VkSurfaceKHR *surface)
 {
-  if (glfwCreateWindowSurface(instance, this->_window, nullptr, surface) != VK_SUCCESS)
+  if (glfwCreateWindowSurface(instance, this->_window, nullptr, surface) != VK_SUCCESS) {
     throw std::runtime_error("failed to craete window surface");
+  }
 }
 
 void ft_Window::framebufferResizeCallback(GLFWwindow *window, int width, int height)

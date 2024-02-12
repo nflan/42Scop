@@ -17,7 +17,12 @@
 #include "Window.hpp"
 #include "SwapChain.hpp"
 
+#ifndef DEBUG
+#define NDEBUG
+#endif
+#include <array>
 #include <cassert>
+#include <stdexcept>
 #include <memory>
 #include <vector>
 

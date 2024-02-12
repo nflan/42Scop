@@ -12,10 +12,6 @@
 
 #include "../incs/Camera.hpp"
 
-// std
-#include <cassert>
-#include <limits>
-
 void    ft_Camera::setOrthographicProjection(float left, float right, float top, float bottom, float near, float far)
 {
     _projectionMatrix = glm::mat4{1.f};

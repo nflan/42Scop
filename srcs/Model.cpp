@@ -13,15 +13,6 @@
 #include "../incs/Model.hpp"
 #include "../incs/tools.hpp"
 
-// libs
-#define GLM_ENABLE_EXPERIMENTAL
-#include </mnt/nfs/homes/nflan/sgoinfre/bin/glm/glm/gtx/hash.hpp>
-
-// std
-#include <cassert>
-#include <cstring>
-#include <unordered_map>
-
 namespace std
 {
     template <>
@@ -45,9 +36,9 @@ ft_Model::~ft_Model() {}
 float   ft_Model::calculateBoundingSize()
 {
     // Calculate the differences along each axis
-    float deltaX = this->_maxVertice.x - this->_minVertice.x;
-    float deltaY = this->_maxVertice.y - this->_minVertice.y;
-    float deltaZ = this->_maxVertice.z - this->_minVertice.z;
+    float   deltaX = this->_maxVertice.x - this->_minVertice.x;
+    float   deltaY = this->_maxVertice.y - this->_minVertice.y;
+    float   deltaZ = this->_maxVertice.z - this->_minVertice.z;
 
     // Calculate the bounding size (distance between max and min along each axis)
     float boundingSize = glm::sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
@@ -61,8 +52,7 @@ std::vector<std::shared_ptr<ft_Model>> ft_Model::createModelFromFile(ft_Device &
 
     Loader  load;
     load.LoadFile(filepath);
-    for (const Mesh& mesh : load._loadedMeshes)
-    {
+    for (const Mesh& mesh : load._loadedMeshes) {
         Models.emplace_back(make_unique<ft_Model>(device, load._mtlFile, mesh._vertices, mesh._indices, mesh._meshMaterial));
     }
 
@@ -70,18 +60,15 @@ std::vector<std::shared_ptr<ft_Model>> ft_Model::createModelFromFile(ft_Device &
     glm::vec3   tmpCenter = glm::vec3(0.f);
     float       maxBoundarySize = 0.f;
 
-    for (std::shared_ptr<ft_Model>& model : Models)
-    {
+    for (std::shared_ptr<ft_Model>& model : Models) {
         float   boundarySize = model->calculateBoundingSize();
         tmpCenter += model->getCenterOfObj();
-        if (maxBoundarySize < boundarySize)
-        {
+        if (maxBoundarySize < boundarySize) {
             scale = model->getScaleObj();
             maxBoundarySize = boundarySize;
         }
     }
-    for (std::shared_ptr<ft_Model>& model : Models)
-    {
+    for (std::shared_ptr<ft_Model>& model : Models) {
         model->setCenterOfObj(tmpCenter / glm::vec3(Models.size()));
         model->setScaleObj(scale);
     }
@@ -94,16 +81,15 @@ void    ft_Model::createVertexBuffers(const std::vector<Vertex> &vertices)
     _maxVertice = vertices[0].position;
     _centerOfObj = glm::vec3(0.f);
 
-    for (const Vertex& vertex : vertices)
-    {
+    for (const Vertex& vertex : vertices) {
         _minVertice = glm::min(_minVertice, vertex.position);
         _maxVertice = glm::max(_maxVertice, vertex.position);
         _centerOfObj += vertex.position;
     }
 
     _objectSize = _maxVertice - _minVertice;
-    float maxDimension = glm::max(_objectSize.x, glm::max(_objectSize.y, _objectSize.z));
-    _scaleObj = glm::vec3(5.f / maxDimension);//change 6.f to set the scaling
+    float   maxDimension = glm::max(_objectSize.x, glm::max(_objectSize.y, _objectSize.z));
+    _scaleObj = glm::vec3(5.f / maxDimension);//change 5.f to set the scaling
 
     _centerOfObj /= static_cast<float>(vertices.size());
     this->_vertexCount = static_cast<uint64_t>(vertices.size());

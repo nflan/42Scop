@@ -12,11 +12,6 @@
 
 #include "../incs/RenderSystem.hpp"
 
-// std
-#include <array>
-#include <cassert>
-#include <stdexcept>
-
 struct SimplePushConstantData
 {
     glm::mat4 modelMatrix{1.f};
@@ -36,19 +31,17 @@ RenderSystem::~RenderSystem()
 
 void    RenderSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout)
 {
-    VkPushConstantRange pushConstantRange{};
-    pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-    pushConstantRange.offset = 0;
-    pushConstantRange.size = sizeof(SimplePushConstantData);
+    VkPushConstantRange pushConstantRange{.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                                            .offset = 0,
+                                            .size = sizeof(SimplePushConstantData)};
 
     std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalSetLayout};
 
-    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
-    pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
-    pipelineLayoutInfo.pushConstantRangeCount = 1;
-    pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+    VkPipelineLayoutCreateInfo pipelineLayoutInfo{.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+                                                    .setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size()),
+                                                    .pSetLayouts = descriptorSetLayouts.data(),
+                                                    .pushConstantRangeCount = 1,
+                                                    .pPushConstantRanges = &pushConstantRange};
 
     if (vkCreatePipelineLayout(this->_device.device(), &pipelineLayoutInfo, nullptr, &this->_pipelineLayout) != VK_SUCCESS)
         throw std::runtime_error("failed to create pipeline layout!");
@@ -86,7 +79,7 @@ void    RenderSystem::update(ft_GameObject& model, GlobalUbo& ubo)
     if (model.model->getMtlFile().size())
     {
         #ifdef DEBUG
-            std::cout << "mtlfile = " << model.model->getMtlFile() << std::endl;
+            std::cerr << "mtlfile = " << model.model->getMtlFile() << std::endl;
         #endif
         Material    light = model.model->getMaterial();
         ubo.ka = light._ka;
@@ -127,8 +120,7 @@ void    RenderSystem::renderGameObjects(FrameInfo& frameInfo, std::unique_ptr<ft
         0,
         nullptr);
 
-    for (std::pair<const ft_GameObject::id_t, ft_GameObject>& kv : frameInfo.gameObjects)
-    {
+    for (std::pair<const ft_GameObject::id_t, ft_GameObject>& kv : frameInfo.gameObjects) {
         ft_GameObject   &obj = kv.second;
         if (obj.model == nullptr)
             continue;
@@ -140,8 +132,7 @@ void    RenderSystem::renderGameObjects(FrameInfo& frameInfo, std::unique_ptr<ft
         obj.transform.translation = -obj.model->getCenterOfObj();
 
         obj.transform.rotation += glm::vec3(ROTX * WAY, ROTY * WAY, ROTZ * WAY); // rotate on itself
-        if (ROBJ)
-        {
+        if (ROBJ) {
             obj.transform.rotation = glm::vec3(0.f, 0.f, 0.f);
             ROBJ = false;
         }
@@ -152,11 +143,10 @@ void    RenderSystem::renderGameObjects(FrameInfo& frameInfo, std::unique_ptr<ft
             glm::scale(glm::mat4(1.f), obj.transform.scale) *
             glm::translate(glm::mat4(1.f), obj.transform.translation);
 
-        SimplePushConstantData  push{};
         obj.transform.modelMatrix = ROTATE * obj.transform.modelMatrix;
-        push.modelMatrix = obj.transform.modelMatrix;
         obj.transform.updateNormalMatrix();
-        push.normalMatrix = obj.transform.normalMat;
+        SimplePushConstantData  push{.modelMatrix = obj.transform.modelMatrix,
+                                        .normalMatrix = obj.transform.normalMat};
         vkCmdPushConstants(
             frameInfo.commandBuffer,
             this->_pipelineLayout,

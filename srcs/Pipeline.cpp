@@ -11,13 +11,6 @@
 /* ************************************************************************** */
 
 #include "../incs/Pipeline.hpp"
-#include "../incs/Model.hpp"
-
-// std
-#include <cassert>
-#include <fstream>
-#include <iostream>
-#include <stdexcept>
 
 ft_Pipeline::ft_Pipeline(ft_Device& device,const std::string& vertFilepath,const std::string& fragFilepath,const PipelineConfigInfo& configInfo): _device{device}
 {
@@ -37,10 +30,10 @@ std::vector<char>   ft_Pipeline::readFile(const std::string& filename)
 
 	if (!file.is_open())
 		throw std::runtime_error(std::string {"Fail to open file: "} + filename + "!");
-	size_t	fileSize = (size_t) file.tellg(); // on a commence a la fin donc voir ou est le pointeur
+	size_t	fileSize = (size_t) file.tellg();
 	std::vector<char>	buffer(fileSize);
 
-	file.seekg(0); // tout lire jusqu'au debut
+	file.seekg(0);
 	file.read(buffer.data(), fileSize);
 
 	file.close();
@@ -57,57 +50,51 @@ void ft_Pipeline::createGraphicsPipeline(const std::string& vertFilepath, const 
     auto fragShaderCode = readFile(fragFilepath);
 
     createShaderModule(vertShaderCode, &this->_vertShaderModule);
-    createShaderModule(fragShaderCode, &this->_fragShaderModule);//creation du pipeline -> compile et mis sur la carte. on peut donc detruire une fois que la pipeline est finie
+    createShaderModule(fragShaderCode, &this->_fragShaderModule);
 
-    VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
-    vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-    vertShaderStageInfo.module = this->_vertShaderModule;
-    vertShaderStageInfo.pName = "main";
-    vertShaderStageInfo.flags = 0;
-    vertShaderStageInfo.pNext = nullptr;
-    vertShaderStageInfo.pSpecializationInfo = nullptr;//-> pour optimiser, virer du code avant la compile si pas besoin
+    VkPipelineShaderStageCreateInfo vertShaderStageInfo{.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+                                                        .pNext = nullptr,
+                                                        .flags = 0,
+                                                        .stage = VK_SHADER_STAGE_VERTEX_BIT,
+                                                        .module = this->_vertShaderModule,
+                                                        .pName = "main",
+                                                        .pSpecializationInfo = nullptr}; //to optimize
 
-    VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
-    fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-    fragShaderStageInfo.module = this->_fragShaderModule;
-    fragShaderStageInfo.pName = "main";
-    fragShaderStageInfo.flags = 0;
-    fragShaderStageInfo.pNext = nullptr;
-    fragShaderStageInfo.pSpecializationInfo = nullptr;
+    VkPipelineShaderStageCreateInfo fragShaderStageInfo{.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+                                                        .pNext = nullptr,
+                                                        .flags = 0,
+                                                        .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
+                                                        .module = this->_fragShaderModule,
+                                                        .pName = "main",
+                                                        .pSpecializationInfo = nullptr};
 
     VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
 
     auto& bindingDescriptions = configInfo.bindingDescriptions;
     auto& attributeDescriptions = configInfo.attributeDescriptions;
 
-    VkPipelineVertexInputStateCreateInfo    vertexInputInfo{};
-    vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-    vertexInputInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDescriptions.size());
-    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
-    vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data();
+    VkPipelineVertexInputStateCreateInfo    vertexInputInfo{.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+                                                            .vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDescriptions.size()),
+                                                            .pVertexBindingDescriptions = bindingDescriptions.data(),
+                                                            .vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size()),
+                                                            .pVertexAttributeDescriptions = attributeDescriptions.data()};
 
-    VkGraphicsPipelineCreateInfo    pipelineInfo{};
-    pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    pipelineInfo.stageCount = 2;
-    pipelineInfo.pStages = shaderStages;
-    pipelineInfo.pVertexInputState = &vertexInputInfo;
-    pipelineInfo.pInputAssemblyState = &configInfo.inputAssemblyInfo;
-    pipelineInfo.pViewportState = &configInfo.viewportInfo;
-    pipelineInfo.pRasterizationState = &configInfo.rasterizationInfo;
-    pipelineInfo.pMultisampleState = &configInfo.multisampleInfo;
-    pipelineInfo.pColorBlendState = &configInfo.colorBlendInfo;
-    pipelineInfo.pDepthStencilState = &configInfo.depthStencilInfo;
-    pipelineInfo.pDynamicState = &configInfo.dynamicStateInfo;
-
-    pipelineInfo.layout = configInfo.pipelineLayout;
-    pipelineInfo.renderPass = configInfo.renderPass;
-    pipelineInfo.subpass = configInfo.subpass;
-
-    pipelineInfo.basePipelineIndex = -1;
-    pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+    VkGraphicsPipelineCreateInfo    pipelineInfo{.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+                                                    .stageCount = 2,
+                                                    .pStages = shaderStages,
+                                                    .pVertexInputState = &vertexInputInfo,
+                                                    .pInputAssemblyState = &configInfo.inputAssemblyInfo,
+                                                    .pViewportState = &configInfo.viewportInfo,
+                                                    .pRasterizationState = &configInfo.rasterizationInfo,
+                                                    .pMultisampleState = &configInfo.multisampleInfo,
+                                                    .pDepthStencilState = &configInfo.depthStencilInfo,
+                                                    .pColorBlendState = &configInfo.colorBlendInfo,
+                                                    .pDynamicState = &configInfo.dynamicStateInfo,
+                                                    .layout = configInfo.pipelineLayout,
+                                                    .renderPass = configInfo.renderPass,
+                                                    .subpass = configInfo.subpass,
+                                                    .basePipelineHandle = VK_NULL_HANDLE,
+                                                    .basePipelineIndex = -1};
 
     if (vkCreateGraphicsPipelines(this->_device.device(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &this->_graphicsPipeline) != VK_SUCCESS)
         throw std::runtime_error("failed to create graphics pipeline");
@@ -115,10 +102,9 @@ void ft_Pipeline::createGraphicsPipeline(const std::string& vertFilepath, const 
 
 void ft_Pipeline::createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule)
 {
-    VkShaderModuleCreateInfo    createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    createInfo.codeSize = code.size();
-    createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+    VkShaderModuleCreateInfo    createInfo{.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+                                            .codeSize = code.size(),
+                                            .pCode = reinterpret_cast<const uint32_t*>(code.data())};
 
 	if (vkCreateShaderModule(this->_device.device(), &createInfo, nullptr, shaderModule) != VK_SUCCESS)
         throw std::runtime_error("failed to create shader module");
