@@ -55,7 +55,7 @@ class ft_Device {
         ft_Device &operator=(ft_Device &&) = delete;
 
         VkCommandPool                   getCommandPool() { return _commandPool; }
-        VkDevice                        device() { return _device_; }
+        VkDevice&                       device() { return _device_; }
         VkDevice*                       pDevice() { return &_device_; }
         VkSurfaceKHR                    surface() { return _surface_; }
         VkQueue                         graphicsQueue() { return _graphicsQueue_; }

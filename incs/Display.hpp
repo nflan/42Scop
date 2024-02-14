@@ -58,10 +58,10 @@ class Display
 	private:
   		void	loadGameObjects();
 		void	loadTextures();
-		void	getText();
+		bool	getText();
 		void	getTextInDir();
 		void	addMaterials();
-		void	createTextureImage(const char *);
+		bool	createTextureImage(const char *);
 		void	createTextureImageView(Texture&);
 		void	createTextureSampler(Texture&);
 		void	createBuffers();

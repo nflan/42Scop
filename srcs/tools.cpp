@@ -34,3 +34,53 @@ std::ostream &  operator<<(std::ostream& o, glm::vec3 vec)
     o << vec.x << "," << vec.y << "," << vec.z << "'";
     return o;
 }
+
+bool	testObjFile(std::string Path)
+{
+	if (Path.substr(Path.size() - 4, 4) != ".obj")
+	{
+		std::cerr << "'" << Path << "' is not a .obj file!" << std::endl;
+		return (1);
+	}
+	return (testOpenFile(Path));
+}
+
+
+bool	testOpenFile(std::string Path)
+{
+    std::ifstream file(Path);
+
+    if (!file)
+	{
+		std::cerr << "Failed to open: '" << Path << "'!" << std::endl;
+		return (1);
+	}
+	return (0);
+}
+
+bool            isTexFile(std::string file)
+{
+	std::vector<std::string>			ext{"png", "jpg", "jpeg"};
+	bool	add = 0;
+
+	std::string	extFile(file.c_str(), file.find_last_of('.') + 1, file.size() - (file.find_last_of('.') + 1));
+	for (std::string authorizedExt : ext) {
+		if (authorizedExt == extFile) {
+			add = !add;
+		}
+	}
+	if (!add) {
+		std::cerr << "This extension is not usable: " << extFile << ". Try with those one ";
+		for (std::string authorizedExt : ext)
+		{
+			std::cerr << authorizedExt;
+			if (authorizedExt != ext[ext.size() - 1])
+				std::cerr << ", ";
+			else
+				std::cerr << ".";
+		}
+		std::cerr << std::endl; 
+		return (1);
+	}
+	return (0);
+}

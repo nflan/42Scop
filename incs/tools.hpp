@@ -95,15 +95,31 @@ struct Mesh
 };
 
 struct  Texture {
-	VkImage			                    _image;
-	VkImageView		                    _imageView;
-	VkDeviceMemory	                    _imageMemory;
-	VkSampler		                    _sampler;
+    Texture() = delete;
+    Texture(VkDevice& device): _device(device) {}
+    ~Texture()
+    {
+        if (_sampler != nullptr)
+            vkDestroySampler(_device, _sampler, nullptr);
+        if (_imageView != nullptr)
+		    vkDestroyImageView(_device, _imageView, nullptr);
+        if (_image != nullptr)
+		    vkDestroyImage(_device, _image, nullptr);
+        if (_imageMemory != nullptr)
+		    vkFreeMemory(_device, _imageMemory, nullptr);
+    }
+	VkImage			                    _image = nullptr;
+	VkImageView		                    _imageView = nullptr;
+	VkDeviceMemory	                    _imageMemory = nullptr;
+	VkSampler		                    _sampler = nullptr;
 	uint32_t		                    _mipLevels;
+    VkDevice                            _device;
 };
 
 void            printMaterial(Material);
-
+bool            testObjFile(std::string);
+bool            testOpenFile(std::string);
+bool            isTexFile(std::string);
 std::ostream &  operator<<(std::ostream& o, glm::vec3 vec);
 
 #endif

@@ -104,13 +104,13 @@ Display	&Display::operator=( const Display& o )
 
 Display::~Display()
 {
-	for (Texture text : this->_loadedTextures)
-	{
-		vkDestroySampler(this->_device.device(), text._sampler, nullptr);
-		vkDestroyImageView(this->_device.device(), text._imageView, nullptr);
-		vkDestroyImage(this->_device.device(), text._image, nullptr);
-		vkFreeMemory(this->_device.device(), text._imageMemory, nullptr);
-	}
+	// for (Texture& text : this->_loadedTextures)
+	// {
+	// 	vkDestroySampler(this->_device.device(), text._sampler, nullptr);
+	// 	vkDestroyImageView(this->_device.device(), text._imageView, nullptr);
+	// 	vkDestroyImage(this->_device.device(), text._image, nullptr);
+	// 	vkFreeMemory(this->_device.device(), text._imageMemory, nullptr);
+	// }
 }
 
 void	Display::setFile(const char* file) { this->_file = file; }
@@ -193,30 +193,36 @@ void	Display::run()
 
 void	Display::loadTextures()
 {
-	ISTEXT = true;
-	getText();
-
-	for (uint32_t i = 0; i < this->_textFiles.size(); i++)
+	if (getText())
+		return ;
+	if (this->_textFiles.size())
 	{
-		createTextureImage(this->_textFiles[i].c_str());
-		createTextureImageView(this->_loadedTextures[i]);
-		createTextureSampler(this->_loadedTextures[i]);
+		ISTEXT = true;	
+		for (uint32_t i = 0; i < this->_textFiles.size(); i++)
+		{
+			createTextureImage(this->_textFiles[i].c_str());
+			createTextureImageView(this->_loadedTextures[i]);
+			createTextureSampler(this->_loadedTextures[i]);
+		}
 	}
 }
 
-void	Display::getText()
+bool	Display::getText()
 {
 	if (std::filesystem::exists(this->_textFile))
 	{
 		if (std::filesystem::is_directory(this->_textFile)) {
 			getTextInDir();
 		}
-		else if (std::filesystem::is_regular_file(this->_textFile)) {
+		else if (std::filesystem::is_regular_file(this->_textFile) && !isTexFile(this->_textFile) && !testOpenFile(this->_textFile)) {
 			this->_textFiles.push_back(this->_textFile);
 		}
+		else
+			return (1);
 	} else {
 		throw std::invalid_argument("Wrong path: " + this->_textFile);
 	}
+	return (0);
 }
 
 void	Display::getTextInDir()
@@ -228,27 +234,15 @@ void	Display::getTextInDir()
 	{
 		if (entry.is_regular_file())
 		{
-			bool	add = 0;
-			std::string	file(entry.path().filename());
-			std::string	extFile(file.c_str(), file.find_last_of('.') + 1, file.size() - (file.find_last_of('.') + 1));
-			for (std::string authorizedExt : ext) {
-				if (authorizedExt == extFile) {
-					add = !add;
-				}
+			std::string	file = this->_textFile;
+			if (*(file.end() - 1) != '/')
+				file += "/";
+			file += entry.path().filename();
+			if (isTexFile(file)) {
+				continue ;
 			}
-			if (!add) {
-				std::cerr << "This extension is not usable: " << extFile << ". Try with those one ";
-				for (std::string authorizedExt : ext)
-				{
-					std::cerr << authorizedExt;
-					if (authorizedExt != ext[ext.size() - 1])
-						std::cerr << ", ";
-					else
-						std::cerr << ".";
-				}
-				std::cerr << std::endl; 
-			} else {
-				this->_textFiles.push_back(_textFile + "/" + file);
+			else if (!testOpenFile(file)) {
+				this->_textFiles.push_back(file);
 			}
 		} else {
 			std::cerr << "Can't use this: '" << _textFile << "/" << entry.path().filename() << "' for texture." << std::endl;
@@ -384,9 +378,9 @@ void	Display::loadGameObjects()
   	}
 }
 
-void	Display::createTextureImage(const char *file)
+bool	Display::createTextureImage(const char *file)
 {
-	Texture			text;
+	Texture			text(this->_device.device());
 	int				texWidth, texHeight, texChannels;
     stbi_uc			*pixels = stbi_load(file, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
     VkDeviceSize	imageSize = texWidth * texHeight * 4;
@@ -394,8 +388,11 @@ void	Display::createTextureImage(const char *file)
 	text._mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
 
     if (!pixels)
-		throw std::runtime_error("failed to load texture image!");
-
+	{
+		std::cerr << "Failed to load thexture image from file '" << file << "'!" << std::endl;
+		return (1);
+	}
+	text._device = this->_device.device();
 	//Buffer intermediaire image
 	VkBuffer		stagingBuffer;
 	VkDeviceMemory	stagingBufferMemory;
@@ -418,6 +415,7 @@ void	Display::createTextureImage(const char *file)
 
 	generateMipmaps(text._image, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, text._mipLevels);
 	this->_loadedTextures.push_back(text);
+	return (0);
 }
 
 void	Display::createTextureImageView(Texture &loadedTexture)
@@ -499,7 +497,7 @@ void	Display::createTextureSampler(Texture &loadedTexture)
 	VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER : utilise une couleur fixée
 	*/
 
-	if (vkCreateSampler(this->_device.device(), &samplerInfo, nullptr, &loadedTexture._sampler) != VK_SUCCESS)
+	if (vkCreateSampler(this->_device.device(), &samplerInfo, nullptr, &loadedTexture._sampler) != VK_SUCCESS);
         throw std::runtime_error("Fail to create Sampler for texture!");
 	// le sampler n'est pas lie a une image ! Il est independant et peut du coup etre efficace tout le long du programme. par contre si on veut changer la facon d'afficher, faut ptete le detruire et le refaire ?
 }
