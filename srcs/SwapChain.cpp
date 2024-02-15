@@ -19,19 +19,69 @@ ft_SwapChain::ft_SwapChain(ft_Device &deviceRef, VkExtent2D extent): _device{dev
 
 ft_SwapChain::ft_SwapChain(ft_Device &deviceRef, VkExtent2D extent, std::shared_ptr<ft_SwapChain> previous): _device{deviceRef}, _windowExtent{extent}, _oldSwapChain{previous}
 {
+    _swapChain = nullptr;
+    _renderPass = nullptr;
     init();
 }
 
 void ft_SwapChain::init()
 {
+    char    status = 0;
     createSwapChain();
-    createImageViews();
-    this->_swapChainDepthFormat = this->findDepthFormat();
-    createRenderPass();
-    createColorResources();
-    createDepthResources();
-    createFramebuffers();
-    createSyncObjects();
+    try {
+        createImageViews();
+        ++status;
+        this->_swapChainDepthFormat = this->findDepthFormat();
+        createRenderPass();
+        ++status;
+        createColorResources();
+        ++status;
+        createDepthResources();
+        ++status;
+        createFramebuffers();
+        ++status;
+        createSyncObjects();
+    }
+    catch (const std::exception& e) {
+        if (status) {
+            for (VkImageView imageView : this->_swapChainImageViews) {
+                vkDestroyImageView(this->_device.device(), imageView, nullptr);
+            }
+            this->_swapChainImageViews.clear();
+        }
+
+        if (this->_swapChain != nullptr) {
+            vkDestroySwapchainKHR(this->_device.device(), this->_swapChain, nullptr);
+            this->_swapChain = nullptr;
+        }
+
+        if (status > 3) {
+            for (std::size_t i = 0; i < this->_depthImages.size(); i++) {
+                vkDestroyImageView(this->_device.device(), this->_depthImageViews[i], nullptr);
+                vkDestroyImage(this->_device.device(), this->_depthImages[i], nullptr);
+                vkFreeMemory(this->_device.device(), this->_depthImageMemorys[i], nullptr);
+            }
+        }
+
+        if (status > 2) {
+            for (std::size_t i = 0; i < this->_colorImages.size(); i++) {
+                vkDestroyImageView(this->_device.device(), this->_colorImageViews[i], nullptr);
+                vkDestroyImage(this->_device.device(), this->_colorImages[i], nullptr);
+                vkFreeMemory(this->_device.device(), this->_colorImageMemorys[i], nullptr);
+            }
+        }
+
+        if (status > 3) {
+            for (VkFramebuffer& framebuffer : this->_swapChainFramebuffers) {
+                vkDestroyFramebuffer(this->_device.device(), framebuffer, nullptr);
+            }
+        }
+
+        if (status > 1)
+        vkDestroyRenderPass(this->_device.device(), this->_renderPass, nullptr);
+
+        throw std::runtime_error(e.what());
+    }
 }
 
 ft_SwapChain::~ft_SwapChain()
@@ -345,7 +395,6 @@ void    ft_SwapChain::createImage(uint32_t width, uint32_t height, uint32_t mipL
         vkBindImageMemory(this->_device.device(), image, imageMemory, 0);
     }
     catch (const std::exception& e) {
-        std::cerr << "COUCOU" << std::endl;
         vkDestroyImage(this->_device.device(), image, nullptr);
         throw std::runtime_error(e.what());
     }
@@ -370,12 +419,10 @@ void	ft_SwapChain::createColorResources()
 	VkFormat	colorFormat = this->_swapChainImageFormat;
     VkExtent2D  swapChainExtent = getSwapChainExtent();
 
-    this->_colorImages.resize(1);
+    this->_colorImages.insert(this->_colorImages.begin(), 1, nullptr);
     this->_colorImageMemorys.resize(1);
     this->_colorImageViews.resize(1);
-    std::cerr << "AVANT COUCOU ?" << std::endl;
     createImage(swapChainExtent.width, swapChainExtent.height, 1, this->_device.getMsaaSamples(), colorFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, _colorImages[0], _colorImageMemorys[0]);
-    std::cerr << "apres COUCOU ?" << std::endl;
     _colorImageViews[0] = createImageView(_colorImages[0], colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
 }
 

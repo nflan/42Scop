@@ -82,54 +82,28 @@ void	DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT
 // class member functions
 ft_Device::ft_Device(ft_Window &window): _window{window}
 {
-	createInstance();
-	try {
-		setupDebugMessenger();
-	}
-	catch (const std::exception& e) {
-		vkDestroyInstance(this->_instance, nullptr);
-		throw std::runtime_error(e.what());
-	}
-	try {
-		createSurface();
-	}
-	catch (const std::exception& e) {
-		if (enableValidationLayers)
-			DestroyDebugUtilsMessengerEXT(this->_instance, this->_debugMessenger, nullptr);
-		vkDestroyInstance(this->_instance, nullptr);
-		throw std::runtime_error(e.what());
-	}
-	try {	
-		pickPhysicalDevice();
-	}
-	catch (const std::exception& e) {
-		if (enableValidationLayers)
-			DestroyDebugUtilsMessengerEXT(this->_instance, this->_debugMessenger, nullptr);
-		vkDestroySurfaceKHR(this->_instance, this->_surface_, nullptr);
-		vkDestroyInstance(this->_instance, nullptr);
-		throw std::runtime_error(e.what());
-	}
-	try {
-		createLogicalDevice();
-	}
-	catch (const std::exception& e) {
-		if (enableValidationLayers)
-			DestroyDebugUtilsMessengerEXT(this->_instance, this->_debugMessenger, nullptr);
-		vkDestroySurfaceKHR(this->_instance, this->_surface_, nullptr);
-		vkDestroyInstance(this->_instance, nullptr);
-		throw std::runtime_error(e.what());
-	}
-	try {
-		createCommandPool();
-	}
-	catch (const std::exception& e) {
-		vkDestroyDevice(this->_device_, nullptr);
-		if (enableValidationLayers)
-			DestroyDebugUtilsMessengerEXT(this->_instance, this->_debugMessenger, nullptr);
-		vkDestroySurfaceKHR(this->_instance, this->_surface_, nullptr);
-		vkDestroyInstance(this->_instance, nullptr);
-		throw std::runtime_error(e.what());
-	}
+    char	status = 0;
+    createInstance();
+    try {
+        setupDebugMessenger();
+        ++status;
+        createSurface();
+        ++status;
+        pickPhysicalDevice();
+        createLogicalDevice();
+        ++status;
+        createCommandPool();
+    }
+    catch (const std::exception& e) {
+        if (status > 2)
+            vkDestroyDevice(this->_device_, nullptr);
+        if (enableValidationLayers && status)
+            DestroyDebugUtilsMessengerEXT(this->_instance, this->_debugMessenger, nullptr);
+        if (status > 1)
+            vkDestroySurfaceKHR(this->_instance, this->_surface_, nullptr);
+        vkDestroyInstance(this->_instance, nullptr);
+        throw std::runtime_error(e.what());
+    }
 }
 
 ft_Device::~ft_Device()
@@ -548,7 +522,6 @@ uint32_t    ft_Device::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags
 	VkPhysicalDeviceMemoryProperties	memProperties;
 	//on recupere les types de memoire de la CG
 	vkGetPhysicalDeviceMemoryProperties(this->_physicalDevice, &memProperties);
-  	throw std::runtime_error("failed to find suitable memory type!");
 
 	//on cherche un type de memoire qui correspond au buffer
 	for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
