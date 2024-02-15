@@ -71,7 +71,7 @@ void ft_SwapChain::init()
             }
         }
 
-        if (status > 3) {
+        if (status > 4) {
             for (VkFramebuffer& framebuffer : this->_swapChainFramebuffers) {
                 vkDestroyFramebuffer(this->_device.device(), framebuffer, nullptr);
             }

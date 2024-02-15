@@ -430,7 +430,11 @@ bool	Display::createTextureImage(const char *file)
 	vkDestroyBuffer(this->_device.device(), stagingBuffer, nullptr);
 	vkFreeMemory(this->_device.device(), stagingBufferMemory, nullptr);
 
-	generateMipmaps(text._image, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, text._mipLevels);
+	if (generateMipmaps(text._image, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, text._mipLevels)) {
+		vkDestroyImage(this->_device.device(), text._image, nullptr);
+		vkFreeMemory(this->_device.device(), text._imageMemory, nullptr);
+		return (1);
+	}
 	this->_loadedTextures.push_back(text);
 	return (0);
 }
@@ -520,14 +524,14 @@ void	Display::createTextureSampler(Texture &loadedTexture)
 	// le sampler n'est pas lie a une image ! Il est independant et peut du coup etre efficace tout le long du programme. par contre si on veut changer la facon d'afficher, faut ptete le detruire et le refaire ?
 }
 
-void	Display::generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels)
+bool	Display::generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels)
 {
 	//Verifier si l'image supporte le filtrage lineaire
 	VkFormatProperties	formatProperties;
     vkGetPhysicalDeviceFormatProperties(this->_device.getPhysicalDevice(), imageFormat, &formatProperties);
 
 	if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
-    	throw std::runtime_error("le format de l'image texture ne supporte pas le filtrage lineaire!");
+    	return (error("Image texture format does not accept linear filter!"));
 
 	VkCommandBuffer	commandBuffer = this->_device.beginSingleTimeCommands();
 
@@ -557,14 +561,6 @@ void	Display::generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWi
 			0, nullptr,
 			0, nullptr,
 			1, &barrier);
-		
-
-// typedef struct VkImageBlit {
-//     VkImageSubresourceLayers    srcSubresource;
-    // VkOffset3D                  srcOffsets[2];
-//     VkImageSubresourceLayers    dstSubresource;
-//     VkOffset3D                  dstOffsets[2];
-// } VkImageBlit;
 
 
 		VkImageBlit blit{.srcSubresource{.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
@@ -614,4 +610,5 @@ void	Display::generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWi
 		1, &barrier);
 
     this->_device.endSingleTimeCommands(commandBuffer);
+	return (0);
 }

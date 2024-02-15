@@ -108,7 +108,6 @@ class ft_SwapChain {
         std::vector<VkFence>        _imagesInFlight;
         size_t                      _currentFrame = 0;
 
-        //Multisampling -> anti-aliasing
 		std::vector<VkImage>		_colorImages;
 		std::vector<VkDeviceMemory>	_colorImageMemorys;
 		std::vector<VkImageView>	_colorImageViews;

@@ -25,7 +25,7 @@ ft_Pipeline::~ft_Pipeline()
 }
 
 std::vector<char>   ft_Pipeline::readFile(const std::string& filename)
-{
+{    
 	std::ifstream	file(filename, std::ios::ate | std::ios::binary); //ate pour commencer a la fin / binary pour dire que c'est un binaire et pas recompiler
 
 	if (!file.is_open())
@@ -46,11 +46,16 @@ void ft_Pipeline::createGraphicsPipeline(const std::string& vertFilepath, const 
     assert(configInfo.pipelineLayout != VK_NULL_HANDLE && "Cannot create graphics pipeline: no pipelineLayout provided in configInfo");
     assert(configInfo.renderPass != VK_NULL_HANDLE && "Cannot create graphics pipeline: no renderPass provided in configInfo");
 
-    auto vertShaderCode = readFile(vertFilepath);
-    auto fragShaderCode = readFile(fragFilepath);
+    std::vector<char> vertShaderCode = readFile(vertFilepath);
+    std::vector<char> fragShaderCode = readFile(fragFilepath);
 
-    createShaderModule(vertShaderCode, &this->_vertShaderModule);
-    createShaderModule(fragShaderCode, &this->_fragShaderModule);
+    if (createShaderModule(vertShaderCode, &this->_vertShaderModule))
+        throw std::runtime_error("failed to create shader module");
+    if (createShaderModule(fragShaderCode, &this->_fragShaderModule))
+    {
+        vkDestroyShaderModule(this->_device.device(), this->_vertShaderModule, nullptr);
+        throw std::runtime_error("failed to create shader module");
+    }
 
     VkPipelineShaderStageCreateInfo vertShaderStageInfo{.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
                                                         .pNext = nullptr,
@@ -97,17 +102,22 @@ void ft_Pipeline::createGraphicsPipeline(const std::string& vertFilepath, const 
                                                     .basePipelineIndex = -1};
 
     if (vkCreateGraphicsPipelines(this->_device.device(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &this->_graphicsPipeline) != VK_SUCCESS)
+    {
+        vkDestroyShaderModule(this->_device.device(), this->_vertShaderModule, nullptr);
+        vkDestroyShaderModule(this->_device.device(), this->_fragShaderModule, nullptr);
         throw std::runtime_error("failed to create graphics pipeline");
+    }
 }
 
-void ft_Pipeline::createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule)
+bool ft_Pipeline::createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule)
 {
     VkShaderModuleCreateInfo    createInfo{.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
                                             .codeSize = code.size(),
                                             .pCode = reinterpret_cast<const uint32_t*>(code.data())};
 
 	if (vkCreateShaderModule(this->_device.device(), &createInfo, nullptr, shaderModule) != VK_SUCCESS)
-        throw std::runtime_error("failed to create shader module");
+        return (error("failed to create shader module"));
+    return (0);
 }
 
 void    ft_Pipeline::bind(VkCommandBuffer commandBuffer)

@@ -46,7 +46,6 @@ class ft_Model {
             void                    loadModel(const std::string &filepath);
         };
 
-        // ft_Model(ft_Device &device, const ft_Model::Builder &builder);
         ft_Model(ft_Device &device, std::string mtlFile, const std::vector<Vertex> &vertices, const std::vector<uint32_t> &indices, const Material &materials);
         ~ft_Model();
 

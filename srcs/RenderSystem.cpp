@@ -21,7 +21,13 @@ struct SimplePushConstantData
 RenderSystem::RenderSystem(ft_Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout, std::string shader): _device{device}, _shader{shader}
 {
     createPipelineLayout(globalSetLayout);
-    createPipeline(renderPass);
+    try {
+        createPipeline(renderPass);
+    }
+    catch (const std::exception& e) {
+        vkDestroyPipelineLayout(this->_device.device(), this->_pipelineLayout, nullptr);
+        throw std::runtime_error(e.what());
+    }
 }
 
 RenderSystem::~RenderSystem()

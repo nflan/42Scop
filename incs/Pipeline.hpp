@@ -67,7 +67,7 @@ class ft_Pipeline
         static std::vector<char>    readFile(const std::string& filepath);
 
         void                        createGraphicsPipeline(const std::string& vertFilepath, const std::string& fragFilepath, const PipelineConfigInfo& configInfo);
-        void                        createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule);
+        bool                        createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule);
         
         ft_Device&      _device;
         VkPipeline      _graphicsPipeline;

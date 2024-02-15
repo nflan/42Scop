@@ -8,23 +8,23 @@ layout (location = 3) in vec2 fragTexCoord;
 layout (location = 0) out vec4 outColor;
 
 struct PointLight {
-    vec4 position; // ignore w
-    vec4 color; // w is intensity
+    vec4 position;
+    vec4 color;
 };
 
 layout(set = 0, binding = 0) uniform GlobalUbo {
     mat4 projection;
     mat4 view;
     mat4 invView;
-    vec3 ka; // ambient color
-    vec3 kd; // diffuse color
-    vec3 ks; // specular color
-    vec3 ke; // emissive color
-    PointLight pointLights[1]; // change to modify lights
-    float ni; // optical density
-    float ns; // shininess
-    float d;  // transparency
-    int illum; //illum = 1 a flat material with no specular highlights, illum = 2 denotes the presence of specular highlights
+    vec3 ka;
+    vec3 kd;
+    vec3 ks;
+    vec3 ke;
+    PointLight pointLights[1];
+    float ni;
+    float ns;
+    float d;
+    int illum;
     int numLights;
 } ubo;
 
@@ -49,7 +49,7 @@ void main()
     for (int i = 0; i < ubo.numLights; i++) {
         PointLight light = ubo.pointLights[i];
         vec3 directionToLight = light.position.xyz - fragPosWorld;
-        float attenuation = dot(directionToLight, directionToLight); // distance squared
+        float attenuation = dot(directionToLight, directionToLight);
         directionToLight = normalize(directionToLight);
 
         float cosAngIncidence = max(dot(surfaceNormal, directionToLight), 0);
@@ -57,16 +57,15 @@ void main()
 
         diffuseLight += intensity * cosAngIncidence;
 
-        // specular lighting
         vec3 halfAngle = normalize(directionToLight + viewDirection);
         float blinnTerm = dot(surfaceNormal, halfAngle);
         blinnTerm = clamp(blinnTerm, 0, 1);
-        blinnTerm = pow(blinnTerm, ubo.ns); // use shininess from material
+        blinnTerm = pow(blinnTerm, ubo.ns);
         specularLight += intensity * blinnTerm;
     }
     
-    vec3 finalDiffuseColor = ubo.kd * fragColor;  // Use Kd from MTL file for diffuse color
-    vec3 finalSpecularColor = ubo.ks * fragColor;  // Use Ks from MTL file for specular color
+    vec3 finalDiffuseColor = ubo.kd * fragColor;
+    vec3 finalSpecularColor = ubo.ks * fragColor;
 
     if (ubo.illum != 1)
         outColor = vec4((diffuseLight * finalDiffuseColor + specularLight * finalSpecularColor) + ubo.ke, ubo.d);

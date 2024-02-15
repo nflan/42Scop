@@ -22,7 +22,13 @@ struct PointLightPushConstants
 PointLightSystem::PointLightSystem(ft_Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout): _device{device}
 {
     createPipelineLayout(globalSetLayout);
-    createPipeline(renderPass);
+    try {
+        createPipeline(renderPass);
+    }
+    catch (const std::exception& e) {
+        vkDestroyPipelineLayout(this->_device.device(), this->_pipelineLayout, nullptr);
+        throw (e.what());
+    }
 }
 
 PointLightSystem::~PointLightSystem()
