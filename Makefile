@@ -85,12 +85,12 @@ $(OBJB_DIR):
 
 clean:
 	@$(RM) $(OBJ_DIR)
-	@$(RM) $(OBJB_DIR)
 	@echo "Cleaned object"
 
 fclean: clean
 	@$(RM) $(NAME)
-	@$(RM) $(NAMEB)
+	@$(RM) $(vertObjFiles)
+	@$(RM) $(fragObjFiles)
 	@echo "Cleaned program"
 
 re: fclean all
