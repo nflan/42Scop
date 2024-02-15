@@ -54,10 +54,10 @@ class Display
 
 		void	setFile(const char* file);
 		void	setText(const char* file);
-		void	run( void );
+		bool	run( void );
 	private:
   		void	loadGameObjects();
-		void	loadTextures();
+		bool	loadTextures();
 		bool	getText();
 		void	getTextInDir();
 		void	addMaterials();
@@ -70,7 +70,7 @@ class Display
 		void	refreshDescriptorSets();
 		void	createRenderSystems();
 		void	generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
-		void	transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
+		bool	transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
 
 		std::string							_file;
 		std::string							_textFile;

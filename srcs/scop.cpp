@@ -23,25 +23,22 @@
 
 int	main(int ac, char **av)
 {
-	if (ac < 2 || ac > 3)
-	{
-		std::cerr << "Invalid number of args!";
-		return (1);
-	}
-
-	if (testObjFile(av[1]))
-		return (1);
-
-	Display	app;
-
 	try
 	{
 		if (ac < 2 || ac > 3)
-			throw std::invalid_argument("Invalid number of args!");
+		{
+			std::cerr << "Invalid number of args!";
+			return (1);
+		}
+
+		if (testObjFile(av[1]))
+			return (1);
+
+		Display	app; 
 		app.setFile(av[1]);
 		if (ac == 3)
 			app.setText(av[2]);
-		app.run();
+		return (app.run());
 	} 
 	catch (const std::exception& e)
 	{

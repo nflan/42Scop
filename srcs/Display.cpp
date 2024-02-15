@@ -104,23 +104,26 @@ Display	&Display::operator=( const Display& o )
 
 Display::~Display()
 {
-	// for (Texture& text : this->_loadedTextures)
-	// {
-	// 	vkDestroySampler(this->_device.device(), text._sampler, nullptr);
-	// 	vkDestroyImageView(this->_device.device(), text._imageView, nullptr);
-	// 	vkDestroyImage(this->_device.device(), text._image, nullptr);
-	// 	vkFreeMemory(this->_device.device(), text._imageMemory, nullptr);
-	// }
+	for (Texture& text : this->_loadedTextures)
+	{
+		vkDestroySampler(this->_device.device(), text._sampler, nullptr);
+		vkDestroyImageView(this->_device.device(), text._imageView, nullptr);
+		vkDestroyImage(this->_device.device(), text._image, nullptr);
+		vkFreeMemory(this->_device.device(), text._imageMemory, nullptr);
+	}
 }
 
 void	Display::setFile(const char* file) { this->_file = file; }
 void	Display::setText(const char* file) { this->_textFile = file; }
 
-void	Display::run()
+bool	Display::run()
 {
 	loadGameObjects();
 	if (this->_textFile.size())
-		loadTextures();
+	{
+		if (loadTextures())
+			return (1);
+	}
 	
 	createBuffers();
 	createDescriptorSetLayout();
@@ -189,22 +192,25 @@ void	Display::run()
 	}
 
 	vkDeviceWaitIdle(this->_device.device());
+	return (0);
 }
 
-void	Display::loadTextures()
+bool	Display::loadTextures()
 {
 	if (getText())
-		return ;
+		return (0);
 	if (this->_textFiles.size())
 	{
 		ISTEXT = true;	
 		for (uint32_t i = 0; i < this->_textFiles.size(); i++)
 		{
-			createTextureImage(this->_textFiles[i].c_str());
+			if (createTextureImage(this->_textFiles[i].c_str()))
+				return (1);
 			createTextureImageView(this->_loadedTextures[i]);
 			createTextureSampler(this->_loadedTextures[i]);
 		}
 	}
+	return (0);
 }
 
 bool	Display::getText()
@@ -380,7 +386,7 @@ void	Display::loadGameObjects()
 
 bool	Display::createTextureImage(const char *file)
 {
-	Texture			text(this->_device.device());
+	Texture			text;
 	int				texWidth, texHeight, texChannels;
     stbi_uc			*pixels = stbi_load(file, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
     VkDeviceSize	imageSize = texWidth * texHeight * 4;
@@ -392,11 +398,16 @@ bool	Display::createTextureImage(const char *file)
 		std::cerr << "Failed to load thexture image from file '" << file << "'!" << std::endl;
 		return (1);
 	}
-	text._device = this->_device.device();
 	//Buffer intermediaire image
 	VkBuffer		stagingBuffer;
 	VkDeviceMemory	stagingBufferMemory;
-	this->_device.createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+	try {
+		this->_device.createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+	}
+	catch (const std::exception& e) {
+		stbi_image_free(pixels);
+		throw std::runtime_error(e.what());
+	}
 
 	void	*data;
 	vkMapMemory(this->_device.device(), stagingBufferMemory, 0, imageSize, 0, &data);
@@ -406,12 +417,18 @@ bool	Display::createTextureImage(const char *file)
 	stbi_image_free(pixels);
 
     this->_renderer.getSwapChain().createImage(static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), text._mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, text._image, text._imageMemory);
-
-	this->transitionImageLayout(text._image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, text._mipLevels);
+	if (this->transitionImageLayout(text._image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, text._mipLevels))
+	{
+		vkDestroyBuffer(this->_device.device(), stagingBuffer, nullptr);
+		vkFreeMemory(this->_device.device(), stagingBufferMemory, nullptr);
+		vkDestroyImage(this->_device.device(), text._image, nullptr);
+		vkFreeMemory(this->_device.device(), text._imageMemory, nullptr);
+		return (1);
+	}
 	this->_device.copyBufferToImage(stagingBuffer, text._image, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), 1);
 
 	vkDestroyBuffer(this->_device.device(), stagingBuffer, nullptr);
-    vkFreeMemory(this->_device.device(), stagingBufferMemory, nullptr);
+	vkFreeMemory(this->_device.device(), stagingBufferMemory, nullptr);
 
 	generateMipmaps(text._image, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, text._mipLevels);
 	this->_loadedTextures.push_back(text);
@@ -423,7 +440,7 @@ void	Display::createTextureImageView(Texture &loadedTexture)
     loadedTexture._imageView = this->_renderer.getSwapChain().createImageView(loadedTexture._image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, loadedTexture._mipLevels);
 }
 
-void	Display::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels)
+bool	Display::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels)
 {
     VkCommandBuffer	commandBuffer = this->_device.beginSingleTimeCommands();
 
@@ -452,7 +469,7 @@ void	Display::transitionImageLayout(VkImage image, VkFormat format, VkImageLayou
 		sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 		destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 	} else if (oldLayout != VK_IMAGE_LAYOUT_UNDEFINED && newLayout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
-		throw std::invalid_argument("Unsupported layout transition!");
+		return (error("Unsupported layout transition!"));
 	}
 
 	vkCmdPipelineBarrier(
@@ -464,6 +481,7 @@ void	Display::transitionImageLayout(VkImage image, VkFormat format, VkImageLayou
 		1, &barrier
 	);
     this->_device.endSingleTimeCommands(commandBuffer);
+	return (0);
 }
 
 void	Display::createTextureSampler(Texture &loadedTexture)
@@ -497,7 +515,7 @@ void	Display::createTextureSampler(Texture &loadedTexture)
 	VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER : utilise une couleur fixée
 	*/
 
-	if (vkCreateSampler(this->_device.device(), &samplerInfo, nullptr, &loadedTexture._sampler) != VK_SUCCESS);
+	if (vkCreateSampler(this->_device.device(), &samplerInfo, nullptr, &loadedTexture._sampler) != VK_SUCCESS)
         throw std::runtime_error("Fail to create Sampler for texture!");
 	// le sampler n'est pas lie a une image ! Il est independant et peut du coup etre efficace tout le long du programme. par contre si on veut changer la facon d'afficher, faut ptete le detruire et le refaire ?
 }

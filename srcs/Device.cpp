@@ -82,12 +82,54 @@ void	DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT
 // class member functions
 ft_Device::ft_Device(ft_Window &window): _window{window}
 {
-    createInstance();
-    setupDebugMessenger();
-    createSurface();
-    pickPhysicalDevice();
-    createLogicalDevice();
-    createCommandPool();
+	createInstance();
+	try {
+		setupDebugMessenger();
+	}
+	catch (const std::exception& e) {
+		vkDestroyInstance(this->_instance, nullptr);
+		throw std::runtime_error(e.what());
+	}
+	try {
+		createSurface();
+	}
+	catch (const std::exception& e) {
+		if (enableValidationLayers)
+			DestroyDebugUtilsMessengerEXT(this->_instance, this->_debugMessenger, nullptr);
+		vkDestroyInstance(this->_instance, nullptr);
+		throw std::runtime_error(e.what());
+	}
+	try {	
+		pickPhysicalDevice();
+	}
+	catch (const std::exception& e) {
+		if (enableValidationLayers)
+			DestroyDebugUtilsMessengerEXT(this->_instance, this->_debugMessenger, nullptr);
+		vkDestroySurfaceKHR(this->_instance, this->_surface_, nullptr);
+		vkDestroyInstance(this->_instance, nullptr);
+		throw std::runtime_error(e.what());
+	}
+	try {
+		createLogicalDevice();
+	}
+	catch (const std::exception& e) {
+		if (enableValidationLayers)
+			DestroyDebugUtilsMessengerEXT(this->_instance, this->_debugMessenger, nullptr);
+		vkDestroySurfaceKHR(this->_instance, this->_surface_, nullptr);
+		vkDestroyInstance(this->_instance, nullptr);
+		throw std::runtime_error(e.what());
+	}
+	try {
+		createCommandPool();
+	}
+	catch (const std::exception& e) {
+		vkDestroyDevice(this->_device_, nullptr);
+		if (enableValidationLayers)
+			DestroyDebugUtilsMessengerEXT(this->_instance, this->_debugMessenger, nullptr);
+		vkDestroySurfaceKHR(this->_instance, this->_surface_, nullptr);
+		vkDestroyInstance(this->_instance, nullptr);
+		throw std::runtime_error(e.what());
+	}
 }
 
 ft_Device::~ft_Device()
@@ -506,6 +548,7 @@ uint32_t    ft_Device::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags
 	VkPhysicalDeviceMemoryProperties	memProperties;
 	//on recupere les types de memoire de la CG
 	vkGetPhysicalDeviceMemoryProperties(this->_physicalDevice, &memProperties);
+  	throw std::runtime_error("failed to find suitable memory type!");
 
 	//on cherche un type de memoire qui correspond au buffer
 	for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
@@ -542,14 +585,21 @@ void    ft_Device::createBuffer(
 	VkMemoryRequirements	memRequirements;
 	vkGetBufferMemoryRequirements(this->_device_, buffer, &memRequirements);
 
-	VkMemoryAllocateInfo	allocInfo{.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-										.allocationSize = memRequirements.size,
-										.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties)};
+	try {
+		VkMemoryAllocateInfo	allocInfo{.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+											.allocationSize = memRequirements.size,
+											.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties)};
 
-	if (vkAllocateMemory(this->_device_, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
-        throw std::runtime_error("failed to allocate vertex buffer memory!");
+		if (vkAllocateMemory(this->_device_, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
+			throw std::runtime_error("failed to allocate vertex buffer memory!");
 
-	vkBindBufferMemory(this->_device_, buffer, bufferMemory, 0);
+		vkBindBufferMemory(this->_device_, buffer, bufferMemory, 0);
+	}
+	catch (const std::exception& e) {
+   		vkDestroyBuffer(this->_device_, buffer, nullptr);
+    	vkFreeMemory(this->_device_, bufferMemory, nullptr);
+		throw std::runtime_error(e.what());
+	}
 	/*
 	 * Le quatrième indique le décalage entre le début de la mémoire et le début du buffer.
 	 Nous avons alloué cette mémoire spécialement pour ce buffer, nous pouvons donc mettre 0.

@@ -107,7 +107,6 @@ void    ft_Model::createVertexBuffers(const std::vector<Vertex> &vertices)
         VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
     };
-
     stagingBuffer.map();
     stagingBuffer.writeToBuffer((void *)vertices.data());
 
@@ -119,6 +118,7 @@ void    ft_Model::createVertexBuffers(const std::vector<Vertex> &vertices)
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
     this->_device.copyBuffer(stagingBuffer.getBuffer(), this->_vertexBuffer->getBuffer(), bufferSize);
+
 }
 
 void    ft_Model::createIndexBuffers(const std::vector<uint32_t> &indices)

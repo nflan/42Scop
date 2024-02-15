@@ -58,7 +58,7 @@ bool	testOpenFile(std::string Path)
 	return (0);
 }
 
-bool            isTexFile(std::string file)
+bool	isTexFile(std::string file)
 {
 	std::vector<std::string>			ext{"png", "jpg", "jpeg"};
 	bool	add = 0;
@@ -83,4 +83,10 @@ bool            isTexFile(std::string file)
 		return (1);
 	}
 	return (0);
+}
+
+bool	error(std::string msg)
+{
+	std::cerr << msg << std::endl;
+	return (1);
 }
