@@ -1,7 +1,5 @@
-resources/
 tags
 *.obj
-textures/
 models/
 .vscode
 err.txt
