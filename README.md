@@ -11,7 +11,7 @@ in charge of parsing to obtain the requested rendering.
 In a window, your 3D object will be displayed in perspective (which means that what
 is far must be smaller), rotate on itself around its main symmetrical axis (middle of the
 object basically...). By using various colors, it must be possible to distinguish the various
-sides. The object can be moved on three axis, in both directions.
+sides.
 Finally, a texture must be applicable simply on the object when we press a dedicated
 key, and the same key allows us to go back to the different colors. A soft transition
 between the two is requested.
