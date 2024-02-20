@@ -54,6 +54,13 @@ Controls
 	- c -> show Texture / Color
 	- t -> change Texture (set in a directory)
 
+How to use
+---
+- git clone
+- make
+	- ./scop resources/file.obj
+	- ./scop resources/file.obj textures/
+
 Examples
 --
 
